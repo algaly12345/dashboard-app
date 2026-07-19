@@ -1,0 +1,69 @@
+spring:
+  application:
+    name: realestate-admin
+
+  # ---- Database (XAMPP MySQL) ----
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/abaadapp_abaad_pdm?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Riyadh&allowPublicKeyRetrieval=true&useSSL=false
+    username: root
+    password: ""
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # Entities are mapped to the existing tables described in the brief.
+  # validate = never auto-alter the existing production schema.
+  jpa:
+    hibernate:
+      ddl-auto: validate
+      naming:
+        # Spring Boot's default SpringPhysicalNamingStrategy rewrites EVERY
+        # column name to snake_case, even ones already explicitly quoted in
+        # @Column(name = "..."). Hibernate's own standard strategy leaves
+        # explicit names untouched, which is what we need for the handful of
+        # genuinely-camelCase columns in `estates` (advertiserName, etc.).
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+        # Explicit dialect - avoids "Unable to determine Dialect" errors and
+        # shows the real connection error (auth/port/db-name) if it fails.
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  # ---- i18n / bilingual AR-RTL / EN-LTR ----
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+  web:
+    locale: ar
+    locale-resolver: fixed
+
+  # ---- Thymeleaf ----
+  thymeleaf:
+    cache: false
+    encoding: UTF-8
+
+server:
+  port: 8088
+
+# ---- Push notifications (Firebase Cloud Messaging) ----
+# 1. Firebase Console -> Project Settings -> Service Accounts -> Generate new
+#    private key. This downloads a JSON file - NEVER commit it or paste its
+#    contents anywhere public/in chat.
+# 2. Put that file at src/main/resources/firebase-service-account.json
+#    (add it to .gitignore) - or point credentials-path at any absolute
+#    file path instead.
+# 3. Flip enabled to true.
+# Until all three are done, the app starts normally and the Send screen
+# just reports "not configured" instead of failing.
+app:
+  firebase:
+    enabled: false
+    credentials-path: classpath:firebase-service-account.json
+    project-id: abaad-8b6a0
+
+# ---- Debug logging (remove once it connects) ----
+logging:
+  level:
+    com.zaxxer.hikari: DEBUG
+    org.hibernate: DEBUG

@@ -1,0 +1,17 @@
+<div th:fragment="topbar(eyebrow, title)" class="topbar">
+    <div>
+        <div class="page-eyebrow" th:text="${eyebrow}">Section</div>
+        <h1 th:text="${title}">Title</h1>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+        <div class="lang-switch">
+            <a th:href="@{${currentUri}(lang='ar')}"
+               th:classappend="${#locale.language == 'ar'} ? 'active' : ''">عربي</a>
+            <a th:href="@{${currentUri}(lang='en')}"
+               th:classappend="${#locale.language != 'ar'} ? 'active' : ''">EN</a>
+        </div>
+        <div class="thumb-fallback" title="Admin">
+            <i class="bi bi-person"></i>
+        </div>
+    </div>
+</div>

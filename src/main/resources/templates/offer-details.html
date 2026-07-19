@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('offer.detailsTitle')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('offers')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{offer.detailsTitle})}"></div>
+
+        <div class="content">
+
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <a th:href="@{/offers}" class="btn btn-outline-gold">
+                    <i class="bi bi-arrow-right"></i> <span th:text="#{offer.backToList}">Back</span>
+                </a>
+                <a th:href="@{'/offers/' + ${offer.id} + '/edit'}" class="btn btn-gold">
+                    <i class="bi bi-pencil"></i> <span th:text="#{offer.edit}">Edit</span>
+                </a>
+            </div>
+
+            <!-- Hero -->
+            <div class="card section-card mb-3">
+                <div class="row g-4">
+                    <div class="col-lg-5">
+                        <div class="offer-card-media" style="height:100%; min-height:220px; border-radius:14px;">
+                            <img th:if="${offer.image}" th:src="@{'/uploads/' + ${offer.image}}" onerror="this.style.display='none'"/>
+                            <i th:unless="${offer.image}" class="bi bi-bag-heart placeholder-icon"></i>
+
+                            <span th:if="${offer.offerType.name() == 'discount' and offer.discount != null}" class="offer-ribbon">
+                                <i class="bi bi-percent"></i> <span th:text="${offer.discount} + '%'">10%</span>
+                            </span>
+                            <span th:if="${offer.offerType.name() == 'price' and offer.servicePrice != null}" class="offer-ribbon price-tag">
+                                <span th:text="${offer.servicePrice} + ' ' + #{offer.currency}">100</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                            <span th:if="${offer.status == 'accept'}" class="badge-pill badge-active" th:text="#{offer.status.accept}">Approved</span>
+                            <span th:if="${offer.status == 'pending'}" class="badge-pill badge-tour" th:text="#{offer.status.pending}">Pending</span>
+                            <span th:if="${offer.status == 'reject'}" class="badge-pill badge-disactive" th:text="#{offer.status.reject}">Rejected</span>
+                            <span th:if="${serviceTypeName}" class="badge-pill badge-rent"><i class="bi bi-tools"></i> <span th:text="${serviceTypeName}">Type</span></span>
+                            <span class="badge-pill badge-sale" th:text="${offer.offerOwner.name() == 'all'} ? #{offer.owner.all} : #{offer.owner.me}">Audience</span>
+                        </div>
+                        <h2 class="mb-2" th:text="${offer.title}">Title</h2>
+                        <p class="text-muted" style="white-space:pre-line;" th:text="${offer.description}">Description</p>
+
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <div class="offer-provider-chip">
+                                <i class="bi bi-telephone"></i>
+                                <span th:text="${offer.phoneProvider}" dir="ltr">Phone</span>
+                            </div>
+                            <div class="offer-provider-chip" th:if="${providerName}">
+                                <i class="bi bi-person"></i>
+                                <span th:text="${providerName}">Name</span>
+                            </div>
+                            <div class="offer-provider-chip">
+                                <i class="bi bi-clock-history"></i>
+                                <span th:text="${offer.expiryDate}">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-lg-6">
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="bi bi-map"></i> <span th:text="#{offer.filter.zone}">Zones</span></div>
+                        <div class="d-flex flex-wrap gap-2" th:if="${not zones.isEmpty()}">
+                            <span th:each="z : ${zones}" class="badge-pill badge-tour" th:text="${z.nameAr}">Zone</span>
+                        </div>
+                        <div th:if="${zones.isEmpty()}" class="text-muted small" th:text="#{offer.owner.all}">All zones</div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="bi bi-tags"></i> <span th:text="#{offer.filter.category}">Categories</span></div>
+                        <div class="d-flex flex-wrap gap-2" th:if="${not categories.isEmpty()}">
+                            <span th:each="c : ${categories}" class="badge-pill badge-rent" th:text="${c.nameAr}">Category</span>
+                        </div>
+                        <div th:if="${categories.isEmpty()}" class="text-muted small" th:text="#{offer.noCategoryLink}">No categories linked</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title"><i class="bi bi-info-circle"></i> Meta</div>
+                <div class="row g-3 small">
+                    <div class="col-6 col-md-3">
+                        <div class="text-muted" th:text="#{offer.createdDate}">Created</div>
+                        <div class="fw-semibold" th:text="${offer.createdAt != null ? #temporals.format(offer.createdAt, 'yyyy-MM-dd') : '-'}">-</div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="text-muted">ID</div>
+                        <div class="fw-semibold" th:text="${offer.id}">-</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

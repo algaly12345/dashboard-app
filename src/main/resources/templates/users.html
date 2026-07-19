@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('nav.users')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('users')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{nav.users})}"></div>
+
+        <div class="content">
+
+            <form th:action="@{/users}" method="get" class="card section-card mb-3">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold" th:text="#{user.name}">Search</label>
+                        <input type="text" name="q" th:value="${q}" class="form-control" th:placeholder="#{user.search.placeholder}"/>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold" th:text="#{user.type}">Type</label>
+                        <select name="userType" class="form-select">
+                            <option value="" th:text="#{user.filter.type}">All types</option>
+                            <option value="customer" th:selected="${userType == 'customer'}">customer</option>
+                            <option value="provider" th:selected="${userType == 'provider'}">provider</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-gold w-100" th:text="#{estate.filter.apply}">Filter</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="card table-card">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th th:text="#{user.name}">Name</th>
+                        <th th:text="#{user.phone}">Phone</th>
+                        <th th:text="#{user.email}">Email</th>
+                        <th th:text="#{user.type}">Type</th>
+                        <th th:text="#{user.status}">Status</th>
+                        <th th:text="#{user.estatesAdded}">Listings</th>
+                        <th th:text="#{user.offersAdded}">Services</th>
+                        <th th:text="#{user.joined}">Joined</th>
+                        <th th:text="#{estate.actions}">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="u : ${users.content}">
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="thumb-fallback"><i class="bi bi-person"></i></div>
+                                <span th:text="${u.name}">Name</span>
+                            </div>
+                        </td>
+                        <td th:text="${u.phone}" dir="ltr">Phone</td>
+                        <td th:text="${u.email}">Email</td>
+                        <td th:text="${u.userType}">Type</td>
+                        <td>
+                            <span th:if="${u.isActive.name() == 'active'}" class="badge-pill badge-active" th:text="#{estate.active}">Active</span>
+                            <span th:if="${u.isActive.name() == 'disactive'}" class="badge-pill badge-disactive" th:text="#{estate.disactive}">Inactive</span>
+                        </td>
+                        <td>
+                            <span class="badge-pill badge-tour"><i class="bi bi-building"></i> <span th:text="${estateCounts.get(u.id)} ?: 0">0</span></span>
+                        </td>
+                        <td>
+                            <span class="badge-pill badge-rent"><i class="bi bi-tools"></i> <span th:text="${offerCounts.get(u.id)} ?: 0">0</span></span>
+                        </td>
+                        <td th:text="${u.createdAt != null ? #temporals.format(u.createdAt, 'yyyy-MM-dd') : '-'}">2026-01-01</td>
+                        <td>
+                            <a th:href="@{'/users/' + ${u.id}}" class="btn-icon" title="View">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr th:if="${users.content.isEmpty()}">
+                        <td colspan="9" class="text-center text-muted py-4">—</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <nav th:if="${users.totalPages > 1}" class="d-flex justify-content-between align-items-center mt-3">
+                <span class="text-muted small">
+                    <span th:text="#{common.page}">Page</span>
+                    <span th:text="${users.number + 1}">1</span>
+                    <span th:text="#{common.of}">of</span>
+                    <span th:text="${users.totalPages}">1</span>
+                </span>
+                <div class="btn-group">
+                    <a class="btn btn-outline-secondary btn-sm"
+                       th:classappend="${users.first} ? 'disabled' : ''"
+                       th:href="@{/users(q=${q}, userType=${userType}, page=${users.number - 1})}"
+                       th:text="#{common.prev}">Prev</a>
+                    <a class="btn btn-outline-secondary btn-sm"
+                       th:classappend="${users.last} ? 'disabled' : ''"
+                       th:href="@{/users(q=${q}, userType=${userType}, page=${users.number + 1})}"
+                       th:text="#{common.next}">Next</a>
+                </div>
+            </nav>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('nav.offers')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('offers')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{nav.offers})}"></div>
+
+        <div class="content">
+
+            <!-- Advanced filters -->
+            <form th:action="@{/offers}" method="get" class="card section-card mb-3">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label" th:text="#{offer.title}">Search</label>
+                        <input type="text" name="q" th:value="${q}" class="form-control" th:placeholder="#{offer.search.placeholder}"/>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" th:text="#{offer.status}">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="" th:text="#{offer.filter.status}">All statuses</option>
+                            <option value="pending" th:text="#{offer.status.pending}" th:selected="${status == 'pending'}"></option>
+                            <option value="accept" th:text="#{offer.status.accept}" th:selected="${status == 'accept'}"></option>
+                            <option value="reject" th:text="#{offer.status.reject}" th:selected="${status == 'reject'}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" th:text="#{offer.type}">Type</label>
+                        <select name="offerType" class="form-select">
+                            <option value="" th:text="#{offer.filter.type}">All types</option>
+                            <option value="price" th:text="#{offer.type.price}" th:selected="${offerType == 'price'}"></option>
+                            <option value="discount" th:text="#{offer.type.discount}" th:selected="${offerType == 'discount'}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" th:text="#{offer.serviceType}">Service type</label>
+                        <select name="serviceTypeId" class="form-select">
+                            <option value="" th:text="#{offer.filter.serviceType}">All service types</option>
+                            <option th:each="t : ${serviceTypes}" th:value="${t.id}" th:text="${t.name}" th:selected="${t.id == serviceTypeId}"></option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row g-2 align-items-end mt-1">
+                    <div class="col-md-3">
+                        <label class="form-label" th:text="#{offer.filter.zone}">Zone</label>
+                        <select name="zoneId" class="form-select">
+                            <option value="" th:text="#{offer.filter.allZones}">All zones</option>
+                            <option th:each="z : ${zones}" th:value="${z.id}" th:text="${z.nameAr}" th:selected="${z.id == zoneId}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" th:text="#{offer.filter.category}">Estate category</label>
+                        <select name="categoryId" class="form-select">
+                            <option value="" th:text="#{offer.filter.allCategories}">All categories</option>
+                            <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.nameAr}" th:selected="${c.id == categoryId}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-gold w-100" th:text="#{offer.filter.apply}">Filter</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Card grid -->
+            <div class="offer-grid" th:if="${not offers.content.isEmpty()}">
+                <div class="offer-card" th:each="o : ${offers.content}">
+                    <div class="offer-card-media">
+                        <img th:if="${o.image}" th:src="@{'/uploads/' + ${o.image}}" onerror="this.style.display='none'"/>
+                        <i th:unless="${o.image}" class="bi bi-bag-heart placeholder-icon"></i>
+
+                        <span th:if="${o.offerType.name() == 'discount' and o.discount != null}" class="offer-ribbon">
+                            <i class="bi bi-percent"></i> <span th:text="${o.discount} + '%'">10%</span>
+                        </span>
+                        <span th:if="${o.offerType.name() == 'price' and o.servicePrice != null}" class="offer-ribbon price-tag">
+                            <span th:text="${o.servicePrice} + ' ' + #{offer.currency}">100</span>
+                        </span>
+
+                        <span class="offer-card-status">
+                            <span th:if="${o.status == 'accept'}" class="badge-pill badge-active" th:text="#{offer.status.accept}">Approved</span>
+                            <span th:if="${o.status == 'pending'}" class="badge-pill badge-tour" th:text="#{offer.status.pending}">Pending</span>
+                            <span th:if="${o.status == 'reject'}" class="badge-pill badge-disactive" th:text="#{offer.status.reject}">Rejected</span>
+                        </span>
+                    </div>
+                    <div class="offer-card-body">
+                        <a th:href="@{'/offers/' + ${o.id}}" class="offer-card-title" style="color:inherit;" th:text="${o.title}">Title</a>
+                        <div class="offer-card-desc" th:text="${o.description}">Description</div>
+                        <div class="offer-provider-chip">
+                            <i class="bi bi-telephone"></i>
+                            <span th:text="${o.phoneProvider}" dir="ltr">Phone</span>
+                        </div>
+                        <div class="offer-provider-chip" th:if="${serviceTypeNames.get(o.serviceTypeId)}">
+                            <i class="bi bi-tools"></i>
+                            <span th:text="${serviceTypeNames.get(o.serviceTypeId)}">Service type</span>
+                        </div>
+                    </div>
+                    <div class="offer-card-footer">
+                        <span class="offer-expiry">
+                            <i class="bi bi-clock-history"></i>
+                            <span th:text="${o.expiryDate}">-</span>
+                        </span>
+                        <div class="d-flex gap-1">
+                            <a th:href="@{'/offers/' + ${o.id}}" class="btn-icon" title="View"><i class="bi bi-eye"></i></a>
+                            <form th:if="${o.status != 'accept'}" th:action="@{'/offers/' + ${o.id} + '/approve'}" method="post">
+                                <input type="hidden" name="redirectTo" th:value="${currentUri}"/>
+                                <button type="submit" class="btn-icon" title="Approve"><i class="bi bi-check-lg"></i></button>
+                            </form>
+                            <form th:if="${o.status != 'reject'}" th:action="@{'/offers/' + ${o.id} + '/reject'}" method="post">
+                                <input type="hidden" name="redirectTo" th:value="${currentUri}"/>
+                                <button type="submit" class="btn-icon" title="Reject"><i class="bi bi-x-lg"></i></button>
+                            </form>
+                            <a th:href="@{'/offers/' + ${o.id} + '/edit'}" class="btn-icon" title="Edit"><i class="bi bi-pencil"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${offers.content.isEmpty()}" class="card section-card text-center text-muted py-5">
+                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                <span th:text="#{offer.noResults}">No results</span>
+            </div>
+
+            <!-- Pagination -->
+            <nav th:if="${offers.totalPages > 1}" class="d-flex justify-content-between align-items-center mt-3">
+                <span class="text-muted small">
+                    <span th:text="#{common.page}">Page</span>
+                    <span th:text="${offers.number + 1}">1</span>
+                    <span th:text="#{common.of}">of</span>
+                    <span th:text="${offers.totalPages}">1</span>
+                </span>
+                <div class="btn-group">
+                    <a class="btn btn-outline-secondary btn-sm"
+                       th:classappend="${offers.first} ? 'disabled' : ''"
+                       th:href="@{/offers(q=${q}, status=${status}, offerType=${offerType}, serviceTypeId=${serviceTypeId}, zoneId=${zoneId}, categoryId=${categoryId}, page=${offers.number - 1})}"
+                       th:text="#{common.prev}">Prev</a>
+                    <a class="btn btn-outline-secondary btn-sm"
+                       th:classappend="${offers.last} ? 'disabled' : ''"
+                       th:href="@{/offers(q=${q}, status=${status}, offerType=${offerType}, serviceTypeId=${serviceTypeId}, zoneId=${zoneId}, categoryId=${categoryId}, page=${offers.number + 1})}"
+                       th:text="#{common.next}">Next</a>
+                </div>
+            </nav>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('offer.editTitle')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('offers')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{offer.editTitle})}"></div>
+
+        <div class="content">
+
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <a th:href="@{/offers}" class="btn btn-outline-gold">
+                    <i class="bi bi-arrow-right"></i> <span th:text="#{offer.backToList}">Back</span>
+                </a>
+                <div th:if="${saved}" class="alert alert-success py-2 px-3 mb-0 small" th:text="#{offer.saved}">Saved</div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-lg-4">
+                    <div class="form-section text-center">
+                        <img th:if="${offer.image}" th:src="@{'/uploads/' + ${offer.image}}"
+                             class="w-100 rounded-3 mb-3" style="max-height:200px; object-fit:cover;" onerror="this.style.display='none'"/>
+                        <div th:unless="${offer.image}" class="thumb-fallback w-100 mb-3" style="height:150px; border-radius:14px;">
+                            <i class="bi bi-bag-heart" style="font-size:2rem;"></i>
+                        </div>
+                        <div class="offer-provider-chip mx-auto mb-2">
+                            <i class="bi bi-telephone"></i>
+                            <span th:text="${offer.phoneProvider}" dir="ltr">Phone</span>
+                        </div>
+                        <div class="text-muted small">#{offer.serviceType}</div>
+                        <select name="serviceTypeId" class="form-select form-select-sm mt-1" form="offerEditForm">
+                            <option th:each="t : ${serviceTypes}" th:value="${t.id}" th:text="${t.name}" th:selected="${t.id == offer.serviceTypeId}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <form th:action="@{'/offers/' + ${offer.id}}" method="post" id="offerEditForm">
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="bi bi-card-heading"></i> <span th:text="#{offer.title}">Basic info</span></div>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label" th:text="#{offer.title}">Title</label>
+                                    <input type="text" name="title" th:value="${offer.title}" class="form-control" required/>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label" th:text="#{offer.description}">Description</label>
+                                    <textarea name="description" rows="4" class="form-control" th:text="${offer.description}"></textarea>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" th:text="#{offer.type}">Type</label>
+                                    <select name="offerType" class="form-select">
+                                        <option value="price" th:selected="${offer.offerType.name() == 'price'}" th:text="#{offer.type.price}">Price</option>
+                                        <option value="discount" th:selected="${offer.offerType.name() == 'discount'}" th:text="#{offer.type.discount}">Discount</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" th:text="#{offer.price}">Price</label>
+                                    <input type="number" name="servicePrice" th:value="${offer.servicePrice}" class="form-control"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" th:text="#{offer.discount}">Discount %</label>
+                                    <input type="number" name="discount" th:value="${offer.discount}" class="form-control"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{offer.status}">Status</label>
+                                    <select name="status" class="form-select">
+                                        <option value="pending" th:selected="${offer.status == 'pending'}" th:text="#{offer.status.pending}">Pending</option>
+                                        <option value="accept" th:selected="${offer.status == 'accept'}" th:text="#{offer.status.accept}">Approved</option>
+                                        <option value="reject" th:selected="${offer.status == 'reject'}" th:text="#{offer.status.reject}">Rejected</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{offer.expiryDate}">Expiry date</label>
+                                    <input type="text" name="expiryDate" th:value="${offer.expiryDate}" class="form-control" dir="ltr" placeholder="YYYY-MM-DD"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{offer.provider}">Provider phone</label>
+                                    <input type="text" name="phoneProvider" th:value="${offer.phoneProvider}" class="form-control" dir="ltr"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sticky-save-bar">
+                            <a th:href="@{/offers}" class="btn btn-outline-gold" th:text="#{common.cancel}">Cancel</a>
+                            <button type="submit" class="btn btn-gold" th:text="#{offer.save}">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

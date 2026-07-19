@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('map.pageTitle')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('estates')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{map.pageTitle})}"></div>
+
+        <div class="content">
+
+            <a th:href="@{/estates}" class="btn btn-outline-gold mb-3">
+                <i class="bi bi-arrow-right"></i> <span th:text="#{estate.backToList}">Back</span>
+            </a>
+
+            <!-- Filters -->
+            <div class="card section-card mb-3">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-2">
+                        <label class="form-label" th:text="#{map.filter.zone}">Zone</label>
+                        <select id="f-zone" class="form-select">
+                            <option value="" th:text="#{map.filter.allZones}">All zones</option>
+                            <option th:each="z : ${zones}" th:value="${z.id}" th:text="${z.nameAr}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" th:text="#{map.filter.city}">City</label>
+                        <select id="f-city" class="form-select">
+                            <option value="" th:text="#{map.filter.allCities}">All cities</option>
+                            <option th:each="c : ${cities}" th:value="${c}" th:text="${c}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" th:text="#{map.filter.district}">District</label>
+                        <select id="f-district" class="form-select">
+                            <option value="" th:text="#{map.filter.allDistricts}">All districts</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" th:text="#{map.filter.category}">Type</label>
+                        <select id="f-category" class="form-select">
+                            <option value="" th:text="#{map.filter.allCategories}">All types</option>
+                            <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.nameAr}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" th:text="#{map.filter.advertiser}">Advertiser</label>
+                        <input type="text" id="f-advertiser" class="form-control" list="advertiser-list" th:placeholder="#{map.filter.advertiserPlaceholder}"/>
+                        <datalist id="advertiser-list">
+                            <option th:each="a : ${advertisers}" th:value="${a}"></option>
+                        </datalist>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge-pill badge-tour"><i class="bi bi-pin-map"></i> <span id="results-count">0</span> <span th:text="#{map.resultsCount}">matching</span></span>
+                <span class="text-muted small" th:text="#{map.noCoordinates}">Coordinates note</span>
+            </div>
+
+            <!-- Map -->
+            <div class="card mb-3" style="overflow:hidden;">
+                <div id="map" style="height:480px; width:100%; background:#EEF0F4;"></div>
+                <div th:if="${mapApiKey == null or mapApiKey.isEmpty()}" class="p-4 text-center text-muted small">
+                    Google Maps API key isn't configured yet - set <code>map_api_key</code> under <a th:href="@{/settings}">Settings</a>.
+                </div>
+            </div>
+
+            <!-- Results list -->
+            <div class="offer-grid" id="results-list"></div>
+
+            <!-- Pagination -->
+            <nav id="pagination" class="d-flex justify-content-between align-items-center mt-3 d-none">
+                <span class="text-muted small">
+                    <span th:text="#{common.page}">Page</span>
+                    <span id="page-current">1</span>
+                    <span th:text="#{common.of}">of</span>
+                    <span id="page-total">1</span>
+                </span>
+                <div class="btn-group">
+                    <button type="button" id="btn-prev" class="btn btn-outline-secondary btn-sm" th:text="#{common.prev}">Prev</button>
+                    <button type="button" id="btn-next" class="btn btn-outline-secondary btn-sm" th:text="#{common.next}">Next</button>
+                </div>
+            </nav>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var CURRENCY = /*[[#{estate.currency}]]*/ 'SAR';
+    var NO_RESULTS_TEXT = /*[[#{map.noResults}]]*/ 'No results';
+    var DETAILS_TEXT = /*[[#{map.viewDetails}]]*/ 'Details';
+
+    var MAP_KEY_CONFIGURED = /*[[${mapApiKey != null and !mapApiKey.isEmpty()}]]*/ false;
+    var map, markers = [], currentPage = 0;
+
+    function currentFilters() {
+        return {
+            zoneId: $('#f-zone').val(),
+            city: $('#f-city').val(),
+            district: $('#f-district').val(),
+            categoryId: $('#f-category').val(),
+            advertiserName: $('#f-advertiser').val()
+        };
+    }
+
+    function clearMarkers() {
+        markers.forEach(function (m) { m.setMap(null); });
+        markers = [];
+    }
+
+    function loadDistricts() {
+        var city = $('#f-city').val();
+        $.getJSON('/api/v1/estates/districts', { city: city }, function (list) {
+            var current = $('#f-district').val();
+            var $sel = $('#f-district');
+            $sel.find('option:not(:first)').remove();
+            list.forEach(function (d) {
+                $sel.append($('<option>').val(d).text(d));
+            });
+            if (list.indexOf(current) !== -1) $sel.val(current);
+        });
+    }
+
+    function escapeHtml(s) {
+        return $('<div>').text(s || '').html();
+    }
+
+    function renderList(data) {
+        var $list = $('#results-list').empty();
+        $('#results-count').text(data.totalElements);
+        if (!data.content.length) {
+            $list.append('<div class="card section-card text-center text-muted py-5 w-100"><i class="bi bi-pin-map fs-3 d-block mb-2"></i>' + NO_RESULTS_TEXT + '</div>');
+            return;
+        }
+        data.content.forEach(function (e) {
+            var img = e.firstImage
+                ? '<img src="/uploads/' + e.firstImage + '" class="offer-card-media" style="height:130px; object-fit:cover;" onerror="this.style.display=\'none\'"/>'
+                : '<div class="offer-card-media" style="height:130px;"><i class="bi bi-house placeholder-icon"></i></div>';
+            var card = '<div class="offer-card">' + img +
+                '<div class="offer-card-body">' +
+                '<div class="offer-card-title">' + escapeHtml(e.title) + '</div>' +
+                '<div class="offer-provider-chip"><i class="bi bi-geo-alt"></i>' + escapeHtml(e.city) + (e.districts ? ' - ' + escapeHtml(e.districts) : '') + '</div>' +
+                '<div class="fw-bold">' + escapeHtml(e.price) + ' ' + CURRENCY + '</div>' +
+                '</div>' +
+                '<div class="offer-card-footer">' +
+                '<span class="offer-provider-chip mb-0"><i class="bi bi-person"></i>' + escapeHtml(e.advertiserName || '') + '</span>' +
+                '<a href="/estates/' + e.id + '" class="btn-icon" title="' + DETAILS_TEXT + '"><i class="bi bi-eye"></i></a>' +
+                '</div></div>';
+            $list.append(card);
+        });
+    }
+
+    function renderMarkers(data) {
+        if (!map) return;
+        clearMarkers();
+        var bounds = new google.maps.LatLngBounds();
+        var any = false;
+        data.content.forEach(function (e) {
+            var lat = parseFloat(e.latitude), lng = parseFloat(e.longitude);
+            if (isNaN(lat) || isNaN(lng)) return;
+            any = true;
+            var pos = { lat: lat, lng: lng };
+            var marker = new google.maps.Marker({ position: pos, map: map, title: e.title || '' });
+            var content = '<div style="min-width:180px;">' +
+                '<div style="font-weight:700; margin-bottom:4px;">' + escapeHtml(e.title) + '</div>' +
+                '<div style="font-size:.82rem; color:#555;">' + escapeHtml(e.city) + '</div>' +
+                '<div style="font-weight:700; margin:4px 0;">' + escapeHtml(e.price) + ' ' + CURRENCY + '</div>' +
+                '<a href="/estates/' + e.id + '" style="font-size:.82rem;">' + DETAILS_TEXT + ' &rarr;</a>' +
+                '</div>';
+            var info = new google.maps.InfoWindow({ content: content });
+            marker.addListener('click', function () { info.open(map, marker); });
+            markers.push(marker);
+            bounds.extend(pos);
+        });
+        if (any) map.fitBounds(bounds);
+    }
+
+    function renderPagination(data) {
+        if (data.totalPages > 1) {
+            $('#pagination').removeClass('d-none');
+            $('#page-current').text(data.number + 1);
+            $('#page-total').text(data.totalPages);
+            $('#btn-prev').prop('disabled', data.first);
+            $('#btn-next').prop('disabled', data.last);
+        } else {
+            $('#pagination').addClass('d-none');
+        }
+    }
+
+    function loadData(page) {
+        currentPage = page || 0;
+        var params = $.extend({ page: currentPage }, currentFilters());
+        $.getJSON('/api/v1/estates/map', params, function (data) {
+            renderList(data);
+            renderMarkers(data);
+            renderPagination(data);
+        });
+    }
+
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: { lat: 24.7136, lng: 46.6753 },
+            zoom: 6
+        });
+        loadData(0);
+    }
+    window.initMap = initMap;
+
+    $(function () {
+        $('#f-zone, #f-category').on('change', function () { loadData(0); });
+        $('#f-city').on('change', function () { loadDistricts(); loadData(0); });
+        $('#f-district').on('change', function () { loadData(0); });
+        var advertiserTimer;
+        $('#f-advertiser').on('input', function () {
+            clearTimeout(advertiserTimer);
+            advertiserTimer = setTimeout(function () { loadData(0); }, 400);
+        });
+        $('#btn-prev').on('click', function () { if (currentPage > 0) loadData(currentPage - 1); });
+        $('#btn-next').on('click', function () { loadData(currentPage + 1); });
+
+        // If there's no map key, the Google Maps script (and its initMap
+        // callback) never loads - so we kick off the first data load
+        // ourselves here instead, showing the paginated list without a map.
+        if (!MAP_KEY_CONFIGURED) {
+            loadData(0);
+        }
+    });
+    /*]]>*/
+</script>
+<script th:if="${mapApiKey != null and !mapApiKey.isEmpty()}"
+        th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${mapApiKey} + '&callback=initMap'}"
+        async defer></script>
+</body>
+</html>

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('nav.dashboard')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('dashboard')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{nav.dashboard})}"></div>
+
+        <div class="content">
+
+            <!-- Period filter -->
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <div class="period-switch">
+                    <a th:href="@{/dashboard(period='day')}" th:classappend="${period == 'day'} ? 'active' : ''" th:text="#{period.day}">Day</a>
+                    <a th:href="@{/dashboard(period='week')}" th:classappend="${period == 'week'} ? 'active' : ''" th:text="#{period.week}">Week</a>
+                    <a th:href="@{/dashboard(period='month')}" th:classappend="${period == 'month'} ? 'active' : ''" th:text="#{period.month}">Month</a>
+                    <a th:href="@{/dashboard(period='year')}" th:classappend="${period == 'year'} ? 'active' : ''" th:text="#{period.year}">Year</a>
+                </div>
+            </div>
+
+            <!-- KPI row -->
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-xl-3">
+                    <div class="card kpi-card">
+                        <div class="kpi-icon violet"><i class="bi bi-building"></i></div>
+                        <div class="kpi-label" th:text="#{kpi.totalEstates}">Total</div>
+                        <div class="kpi-value" th:text="${totalEstates}">0</div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="card kpi-card">
+                        <div class="kpi-icon success"><i class="bi bi-check-circle"></i></div>
+                        <div class="kpi-label" th:text="#{kpi.activeEstates}">Active</div>
+                        <div class="kpi-value" th:text="${activeEstates}">0</div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="card kpi-card">
+                        <div class="kpi-icon amber"><i class="bi bi-tag"></i></div>
+                        <div class="kpi-label" th:text="#{kpi.forSale}">For sale</div>
+                        <div class="kpi-value" th:text="${forSale}">0</div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="card kpi-card">
+                        <div class="kpi-icon rent"><i class="bi bi-key"></i></div>
+                        <div class="kpi-label" th:text="#{kpi.forRent}">For rent</div>
+                        <div class="kpi-value" th:text="${forRent}">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-xl-3">
+                    <div class="card kpi-card">
+                        <div class="kpi-icon coral"><i class="bi bi-stars"></i></div>
+                        <div class="kpi-label" th:text="#{kpi.newInPeriod}">New</div>
+                        <div class="kpi-value" th:text="${newInPeriod}">0</div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="card kpi-card">
+                        <div class="kpi-icon ink"><i class="bi bi-people"></i></div>
+                        <div class="kpi-label" th:text="#{kpi.totalUsers}">Users</div>
+                        <div class="kpi-value" th:text="${totalUsers}">0</div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="card kpi-card">
+                        <div class="kpi-icon rent"><i class="bi bi-tools"></i></div>
+                        <div class="kpi-label" th:text="#{kpi.totalOffers}">Services</div>
+                        <div class="kpi-value" th:text="${totalOffers}">0</div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="card kpi-card">
+                        <div class="kpi-icon ink"><i class="bi bi-map"></i></div>
+                        <div class="kpi-label" th:text="#{kpi.totalZones}">Zones</div>
+                        <div class="kpi-value" th:text="${totalZones}">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="row g-3 mb-4">
+                <div class="col-lg-4">
+                    <div class="card section-card h-100">
+                        <div class="section-title" th:text="#{dashboard.byCategory}">Listings by category</div>
+                        <div th:each="row : ${byCategory}" class="bar-row">
+                            <div class="bar-row-top">
+                                <span th:text="${row.label}">Category</span>
+                                <span class="count" th:text="${row.count}">0</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill" th:style="'width:' + ${row.count * 100 / (byCategory[0].count)} + '%'"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card section-card h-100">
+                        <div class="section-title" th:text="#{dashboard.byCity}">Listings by city</div>
+                        <div th:each="row : ${byCity}" class="bar-row">
+                            <div class="bar-row-top">
+                                <span th:text="${row.label}">City</span>
+                                <span class="count" th:text="${row.count}">0</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill alt" th:style="'width:' + ${row.count * 100 / (byCity[0].count)} + '%'"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card section-card h-100">
+                        <div class="section-title">
+                            <span th:text="#{dashboard.byZone}">Top zones</span>
+                            <a th:href="@{/zones}" class="small fw-semibold" th:text="#{dashboard.viewAll}">View all</a>
+                        </div>
+                        <div th:each="row : ${byZone}" class="bar-row">
+                            <div class="bar-row-top">
+                                <span th:text="${row.label}">Zone</span>
+                                <span class="count" th:text="${row.count}">0</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill" th:style="'width:' + ${row.count * 100 / (byZone[0].count)} + '%'"></div>
+                            </div>
+                        </div>
+                        <div th:if="${byZone.isEmpty()}" class="text-muted small" th:text="#{estate.noResults}">No data</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Services & providers -->
+            <div class="row g-3 mb-4">
+                <div class="col-lg-4">
+                    <div class="card section-card h-100">
+                        <div class="section-title">
+                            <span th:text="#{dashboard.serviceStatus}">Offer status</span>
+                            <a th:href="@{/offers}" class="small fw-semibold" th:text="#{dashboard.viewAll}">View all</a>
+                        </div>
+                        <div class="status-stack" th:if="${totalOffers > 0}">
+                            <span class="seg-pending" th:style="'width:' + ${pendingOffers * 100 / totalOffers} + '%'"></span>
+                            <span class="seg-accept" th:style="'width:' + ${acceptedOffers * 100 / totalOffers} + '%'"></span>
+                            <span class="seg-reject" th:style="'width:' + ${rejectedOffers * 100 / totalOffers} + '%'"></span>
+                        </div>
+                        <div class="status-legend">
+                            <span class="legend-item"><i class="legend-dot pending"></i> <span th:text="#{offer.status.pending}">Pending</span> <b th:text="${pendingOffers}">0</b></span>
+                            <span class="legend-item"><i class="legend-dot accept"></i> <span th:text="#{offer.status.accept}">Approved</span> <b th:text="${acceptedOffers}">0</b></span>
+                            <span class="legend-item"><i class="legend-dot reject"></i> <span th:text="#{offer.status.reject}">Rejected</span> <b th:text="${rejectedOffers}">0</b></span>
+                        </div>
+                        <div th:if="${totalOffers == 0}" class="text-muted small" th:text="#{estate.noResults}">No data</div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card section-card h-100">
+                        <div class="section-title" th:text="#{dashboard.byServiceType}">Top service types</div>
+                        <div th:each="row : ${byServiceType}" class="bar-row">
+                            <div class="bar-row-top">
+                                <span th:text="${row.label}">Type</span>
+                                <span class="count" th:text="${row.count}">0</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill coral" th:style="'width:' + ${row.count * 100 / (byServiceType[0].count)} + '%'"></div>
+                            </div>
+                        </div>
+                        <div th:if="${byServiceType.isEmpty()}" class="text-muted small" th:text="#{estate.noResults}">No data</div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="card section-card h-100">
+                        <div class="section-title" th:text="#{dashboard.topProviders}">Top providers</div>
+                        <div th:each="p, iter : ${topProviders}" class="provider-row">
+                            <div class="provider-rank" th:text="${iter.count}">1</div>
+                            <div>
+                                <div class="provider-name" th:text="${p.name} ?: #{dashboard.unknownProvider}">Name</div>
+                                <div class="provider-phone" dir="ltr" th:text="${p.phone}">Phone</div>
+                            </div>
+                            <div class="provider-count" th:text="${p.count}">0</div>
+                        </div>
+                        <div th:if="${topProviders.isEmpty()}" class="text-muted small" th:text="#{estate.noResults}">No data</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent listings -->
+            <div class="card table-card">
+                <div class="section-card pb-0">
+                    <div class="section-title">
+                        <span th:text="#{dashboard.recent}">Recent</span>
+                        <a th:href="@{/estates}" class="small fw-semibold" th:text="#{dashboard.viewAll}">View all</a>
+                    </div>
+                </div>
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th th:text="#{estate.title}">Title</th>
+                        <th th:text="#{estate.city}">City</th>
+                        <th th:text="#{estate.adType}">Purpose</th>
+                        <th th:text="#{estate.price}">Price</th>
+                        <th th:text="#{estate.status}">Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="e : ${recentEstates}">
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <img th:if="${e.firstImage}" th:src="@{'/uploads/' + ${e.firstImage}}" class="thumb" onerror="this.style.display='none'"/>
+                                <div th:unless="${e.firstImage}" class="thumb-fallback"><i class="bi bi-image"></i></div>
+                                <span th:text="${e.shortDescription}">Title</span>
+                            </div>
+                        </td>
+                        <td th:text="${e.city}">City</td>
+                        <td>
+                            <span th:if="${e.advertisementType == 'بيع'}" class="badge-pill badge-sale" th:text="#{estate.sale}">Sale</span>
+                            <span th:if="${e.advertisementType == 'إيجار'}" class="badge-pill badge-rent" th:text="#{estate.rent}">Rent</span>
+                        </td>
+                        <td th:text="|${e.price} #{estate.currency}|">0</td>
+                        <td>
+                            <span th:if="${e.status.name() == 'active'}" class="badge-pill badge-active" th:text="#{estate.active}">Active</span>
+                            <span th:if="${e.status.name() == 'disactive'}" class="badge-pill badge-disactive" th:text="#{estate.disactive}">Inactive</span>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('user.detailsTitle')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('users')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{user.detailsTitle})}"></div>
+
+        <div class="content">
+
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <a th:href="@{/users}" class="btn btn-outline-gold">
+                    <i class="bi bi-arrow-right"></i> <span th:text="#{user.backToList}">Back</span>
+                </a>
+                <div th:if="${saved}" class="alert alert-success py-2 px-3 mb-0 small" th:text="#{user.saved}">Saved</div>
+            </div>
+
+            <div class="card section-card mb-3">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="thumb-fallback" style="width:56px; height:56px; font-size:1.4rem;"><i class="bi bi-person"></i></div>
+                        <div>
+                            <h2 class="mb-1" th:text="${user.name}">Name</h2>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span th:if="${user.isActive.name() == 'active'}" class="badge-pill badge-active" th:text="#{estate.active}">Active</span>
+                                <span th:if="${user.isActive.name() == 'disactive'}" class="badge-pill badge-disactive" th:text="#{estate.disactive}">Inactive</span>
+                                <span class="badge-pill badge-tour" th:text="${user.userType}">Type</span>
+                                <span th:if="${agent != null}" class="badge-pill badge-sale" th:text="#{user.section.agentProfile}">Agent</span>
+                                <span th:if="${provider != null}" class="badge-pill badge-rent" th:text="#{user.section.providerProfile}">Provider</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <div class="zone-stat" th:if="${agent != null}">
+                            <div class="zone-stat-value" th:text="${estateCount}">0</div>
+                            <div class="zone-stat-label"><i class="bi bi-building"></i> <span th:text="#{user.estatesAdded}">Listings added</span></div>
+                        </div>
+                        <div class="zone-stat zone-stat-alt" th:if="${provider != null}">
+                            <div class="zone-stat-value" th:text="${offerCount}">0</div>
+                            <div class="zone-stat-label"><i class="bi bi-tools"></i> <span th:text="#{user.offersAdded}">Offers added</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form th:action="@{'/users/' + ${user.id}}" method="post">
+
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-person-badge"></i> <span th:text="#{user.section.account}">Account</span></div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{user.name}">Name</label>
+                            <input type="text" name="name" th:value="${user.name}" class="form-control"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{user.phone}">Phone</label>
+                            <input type="text" name="phone" th:value="${user.phone}" class="form-control" dir="ltr"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{user.email}">Email</label>
+                            <input type="text" name="email" th:value="${user.email}" class="form-control" dir="ltr"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{user.status}">Status</label>
+                            <select name="isActive" class="form-select">
+                                <option value="active" th:selected="${user.isActive.name() == 'active'}" th:text="#{estate.active}">Active</option>
+                                <option value="disactive" th:selected="${user.isActive.name() == 'disactive'}" th:text="#{estate.disactive}">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{user.type}">User type</label>
+                            <input type="text" th:value="${user.userType}" class="form-control" disabled/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{user.joined}">Joined</label>
+                            <input type="text" th:value="${user.createdAt != null ? #temporals.format(user.createdAt, 'yyyy-MM-dd') : '-'}" class="form-control" disabled/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section" th:if="${agent != null}">
+                    <div class="form-section-title"><i class="bi bi-briefcase"></i> <span th:text="#{user.section.agentProfile}">Agent profile</span></div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{user.agentType}">Agent type</label>
+                            <input type="text" name="agentType" th:value="${agent.agentType}" class="form-control"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{user.membershipType}">Membership type</label>
+                            <select name="agentMembershipType" class="form-select">
+                                <option value="agent" th:selected="${agent.membershipType.name() == 'agent'}">agent</option>
+                                <option value="provider" th:selected="${agent.membershipType.name() == 'provider'}">provider</option>
+                                <option value="customer" th:selected="${agent.membershipType.name() == 'customer'}">customer</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{user.falLicense}">FAL license</label>
+                            <input type="text" name="falLicenseNumber" th:value="${agent.falLicenseNumber}" class="form-control" dir="ltr"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section" th:if="${provider != null}">
+                    <div class="form-section-title"><i class="bi bi-tools"></i> <span th:text="#{user.section.providerProfile}">Provider profile</span></div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{user.job}">Job</label>
+                            <input type="text" name="job" th:value="${provider.job}" class="form-control"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{user.address}">Address</label>
+                            <input type="text" name="providerAddress" th:value="${provider.address}" class="form-control"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{user.identityNumber}">Identity number</label>
+                            <input type="text" name="identityNumber" th:value="${provider.identityNumber}" class="form-control" dir="ltr"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section text-muted small" th:if="${agent == null and provider == null}">
+                    <i class="bi bi-info-circle"></i> <span th:text="#{user.noProfile}">No profile</span>
+                </div>
+
+                <div class="sticky-save-bar">
+                    <a th:href="@{/users}" class="btn btn-outline-gold" th:text="#{common.cancel}">Cancel</a>
+                    <button type="submit" class="btn btn-gold" th:text="#{user.save}">Save</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

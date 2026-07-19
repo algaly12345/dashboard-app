@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('estate.detailsTitle')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('estates')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{estate.detailsTitle})}"></div>
+
+        <div class="content">
+
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <a th:href="@{/estates}" class="btn btn-outline-gold">
+                    <i class="bi bi-arrow-right"></i> <span th:text="#{estate.backToList}">Back</span>
+                </a>
+                <a th:href="@{'/estates/' + ${estate.id} + '/edit'}" class="btn btn-gold">
+                    <i class="bi bi-pencil"></i> <span th:text="#{estate.edit}">Edit</span>
+                </a>
+            </div>
+
+            <!-- Hero -->
+            <div class="card section-card mb-3">
+                <div class="row g-4">
+                    <div class="col-lg-5">
+                        <img th:if="${estate.firstImage}" th:src="@{'/uploads/' + ${estate.firstImage}}"
+                             class="w-100 h-100 rounded-3" style="object-fit:cover; min-height:220px; max-height:320px;"
+                             onerror="this.style.display='none'"/>
+                        <div th:unless="${estate.firstImage}" class="thumb-fallback w-100" style="height:220px; border-radius:14px;">
+                            <i class="bi bi-image" style="font-size:2rem;"></i>
+                        </div>
+                    </div>
+                    <div class="col-lg-7">
+                        <div class="d-flex flex-wrap gap-2 mb-2">
+                            <span th:if="${estate.advertisementType == 'بيع'}" class="badge-pill badge-sale" th:text="#{estate.sale}">Sale</span>
+                            <span th:if="${estate.advertisementType == 'إيجار'}" class="badge-pill badge-rent" th:text="#{estate.rent}">Rent</span>
+                            <span th:if="${estate.status.name() == 'active'}" class="badge-pill badge-active" th:text="#{estate.active}">Active</span>
+                            <span th:if="${estate.status.name() == 'disactive'}" class="badge-pill badge-disactive" th:text="#{estate.disactive}">Inactive</span>
+                            <span th:if="${estate.hasVirtualTour}" class="badge-pill badge-tour"><i class="bi bi-box"></i> <span th:text="#{estate.virtualTour.badge}">3D tour</span></span>
+                        </div>
+                        <h2 class="mb-1" th:text="${estate.title != null ? estate.title : estate.shortDescription}">Title</h2>
+                        <p class="text-muted mb-3">
+                            <i class="bi bi-geo-alt"></i>
+                            <span th:text="${estate.city}">City</span> · <span th:text="${estate.districts}">District</span>
+                        </p>
+                        <div class="row g-3">
+                            <div class="col-6 col-md-4">
+                                <div class="text-muted small" th:text="#{estate.price}">Price</div>
+                                <div class="fw-bold fs-5" th:text="|${estate.price} #{estate.currency}|">0</div>
+                            </div>
+                            <div class="col-6 col-md-4" th:if="${estate.space}">
+                                <div class="text-muted small" th:text="#{estate.space}">Space</div>
+                                <div class="fw-bold fs-5" th:text="${estate.space} + ' m²'">0</div>
+                            </div>
+                            <div class="col-6 col-md-4" th:if="${estate.estateType}">
+                                <div class="text-muted small" th:text="#{estate.type}">Type</div>
+                                <div class="fw-bold fs-5" th:text="${estate.estateType}">Type</div>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2 mt-3">
+                            <a th:if="${estate.videoUrl}" th:href="@{'/uploads/' + ${estate.videoUrl}}" target="_blank" class="btn btn-outline-gold btn-sm">
+                                <i class="bi bi-play-circle"></i> <span th:text="#{estate.watchVideo}">Watch video</span>
+                            </a>
+                            <a th:if="${estate.hasVirtualTour}" th:href="@{${estate.arPath}}" target="_blank" class="btn btn-outline-gold btn-sm">
+                                <i class="bi bi-box"></i> <span th:text="#{estate.openTour}">Open tour</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-lg-8">
+
+                    <!-- Description -->
+                    <div class="form-section" th:if="${estate.longDescription}">
+                        <div class="form-section-title"><i class="bi bi-card-text"></i> <span th:text="#{estate.longDescription}">Description</span></div>
+                        <p style="white-space:pre-line;" th:text="${estate.longDescription}">Description text</p>
+                    </div>
+
+                    <!-- Room breakdown -->
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="bi bi-grid-3x3-gap"></i> <span th:text="#{estate.section.rooms}">Rooms</span></div>
+                        <div th:if="${estate.roomBreakdown.isEmpty()}" class="text-muted small" th:text="#{estate.noRoomInfo}">No data</div>
+                        <div class="row g-3" th:unless="${estate.roomBreakdown.isEmpty()}">
+                            <div class="col-6 col-md-3" th:each="room : ${estate.roomBreakdown}">
+                                <div class="border rounded-3 p-3 text-center" style="border-color: var(--border) !important;">
+                                    <div class="fw-bold fs-4" th:text="${room.number}">0</div>
+                                    <div class="text-muted small" th:text="${room.name}">Room</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gallery -->
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="bi bi-images"></i> <span th:text="#{estate.section.gallery}">Photos</span></div>
+                        <div th:if="${estate.imageList.isEmpty()}" class="text-muted small" th:text="#{estate.noPhotos}">No photos</div>
+                        <div class="row g-2" th:unless="${estate.imageList.isEmpty()}">
+                            <div class="col-4 col-md-3" th:each="img : ${estate.imageList}">
+                                <img th:src="@{'/uploads/' + ${img}}" class="w-100 rounded-3" style="aspect-ratio:1; object-fit:cover;" onerror="this.closest('div').style.display='none'"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Legal / deed info -->
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="bi bi-file-earmark-lock"></i> <span th:text="#{estate.section.legal}">Legal</span></div>
+                        <div class="row g-3 small">
+                            <div class="col-6 col-md-3" th:if="${estate.deedNumber}">
+                                <div class="text-muted" th:text="#{estate.deedNumber}">Deed #</div>
+                                <div class="fw-semibold" th:text="${estate.deedNumber}" dir="ltr">-</div>
+                            </div>
+                            <div class="col-6 col-md-3" th:if="${estate.landNumber}">
+                                <div class="text-muted" th:text="#{estate.landNumber}">Land #</div>
+                                <div class="fw-semibold" th:text="${estate.landNumber}" dir="ltr">-</div>
+                            </div>
+                            <div class="col-6 col-md-3" th:if="${estate.licenseNumber}">
+                                <div class="text-muted" th:text="#{estate.licenseNumber}">License #</div>
+                                <div class="fw-semibold" th:text="${estate.licenseNumber}" dir="ltr">-</div>
+                            </div>
+                            <div class="col-6 col-md-3" th:if="${estate.documentNumber}">
+                                <div class="text-muted" th:text="#{estate.documentNumber}">Document #</div>
+                                <div class="fw-semibold" th:text="${estate.documentNumber}" dir="ltr">-</div>
+                            </div>
+                            <div class="col-6 col-md-3" th:if="${estate.propertyFace}">
+                                <div class="text-muted" th:text="#{estate.propertyFace}">Facade</div>
+                                <div class="fw-semibold" th:text="${estate.propertyFace}">-</div>
+                            </div>
+                            <div class="col-6 col-md-3" th:if="${estate.streetWidth}">
+                                <div class="text-muted" th:text="#{estate.streetWidth}">Street width</div>
+                                <div class="fw-semibold" th:text="${estate.streetWidth}">-</div>
+                            </div>
+                            <div class="col-6 col-md-3" th:if="${estate.northLimit}">
+                                <div class="text-muted" th:text="#{estate.northLimit}">North</div>
+                                <div class="fw-semibold" th:text="${estate.northLimit}">-</div>
+                            </div>
+                            <div class="col-6 col-md-3" th:if="${estate.southLimit}">
+                                <div class="text-muted" th:text="#{estate.southLimit}">South</div>
+                                <div class="fw-semibold" th:text="${estate.southLimit}">-</div>
+                            </div>
+                        </div>
+                        <div th:if="${estate.deedNumber == null and estate.landNumber == null and estate.licenseNumber == null}"
+                             class="text-muted small" th:text="#{estate.noLegalInfo}">No legal info</div>
+                    </div>
+
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Advertiser card -->
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="bi bi-person-vcard"></i> <span th:text="#{estate.section.contact}">Contact</span></div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <div class="thumb-fallback"><i class="bi bi-person"></i></div>
+                            <div>
+                                <div class="fw-semibold" th:text="${estate.advertiserName}">Name</div>
+                                <div class="text-muted small" th:text="${estate.phoneNumber}" dir="ltr">Phone</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="bi bi-geo-alt"></i> <span th:text="#{estate.section.location}">Location</span></div>
+                        <p class="small mb-2" th:text="${estate.address}">Address</p>
+                        <p class="small text-muted mb-0" dir="ltr" th:if="${estate.latitude}">
+                            <span th:text="${estate.latitude}">0</span>, <span th:text="${estate.longitude}">0</span>
+                        </p>
+                        <a th:if="${estate.latitude}"
+                           th:href="@{'https://www.google.com/maps?q=' + ${estate.latitude} + ',' + ${estate.longitude}}"
+                           target="_blank" class="btn btn-outline-gold btn-sm w-100 mt-2">
+                            <i class="bi bi-map"></i> Google Maps
+                        </a>
+                    </div>
+
+                    <!-- Meta -->
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="bi bi-info-circle"></i> ID / Meta</div>
+                        <div class="small text-muted d-flex justify-content-between mb-1">
+                            <span>ID</span><span th:text="${estate.id}">0</span>
+                        </div>
+                        <div class="small text-muted d-flex justify-content-between mb-1" th:if="${estate.createdAt}">
+                            <span th:text="#{estate.date}">Created</span><span th:text="${#temporals.format(estate.createdAt, 'yyyy-MM-dd')}">-</span>
+                        </div>
+                        <div class="small text-muted d-flex justify-content-between">
+                            <span th:text="#{estate.views}">Views</span><span th:text="${estate.view}">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

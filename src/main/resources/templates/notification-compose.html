@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('notif.compose')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('notifications')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{notif.compose})}"></div>
+
+        <div class="content">
+
+            <a th:href="@{/notifications}" class="btn btn-outline-gold mb-3">
+                <i class="bi bi-arrow-right"></i> <span th:text="#{notif.backToList}">Back</span>
+            </a>
+
+            <div th:unless="${firebaseReady}" class="alert alert-warning small mb-3">
+                <i class="bi bi-exclamation-triangle"></i> <span th:text="#{notif.firebaseWarning}">Not configured</span>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-lg-7">
+                    <form th:action="@{/notifications/send}" method="post">
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="bi bi-pencil-square"></i> <span th:text="#{notif.title}">Message</span></div>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label" th:text="#{notif.title}">Title</label>
+                                    <input type="text" name="title" id="notif-title" class="form-control" maxlength="100" required/>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label" th:text="#{notif.description}">Message</label>
+                                    <textarea name="description" id="notif-description" rows="4" class="form-control" maxlength="255" required></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="bi bi-bullseye"></i> <span th:text="#{notif.target}">Audience</span></div>
+                            <p class="text-muted small" th:text="#{notif.targetingNote}">Targeting note</p>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label" th:text="#{notif.target}">Audience</label>
+                                    <select name="audience" id="notif-audience" class="form-select">
+                                        <option value="all" th:text="#{notif.target.all}">Everyone</option>
+                                        <option value="agent" th:text="#{notif.target.agent}">Marketers</option>
+                                        <option value="provider" th:text="#{notif.target.provider}">Providers</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" th:text="#{notif.zone}">Zone</label>
+                                    <select name="zoneId" id="notif-zone" class="form-select">
+                                        <option value="" th:text="#{notif.allZones}">All zones</option>
+                                        <option th:each="z : ${zones}" th:value="${z.id}" th:text="${z.nameAr}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" th:text="#{notif.category}">Category</label>
+                                    <select name="categoryId" id="notif-category" class="form-select">
+                                        <option value="" th:text="#{notif.allCategories}">All categories</option>
+                                        <option th:each="c : ${categories}" th:value="${c.id}" th:text="${c.nameAr}"></option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sticky-save-bar">
+                            <a th:href="@{/notifications}" class="btn btn-outline-gold" th:text="#{common.cancel}">Cancel</a>
+                            <button type="submit" class="btn btn-gold"><i class="bi bi-send"></i> <span th:text="#{notif.send}">Send</span></button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Live preview -->
+                <div class="col-lg-5">
+                    <div class="form-section" style="position:sticky; top:90px;">
+                        <div class="form-section-title"><i class="bi bi-phone"></i> <span th:text="#{notif.preview}">Preview</span></div>
+                        <div class="notif-phone-mock">
+                            <div class="notif-preview-card">
+                                <div class="notif-preview-icon"><i class="bi bi-house-door-fill"></i></div>
+                                <div class="notif-preview-text">
+                                    <div class="notif-preview-title" id="preview-title">—</div>
+                                    <div class="notif-preview-body" id="preview-body">—</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        var titleEl = document.getElementById('notif-title');
+        var descEl = document.getElementById('notif-description');
+        var pTitle = document.getElementById('preview-title');
+        var pBody = document.getElementById('preview-body');
+        function sync() {
+            pTitle.textContent = titleEl.value || '—';
+            pBody.textContent = descEl.value || '—';
+        }
+        titleEl.addEventListener('input', sync);
+        descEl.addEventListener('input', sync);
+    })();
+</script>
+</body>
+</html>

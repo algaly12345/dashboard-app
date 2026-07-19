@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('notif.pageTitle')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('notifications')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{notif.pageTitle})}"></div>
+
+        <div class="content">
+
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="kpi-icon violet" style="position:static;"><i class="bi bi-bell"></i></div>
+                    <div>
+                        <div class="text-muted small" th:text="#{notif.pageTitle}">Notifications</div>
+                        <div class="fw-bold fs-4" th:text="${notifications.totalElements}">0</div>
+                    </div>
+                </div>
+                <a th:href="@{/notifications/compose}" class="btn btn-gold">
+                    <i class="bi bi-send"></i> <span th:text="#{notif.compose}">New</span>
+                </a>
+            </div>
+
+            <div th:if="${sendResult != null}"
+                 th:class="'alert py-2 px-3 mb-3 small ' + (${sendResult.sent} ? 'alert-success' : 'alert-warning')">
+                <span th:if="${sendResult.sent}" th:text="#{notif.sentSuccess}">Sent</span>
+                <span th:unless="${sendResult.sent}" th:text="#{notif.sentFailed} + ': ' + ${sendResult.error}">Failed</span>
+            </div>
+
+            <div th:if="${not notifications.content.isEmpty()}">
+                <div class="report-card" th:each="n : ${notifications.content}">
+                    <div class="report-flag" style="background: linear-gradient(135deg, var(--violet-light), var(--violet)); box-shadow: var(--glow);">
+                        <i class="bi bi-bell-fill"></i>
+                    </div>
+                    <div class="report-body">
+                        <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
+                            <div class="fw-bold" th:text="${n.title}">Title</div>
+                            <span th:if="${n.status}" class="badge-pill badge-active" th:text="#{notif.status.sent}">Delivered</span>
+                            <span th:unless="${n.status}" class="badge-pill badge-disactive" th:text="#{notif.status.failed}">Failed</span>
+                        </div>
+                        <p class="report-desc" th:text="${n.description}">Description</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge-pill badge-tour" th:if="${n.target}">
+                                <i class="bi bi-people"></i>
+                                <span th:text="#{${'notif.target.' + n.target}}">Audience</span>
+                            </span>
+                            <span class="badge-pill badge-rent" th:if="${n.zoneId != null}">
+                                <i class="bi bi-geo-alt"></i>
+                                <span th:text="${zoneNames.get(n.zoneId)} ?: ('#' + ${n.zoneId})">Zone</span>
+                            </span>
+                            <span class="report-date">
+                                <i class="bi bi-clock"></i>
+                                <span th:text="${n.createdAt != null ? #temporals.format(n.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">-</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${notifications.content.isEmpty()}" class="card section-card text-center text-muted py-5">
+                <i class="bi bi-bell-slash fs-3 d-block mb-2"></i>
+                <span th:text="#{notif.noResults}">No notifications</span>
+            </div>
+
+            <nav th:if="${notifications.totalPages > 1}" class="d-flex justify-content-between align-items-center mt-3">
+                <span class="text-muted small">
+                    <span th:text="#{common.page}">Page</span>
+                    <span th:text="${notifications.number + 1}">1</span>
+                    <span th:text="#{common.of}">of</span>
+                    <span th:text="${notifications.totalPages}">1</span>
+                </span>
+                <div class="btn-group">
+                    <a class="btn btn-outline-secondary btn-sm"
+                       th:classappend="${notifications.first} ? 'disabled' : ''"
+                       th:href="@{/notifications(page=${notifications.number - 1})}"
+                       th:text="#{common.prev}">Prev</a>
+                    <a class="btn btn-outline-secondary btn-sm"
+                       th:classappend="${notifications.last} ? 'disabled' : ''"
+                       th:href="@{/notifications(page=${notifications.number + 1})}"
+                       th:text="#{common.next}">Next</a>
+                </div>
+            </nav>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

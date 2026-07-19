@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('providerReport.title')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('provider-reports')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{nav.providerReports})}"></div>
+
+        <div class="content">
+
+            <!-- Report header -->
+            <div class="pr-header d-flex justify-content-between align-items-end flex-wrap gap-3">
+                <div>
+                    <div class="pr-header-title" th:text="#{providerReport.title}">Service Providers Report</div>
+                    <div class="pr-header-sub" th:text="#{providerReport.subtitle}">Subtitle</div>
+                    <div class="pr-header-meta">
+                        <i class="bi bi-calendar-check"></i>
+                        <span th:text="#{propReport.generatedAt}">Generated on</span>:
+                        <span th:text="${#temporals.format(generatedAt, 'yyyy-MM-dd HH:mm')}">-</span>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-gold" onclick="window.print()">
+                    <i class="bi bi-printer"></i> <span th:text="#{propReport.print}">Print</span>
+                </button>
+            </div>
+
+            <!-- Advanced filters -->
+            <form th:action="@{/provider-reports}" method="get" class="card section-card mb-4">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label" th:text="#{providerReport.filter.zone}">Zone</label>
+                        <select name="zoneId" class="form-select">
+                            <option value="" th:text="#{providerReport.filter.allZones}">All zones</option>
+                            <option th:each="z : ${zones}" th:value="${z.id}" th:text="${z.nameAr}" th:selected="${z.id == zoneId}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" th:text="#{providerReport.filter.serviceType}">Service type</label>
+                        <select name="serviceTypeId" class="form-select">
+                            <option value="" th:text="#{providerReport.filter.allServiceTypes}">All service types</option>
+                            <option th:each="t : ${serviceTypes}" th:value="${t.id}" th:text="${t.name}" th:selected="${t.id == serviceTypeId}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label" th:text="#{providerReport.filter.provider}">Provider</label>
+                        <select name="phoneProvider" class="form-select">
+                            <option value="" th:text="#{providerReport.filter.allProviders}">All providers</option>
+                            <option th:each="p : ${providerOptions}" th:value="${p.value}" th:text="${p.label}" th:selected="${p.value == phoneProvider}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-gold w-100" th:text="#{offer.filter.apply}">Filter</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- KPI summary -->
+            <div class="row g-3 mb-4">
+                <div class="col-6 col-xl-3">
+                    <div class="card kpi-card">
+                        <div class="kpi-icon violet"><i class="bi bi-tools"></i></div>
+                        <div class="kpi-label" th:text="#{providerReport.kpi.total}">Total offers</div>
+                        <div class="kpi-value" th:text="${totalOffers}">0</div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="card kpi-card">
+                        <div class="kpi-icon ink"><i class="bi bi-person-badge"></i></div>
+                        <div class="kpi-label" th:text="#{providerReport.kpi.providers}">Providers</div>
+                        <div class="kpi-value" th:text="${totalProviders}">0</div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="card kpi-card">
+                        <div class="kpi-icon amber"><i class="bi bi-percent"></i></div>
+                        <div class="kpi-label" th:text="#{providerReport.kpi.avgDiscount}">Avg discount</div>
+                        <div class="kpi-value" th:text="${avgDiscount} + '%'">0%</div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="card kpi-card">
+                        <div class="kpi-icon rent"><i class="bi bi-cash-stack"></i></div>
+                        <div class="kpi-label" th:text="#{providerReport.kpi.avgPrice}">Avg price</div>
+                        <div class="kpi-value" style="font-size:1.2rem;" th:text="|${avgServicePrice} #{offer.currency}|">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status stack -->
+            <div class="card section-card mb-4">
+                <div class="section-title" th:text="#{dashboard.serviceStatus}">Offer status</div>
+                <div class="status-stack" th:if="${totalOffers > 0}">
+                    <span class="seg-pending" th:style="'width:' + ${pendingOffers * 100 / totalOffers} + '%'"></span>
+                    <span class="seg-accept" th:style="'width:' + ${acceptedOffers * 100 / totalOffers} + '%'"></span>
+                    <span class="seg-reject" th:style="'width:' + ${rejectedOffers * 100 / totalOffers} + '%'"></span>
+                </div>
+                <div class="status-legend">
+                    <span class="legend-item"><i class="legend-dot pending"></i> <span th:text="#{providerReport.kpi.pending}">Pending</span> <b th:text="${pendingOffers}">0</b></span>
+                    <span class="legend-item"><i class="legend-dot accept"></i> <span th:text="#{providerReport.kpi.accepted}">Approved</span> <b th:text="${acceptedOffers}">0</b></span>
+                    <span class="legend-item"><i class="legend-dot reject"></i> <span th:text="#{providerReport.kpi.rejected}">Rejected</span> <b th:text="${rejectedOffers}">0</b></span>
+                </div>
+            </div>
+
+            <!-- Trend chart -->
+            <div class="card section-card mb-4">
+                <div class="section-title" th:text="#{providerReport.section.trend}">New offers trend</div>
+                <div class="trend-chart" th:if="${not monthlyTrend.isEmpty()}">
+                    <div class="trend-col" th:each="m : ${monthlyTrend}">
+                        <span class="trend-count" th:text="${m.count}">0</span>
+                        <div class="trend-bar" th:style="'height:' + ${m.count * 100 / maxMonthCount} + '%'"></div>
+                        <span class="trend-label" th:text="${m.month}">Month</span>
+                    </div>
+                </div>
+                <div th:if="${monthlyTrend.isEmpty()}" class="text-muted small" th:text="#{propReport.noData}">No data</div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <!-- Top providers -->
+                <div class="col-lg-6">
+                    <div class="card section-card h-100">
+                        <div class="section-title" th:text="#{providerReport.section.topProviders}">Top providers</div>
+                        <div th:if="${not topProviders.isEmpty()}">
+                            <div th:each="p, iter : ${topProviders}" class="provider-row">
+                                <div class="provider-rank" th:text="${iter.count}">1</div>
+                                <div>
+                                    <div class="provider-name" th:text="${p.name} ?: #{dashboard.unknownProvider}">Name</div>
+                                    <div class="provider-phone" dir="ltr" th:text="${p.phone}">Phone</div>
+                                </div>
+                                <div class="provider-count" th:text="${p.count}">0</div>
+                            </div>
+                        </div>
+                        <div th:if="${topProviders.isEmpty()}" class="text-muted small" th:text="#{propReport.noData}">No data</div>
+                    </div>
+                </div>
+
+                <!-- Service type + zone breakdown -->
+                <div class="col-lg-6">
+                    <div class="card section-card mb-3">
+                        <div class="section-title" th:text="#{providerReport.section.byServiceType}">By service type</div>
+                        <div th:each="row : ${byServiceType}" class="bar-row">
+                            <div class="bar-row-top">
+                                <span th:text="${row.label}">Type</span>
+                                <span class="count" th:text="${row.count}">0</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill coral" th:style="'width:' + ${row.count * 100 / (byServiceType[0].count)} + '%'"></div>
+                            </div>
+                        </div>
+                        <div th:if="${byServiceType.isEmpty()}" class="text-muted small" th:text="#{propReport.noData}">No data</div>
+                    </div>
+                    <div class="card section-card">
+                        <div class="section-title" th:text="#{providerReport.section.byZone}">By zone</div>
+                        <div th:each="row : ${byZone}" class="bar-row">
+                            <div class="bar-row-top">
+                                <span th:text="${row.label}">Zone</span>
+                                <span class="count" th:text="${row.count}">0</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill alt" th:style="'width:' + ${row.count * 100 / (byZone[0].count)} + '%'"></div>
+                            </div>
+                        </div>
+                        <div th:if="${byZone.isEmpty()}" class="text-muted small" th:text="#{propReport.noData}">No data</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center text-muted small py-3" th:text="#{propReport.footer}">Footer</div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

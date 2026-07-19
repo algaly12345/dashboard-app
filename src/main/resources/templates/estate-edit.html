@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('estate.editTitle')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('estates')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{estate.editTitle})}"></div>
+
+        <div class="content">
+
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <a th:href="@{/estates}" class="btn btn-outline-gold">
+                    <i class="bi bi-arrow-right"></i> <span th:text="#{estate.backToList}">Back</span>
+                </a>
+                <div th:if="${saved}" class="alert alert-success py-2 px-3 mb-0 small" th:text="#{estate.saved}">Saved</div>
+            </div>
+
+            <form th:action="@{'/estates/' + ${estate.id}}" method="post">
+
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-card-heading"></i> <span th:text="#{estate.section.basic}">Basic info</span></div>
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label" th:text="#{estate.title}">Title</label>
+                            <input type="text" name="title" th:value="${estate.title}" class="form-control"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{estate.status}">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="active" th:selected="${estate.status.name() == 'active'}" th:text="#{estate.active}">Active</option>
+                                <option value="disactive" th:selected="${estate.status.name() == 'disactive'}" th:text="#{estate.disactive}">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{estate.adType}">Purpose</label>
+                            <select name="advertisementType" class="form-select">
+                                <option value="بيع" th:selected="${estate.advertisementType == 'بيع'}" th:text="#{estate.sale}">Sale</option>
+                                <option value="إيجار" th:selected="${estate.advertisementType == 'إيجار'}" th:text="#{estate.rent}">Rent</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{estate.type}">Estate type</label>
+                            <input type="text" name="estateType" th:value="${estate.estateType}" class="form-control"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{estate.age}">Age</label>
+                            <input type="text" name="ageEstate" th:value="${estate.ageEstate}" class="form-control"/>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" th:text="#{estate.title}">Short description</label>
+                            <input type="text" name="shortDescription" th:value="${estate.shortDescription}" class="form-control"/>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label" th:text="#{estate.longDescription}">Description</label>
+                            <textarea name="longDescription" rows="5" class="form-control" th:text="${estate.longDescription}"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-cash-coin"></i> <span th:text="#{estate.section.pricing}">Pricing & size</span></div>
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label" th:text="#{estate.price}">Price</label>
+                            <input type="text" name="price" th:value="${estate.price}" class="form-control"/>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" th:text="#{estate.totalPrice}">Total price</label>
+                            <input type="text" name="totalPrice" th:value="${estate.totalPrice}" class="form-control"/>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" th:text="#{estate.priceNegotiation}">Negotiable</label>
+                            <input type="text" name="priceNegotiation" th:value="${estate.priceNegotiation}" class="form-control"/>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" th:text="#{estate.floors}">Floors</label>
+                            <input type="number" name="floors" th:value="${estate.floors}" class="form-control"/>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" th:text="#{estate.space}">Space (m00b2)</label>
+                            <input type="text" name="space" th:value="${estate.space}" class="form-control"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-geo-alt"></i> <span th:text="#{estate.section.location}">Location</span></div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{estate.city}">City</label>
+                            <input type="text" name="city" th:value="${estate.city}" class="form-control"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{estate.district}">District</label>
+                            <input type="text" name="districts" th:value="${estate.districts}" class="form-control"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{estate.address}">Address</label>
+                            <input type="text" name="address" th:value="${estate.address}" class="form-control"/>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" th:text="#{estate.latitude}">Latitude</label>
+                            <input type="text" name="latitude" th:value="${estate.latitude}" class="form-control" dir="ltr"/>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label" th:text="#{estate.longitude}">Longitude</label>
+                            <input type="text" name="longitude" th:value="${estate.longitude}" class="form-control" dir="ltr"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-camera-reels"></i> <span th:text="#{estate.section.media}">Media & tour</span></div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" th:text="#{estate.videoUrl}">Video URL</label>
+                            <input type="text" name="videoUrl" th:value="${estate.videoUrl}" class="form-control" dir="ltr"/>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" th:text="#{estate.arPath}">Virtual tour path/URL</label>
+                            <input type="text" name="arPath" th:value="${estate.arPath}" class="form-control" dir="ltr"/>
+                            <div class="form-text">
+                                <span th:if="${estate.hasVirtualTour}" class="badge-pill badge-tour"><i class="bi bi-box"></i> <span th:text="#{estate.virtualTour.badge}">3D tour</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-person-vcard"></i> <span th:text="#{estate.section.contact}">Advertiser contact</span></div>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" th:text="#{estate.advertiserName}">Advertiser name</label>
+                            <input type="text" name="advertiserName" th:value="${estate.advertiserName}" class="form-control"/>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" th:text="#{estate.phoneNumber}">Advertiser phone</label>
+                            <input type="text" name="phoneNumber" th:value="${estate.phoneNumber}" class="form-control" dir="ltr"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sticky-save-bar">
+                    <a th:href="@{/estates}" class="btn btn-outline-gold" th:text="#{common.cancel}">Cancel</a>
+                    <button type="submit" class="btn btn-gold" th:text="#{estate.save}">Save changes</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

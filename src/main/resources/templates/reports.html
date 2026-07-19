@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('report.pageTitle')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('reports')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{report.pageTitle})}"></div>
+
+        <div class="content">
+
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <div class="kpi-icon coral" style="position:static;"><i class="bi bi-flag"></i></div>
+                <div>
+                    <div class="text-muted small" th:text="#{report.total}">Total reports</div>
+                    <div class="fw-bold fs-4" th:text="${reports.totalElements}">0</div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <form th:action="@{/reports}" method="get" class="card section-card mb-3">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-5">
+                        <label class="form-label" th:text="#{report.description}">Search</label>
+                        <input type="text" name="q" th:value="${q}" class="form-control" th:placeholder="#{report.search.placeholder}"/>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" th:text="#{report.title}">Reason</label>
+                        <select name="title" class="form-select">
+                            <option value="" th:text="#{report.filter.title}">All reasons</option>
+                            <option th:each="t : ${titles}" th:value="${t}" th:text="${t}" th:selected="${t == title}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" th:text="#{report.filter.estateId}">Listing ID</label>
+                        <input type="text" name="estateId" th:value="${estateId}" class="form-control" dir="ltr"/>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-gold w-100" th:text="#{report.filter.apply}">Filter</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Report list -->
+            <div th:if="${not reports.content.isEmpty()}">
+                <div class="report-card" th:each="r : ${reports.content}">
+                    <div class="report-flag"><i class="bi bi-flag-fill"></i></div>
+                    <div class="report-body">
+                        <div class="d-flex align-items-start justify-content-between flex-wrap gap-2">
+                            <span class="badge-pill badge-disactive" th:text="${r.title}">Reason</span>
+                            <span class="report-date"><i class="bi bi-clock"></i> <span th:text="${r.createdAt != null ? #temporals.format(r.createdAt, 'yyyy-MM-dd HH:mm') : '-'}">-</span></span>
+                        </div>
+                        <p class="report-desc" th:text="${r.description}">Description</p>
+
+                        <a th:if="${estates.get(r.estateId) != null}" th:href="@{'/estates/' + ${r.estateId}}" class="report-estate-chip">
+                            <img th:if="${estates.get(r.estateId).firstImage}" th:src="@{'/uploads/' + ${estates.get(r.estateId).firstImage}}" class="thumb" onerror="this.style.display='none'"/>
+                            <div th:unless="${estates.get(r.estateId).firstImage}" class="thumb-fallback"><i class="bi bi-building"></i></div>
+                            <div>
+                                <div class="fw-semibold small" th:text="${estates.get(r.estateId).shortDescription}">Estate</div>
+                                <div class="text-muted small" th:text="${estates.get(r.estateId).city}">City</div>
+                            </div>
+                            <i class="bi bi-box-arrow-up-right ms-auto"></i>
+                        </a>
+                        <div th:if="${estates.get(r.estateId) == null}" class="report-estate-chip text-muted">
+                            <i class="bi bi-question-circle"></i>
+                            <span th:text="|#${r.estateId}|">#0</span>
+                        </div>
+
+                        <div class="report-reporter">
+                            <i class="bi bi-person-circle"></i>
+                            <span th:if="${reporters.get(r.reporterId) != null}" th:text="${reporters.get(r.reporterId).name}">Reporter</span>
+                            <span th:if="${reporters.get(r.reporterId) == null}" th:text="#{report.anonymous}">Anonymous</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${reports.content.isEmpty()}" class="card section-card text-center text-muted py-5">
+                <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                <span th:text="#{report.noResults}">No results</span>
+            </div>
+
+            <!-- Pagination -->
+            <nav th:if="${reports.totalPages > 1}" class="d-flex justify-content-between align-items-center mt-3">
+                <span class="text-muted small">
+                    <span th:text="#{common.page}">Page</span>
+                    <span th:text="${reports.number + 1}">1</span>
+                    <span th:text="#{common.of}">of</span>
+                    <span th:text="${reports.totalPages}">1</span>
+                </span>
+                <div class="btn-group">
+                    <a class="btn btn-outline-secondary btn-sm"
+                       th:classappend="${reports.first} ? 'disabled' : ''"
+                       th:href="@{/reports(q=${q}, title=${title}, estateId=${estateId}, page=${reports.number - 1})}"
+                       th:text="#{common.prev}">Prev</a>
+                    <a class="btn btn-outline-secondary btn-sm"
+                       th:classappend="${reports.last} ? 'disabled' : ''"
+                       th:href="@{/reports(q=${q}, title=${title}, estateId=${estateId}, page=${reports.number + 1})}"
+                       th:text="#{common.next}">Next</a>
+                </div>
+            </nav>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

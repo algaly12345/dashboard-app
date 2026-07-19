@@ -1,0 +1,53 @@
+<div th:fragment="sidebar(active)" class="sidebar">
+    <div class="brand">
+        <div class="brand-mark">E</div>
+        <div>
+            <div class="brand-title" th:text="#{app.name}">Estate Control</div>
+            <div class="brand-sub" th:text="#{brand.tagline}">Real Estate Back Office</div>
+        </div>
+    </div>
+
+    <nav>
+        <a th:href="@{/dashboard}" class="nav-link" th:classappend="${active == 'dashboard'} ? 'active' : ''">
+            <i class="bi bi-grid-1x2"></i><span th:text="#{nav.dashboard}">Dashboard</span>
+        </a>
+        <a th:href="@{/estates}" class="nav-link" th:classappend="${active == 'estates'} ? 'active' : ''">
+            <i class="bi bi-building"></i><span th:text="#{nav.estates}">Listings</span>
+        </a>
+        <a th:href="@{/offers}" class="nav-link" th:classappend="${active == 'offers'} ? 'active' : ''">
+            <i class="bi bi-percent"></i><span th:text="#{nav.offers}">Services</span>
+        </a>
+        <a th:href="@{/reports}" class="nav-link" th:classappend="${active == 'reports'} ? 'active' : ''">
+            <i class="bi bi-flag"></i><span th:text="#{nav.reports}">Reports</span>
+        </a>
+        <a th:href="@{/property-reports}" class="nav-link" th:classappend="${active == 'property-reports'} ? 'active' : ''">
+            <i class="bi bi-file-earmark-bar-graph"></i><span th:text="#{nav.propertyReports}">Property Reports</span>
+        </a>
+        <a th:href="@{/provider-reports}" class="nav-link" th:classappend="${active == 'provider-reports'} ? 'active' : ''">
+            <i class="bi bi-graph-up-arrow"></i><span th:text="#{nav.providerReports}">Provider Reports</span>
+        </a>
+        <a th:href="@{/notifications}" class="nav-link" th:classappend="${active == 'notifications'} ? 'active' : ''">
+            <i class="bi bi-bell"></i><span th:text="#{nav.notifications}">Notifications</span>
+        </a>
+        <a th:href="@{/settings}" class="nav-link" th:classappend="${active == 'settings'} ? 'active' : ''">
+            <i class="bi bi-gear"></i><span th:text="#{nav.settings}">Settings</span>
+        </a>
+        <a th:href="@{/users}" class="nav-link" th:classappend="${active == 'users'} ? 'active' : ''">
+            <i class="bi bi-people"></i><span th:text="#{nav.users}">Users</span>
+        </a>
+        <a th:href="@{/categories}" class="nav-link" th:classappend="${active == 'categories'} ? 'active' : ''">
+            <i class="bi bi-tags"></i><span th:text="#{nav.categories}">Categories</span>
+        </a>
+        <a th:href="@{/zones}" class="nav-link" th:classappend="${active == 'zones'} ? 'active' : ''">
+            <i class="bi bi-map"></i><span th:text="#{nav.zones}">Zones</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="nav-link border-0 w-100 text-start bg-transparent" style="cursor:pointer;">
+                <i class="bi bi-box-arrow-right"></i><span th:text="#{nav.logout}">Sign out</span>
+            </button>
+        </form>
+    </div>
+</div>

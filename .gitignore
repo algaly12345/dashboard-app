@@ -1,0 +1,8 @@
+target/
+*.class
+.idea/
+*.iml
+.vscode/
+
+# Firebase service account key - never commit
+src/main/resources/firebase-service-account.json

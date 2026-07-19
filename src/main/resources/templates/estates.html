@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('nav.estates')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('estates')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{nav.estates})}"></div>
+
+        <div class="content">
+
+            <!-- Filters -->
+            <form th:action="@{/estates}" method="get" class="card section-card mb-3">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label" th:text="#{estate.title}">Search</label>
+                        <input type="text" name="q" th:value="${q}" class="form-control" th:placeholder="#{estate.search.placeholder}"/>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" th:text="#{estate.city}">City</label>
+                        <select name="city" class="form-select">
+                            <option value="" th:text="#{estate.filter.city}">All cities</option>
+                            <option th:each="c : ${cities}" th:value="${c}" th:text="${c}" th:selected="${c == city}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" th:text="#{estate.type}">Category</label>
+                        <select name="category" class="form-select">
+                            <option value="" th:text="#{estate.filter.category}">All categories</option>
+                            <option th:each="c : ${categories}" th:value="${c}" th:text="${c}" th:selected="${c == category}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" th:text="#{estate.status}">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="" th:text="#{estate.filter.status}">All statuses</option>
+                            <option value="active" th:text="#{estate.active}" th:selected="${status == 'active'}"></option>
+                            <option value="disactive" th:text="#{estate.disactive}" th:selected="${status == 'disactive'}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" th:text="#{estate.adType}">Purpose</label>
+                        <select name="adType" class="form-select">
+                            <option value="" th:text="#{estate.filter.adType}">All purposes</option>
+                            <option value="بيع" th:text="#{estate.sale}" th:selected="${adType == 'بيع'}"></option>
+                            <option value="إيجار" th:text="#{estate.rent}" th:selected="${adType == 'إيجار'}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="submit" class="btn btn-gold w-100" th:text="#{estate.filter.apply}">Filter</button>
+                    </div>
+                </div>
+
+                <div class="row g-2 align-items-end mt-1">
+                    <div class="col-md-2">
+                        <label class="form-label" th:text="#{estate.type}">Estate type</label>
+                        <select name="estateType" class="form-select">
+                            <option value="" th:text="#{estate.filter.estateType}">All estate types</option>
+                            <option th:each="t : ${estateTypes}" th:value="${t}" th:text="${t}" th:selected="${t == estateType}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" th:text="#{estate.filter.virtualTour}">Virtual tour</label>
+                        <select name="virtualTour" class="form-select">
+                            <option value="" th:text="#{estate.virtualTour.any}">Any</option>
+                            <option value="yes" th:text="#{estate.virtualTour.yes}" th:selected="${virtualTour == 'yes'}"></option>
+                            <option value="no" th:text="#{estate.virtualTour.no}" th:selected="${virtualTour == 'no'}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" th:text="#{estate.minPrice}">Min price</label>
+                        <input type="number" name="minPrice" th:value="${minPrice}" class="form-control" placeholder="0"/>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" th:text="#{estate.maxPrice}">Max price</label>
+                        <input type="number" name="maxPrice" th:value="${maxPrice}" class="form-control" placeholder="—"/>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <a th:href="@{/estates/map}" class="btn btn-outline-gold btn-sm">
+                            <i class="bi bi-geo-alt"></i> <span th:text="#{estate.mapView}">Map view</span>
+                        </a>
+                    </div>
+                </div>
+            </form>
+
+            <div class="card table-card">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th th:text="#{estate.title}">Title</th>
+                        <th th:text="#{estate.city}">City</th>
+                        <th th:text="#{estate.district}">District</th>
+                        <th th:text="#{estate.adType}">Purpose</th>
+                        <th th:text="#{estate.price}">Price</th>
+                        <th th:text="#{estate.views}">Views</th>
+                        <th th:text="#{estate.status}">Status</th>
+                        <th th:text="#{estate.date}">Date</th>
+                        <th th:text="#{estate.actions}">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="e : ${estates.content}">
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <img th:if="${e.firstImage}" th:src="@{'/uploads/' + ${e.firstImage}}" class="thumb" onerror="this.style.display='none'"/>
+                                <div th:unless="${e.firstImage}" class="thumb-fallback"><i class="bi bi-image"></i></div>
+                                <div>
+                                    <div th:text="${e.shortDescription}">Title</div>
+                                    <span th:if="${e.hasVirtualTour}" class="badge-pill badge-tour mt-1">
+                                        <i class="bi bi-box"></i> <span th:text="#{estate.virtualTour.badge}">3D tour</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </td>
+                        <td th:text="${e.city}">City</td>
+                        <td th:text="${e.districts}">District</td>
+                        <td>
+                            <span th:if="${e.advertisementType == 'بيع'}" class="badge-pill badge-sale" th:text="#{estate.sale}">Sale</span>
+                            <span th:if="${e.advertisementType == 'إيجار'}" class="badge-pill badge-rent" th:text="#{estate.rent}">Rent</span>
+                        </td>
+                        <td th:text="|${e.price} #{estate.currency}|">0</td>
+                        <td th:text="${e.view}">0</td>
+                        <td>
+                            <span th:if="${e.status.name() == 'active'}" class="badge-pill badge-active" th:text="#{estate.active}">Active</span>
+                            <span th:if="${e.status.name() == 'disactive'}" class="badge-pill badge-disactive" th:text="#{estate.disactive}">Inactive</span>
+                        </td>
+                        <td th:text="${#temporals.format(e.createdAt, 'yyyy-MM-dd')}">2026-01-01</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <a th:href="@{'/estates/' + ${e.id}}" class="btn-icon" title="View">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a th:href="@{'/estates/' + ${e.id} + '/edit'}" class="btn-icon" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${estates.content.isEmpty()}">
+                        <td colspan="9" class="text-center text-muted py-4" th:text="#{estate.noResults}">No results</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <nav th:if="${estates.totalPages > 1}" class="d-flex justify-content-between align-items-center mt-3">
+                <span class="text-muted small">
+                    <span th:text="#{common.page}">Page</span>
+                    <span th:text="${estates.number + 1}">1</span>
+                    <span th:text="#{common.of}">of</span>
+                    <span th:text="${estates.totalPages}">1</span>
+                </span>
+                <div class="btn-group">
+                    <a class="btn btn-outline-secondary btn-sm"
+                       th:classappend="${estates.first} ? 'disabled' : ''"
+                       th:href="@{/estates(q=${q}, city=${city}, category=${category}, status=${status}, adType=${adType}, estateType=${estateType}, virtualTour=${virtualTour}, minPrice=${minPrice}, maxPrice=${maxPrice}, page=${estates.number - 1})}"
+                       th:text="#{common.prev}">Prev</a>
+                    <a class="btn btn-outline-secondary btn-sm"
+                       th:classappend="${estates.last} ? 'disabled' : ''"
+                       th:href="@{/estates(q=${q}, city=${city}, category=${category}, status=${status}, adType=${adType}, estateType=${estateType}, virtualTour=${virtualTour}, minPrice=${minPrice}, maxPrice=${maxPrice}, page=${estates.number + 1})}"
+                       th:text="#{common.next}">Next</a>
+                </div>
+            </nav>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

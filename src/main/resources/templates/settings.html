@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('settings.pageTitle')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('settings')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{settings.pageTitle})}"></div>
+
+        <div class="content">
+
+            <div th:if="${saved}" class="alert alert-success py-2 px-3 mb-3 small" th:text="#{settings.saved}">Saved</div>
+
+            <form th:action="@{/settings/save}" method="post">
+
+                <div class="row g-3">
+                    <div class="col-lg-6">
+
+                        <!-- Company info -->
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="bi bi-building"></i> <span th:text="#{settings.section.company}">Company</span></div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{settings.companyName}">Name</label>
+                                    <input type="text" name="companyName" th:value="${companyName}" class="form-control"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{settings.companyPhone}">Phone</label>
+                                    <input type="text" name="companyPhone" th:value="${companyPhone}" class="form-control" dir="ltr"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{settings.companyEmail}">Email</label>
+                                    <input type="text" name="companyEmail" th:value="${companyEmail}" class="form-control" dir="ltr"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{settings.address}">Address</label>
+                                    <input type="text" name="address" th:value="${address}" class="form-control"/>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label" th:text="#{settings.copyrightText}">Copyright</label>
+                                    <input type="text" name="copyrightText" th:value="${copyrightText}" class="form-control"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Brand colors -->
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="bi bi-palette"></i> <span th:text="#{settings.section.brand}">Brand</span></div>
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <label class="form-label" th:text="#{settings.colorPrimary}">Primary</label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="color" name="colorPrimary" th:value="${colors.primary}" class="form-control form-control-color" style="width:48px;"/>
+                                        <span class="text-muted small" th:text="${colors.primary}" dir="ltr">#000</span>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label" th:text="#{settings.colorSecondary}">Secondary</label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <input type="color" name="colorSecondary" th:value="${colors.secondary}" class="form-control form-control-color" style="width:48px;"/>
+                                        <span class="text-muted small" th:text="${colors.secondary}" dir="ltr">#000</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- App store links -->
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="bi bi-shop-window"></i> <span th:text="#{settings.section.stores}">Stores</span></div>
+                            <div class="row g-3 align-items-end">
+                                <div class="col-12"><strong class="small" th:text="#{settings.googleStore}">Google Play</strong></div>
+                                <div class="col-md-8">
+                                    <label class="form-label" th:text="#{settings.storeLink}">URL</label>
+                                    <input type="text" name="googleStoreLink" th:value="${googleStore.link}" class="form-control" dir="ltr"/>
+                                </div>
+                                <div class="col-md-4 form-check pb-2">
+                                    <input type="checkbox" name="googleStoreEnabled" th:checked="${googleStore.enabled}" class="form-check-input" id="googleEnabled"/>
+                                    <label class="form-check-label small" for="googleEnabled" th:text="#{settings.storeEnabled}">Enabled</label>
+                                </div>
+                                <div class="col-12"><hr/><strong class="small" th:text="#{settings.appleStore}">App Store</strong></div>
+                                <div class="col-md-8">
+                                    <label class="form-label" th:text="#{settings.storeLink}">URL</label>
+                                    <input type="text" name="appleStoreLink" th:value="${appleStore.link}" class="form-control" dir="ltr"/>
+                                </div>
+                                <div class="col-md-4 form-check pb-2">
+                                    <input type="checkbox" name="appleStoreEnabled" th:checked="${appleStore.enabled}" class="form-check-input" id="appleEnabled"/>
+                                    <label class="form-check-label small" for="appleEnabled" th:text="#{settings.storeEnabled}">Enabled</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Push (legacy) -->
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="bi bi-bell"></i> <span th:text="#{settings.section.push}">Push</span></div>
+                            <p class="text-muted small" th:text="#{settings.pushKeyNote}">Legacy note</p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{settings.fcmTopic}">Topic</label>
+                                    <input type="text" name="fcmTopic" th:value="${fcmTopic}" class="form-control" dir="ltr"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{settings.fcmProjectId}">Project ID</label>
+                                    <input type="text" name="fcmProjectId" th:value="${fcmProjectId}" class="form-control" dir="ltr"/>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label" th:text="#{settings.pushKey}">Server key</label>
+                                    <input type="password" name="pushNotificationKey" class="form-control" dir="ltr" autocomplete="new-password"/>
+                                    <div class="form-text" th:text="#{settings.pushKeyHint}">Hint</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-6">
+
+                        <!-- Registration -->
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="bi bi-person-check"></i> <span th:text="#{settings.section.registration}">Registration</span></div>
+                            <div class="form-check form-switch mb-2">
+                                <input type="checkbox" name="agentRegistration" th:checked="${agentRegistration}" class="form-check-input" id="agentReg"/>
+                                <label class="form-check-label small" for="agentReg" th:text="#{settings.agentRegistration}">Agent</label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                <input type="checkbox" name="sellerRegistration" th:checked="${sellerRegistration}" class="form-check-input" id="sellerReg"/>
+                                <label class="form-check-label small" for="sellerReg" th:text="#{settings.sellerRegistration}">Seller</label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                <input type="checkbox" name="phoneVerification" th:checked="${phoneVerification}" class="form-check-input" id="phoneVer"/>
+                                <label class="form-check-label small" for="phoneVer" th:text="#{settings.phoneVerification}">Phone</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" name="emailVerification" th:checked="${emailVerification}" class="form-check-input" id="emailVer"/>
+                                <label class="form-check-label small" for="emailVer" th:text="#{settings.emailVerification}">Email</label>
+                            </div>
+                        </div>
+
+                        <!-- Map & regional -->
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="bi bi-map"></i> <span th:text="#{settings.section.map}">Map</span></div>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label" th:text="#{settings.mapApiKey}">Maps key</label>
+                                    <input type="text" name="mapApiKey" th:value="${mapApiKey}" class="form-control" dir="ltr"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" th:text="#{settings.countryCode}">Country</label>
+                                    <input type="text" name="countryCode" th:value="${countryCode}" class="form-control" dir="ltr"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" th:text="#{settings.paginationLimit}">Page size</label>
+                                    <input type="number" name="paginationLimit" th:value="${paginationLimit}" class="form-control"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label" th:text="#{settings.timezone}">Timezone</label>
+                                    <input type="text" name="timezone" th:value="${timezone}" class="form-control" dir="ltr"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Legal content -->
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="bi bi-file-earmark-text"></i> <span th:text="#{settings.section.legal}">Legal</span></div>
+                            <p class="text-muted small" th:text="#{settings.legalHint}">Hint</p>
+                            <div class="mb-3">
+                                <label class="form-label" th:text="#{settings.aboutUs}">About</label>
+                                <textarea name="aboutUs" rows="4" class="form-control" dir="ltr" style="font-family:monospace; font-size:.78rem;" th:text="${aboutUs}"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" th:text="#{settings.termsCondition}">Terms</label>
+                                <textarea name="termsCondition" rows="4" class="form-control" dir="ltr" style="font-family:monospace; font-size:.78rem;" th:text="${termsCondition}"></textarea>
+                            </div>
+                            <div>
+                                <label class="form-label" th:text="#{settings.privacyPolicy}">Privacy</label>
+                                <textarea name="privacyPolicy" rows="4" class="form-control" dir="ltr" style="font-family:monospace; font-size:.78rem;" th:text="${privacyPolicy}"></textarea>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="sticky-save-bar">
+                    <button type="submit" class="btn btn-gold"><i class="bi bi-check2"></i> <span th:text="#{settings.save}">Save</span></button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

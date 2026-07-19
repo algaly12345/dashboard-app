@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('nav.zones')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('zones')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{nav.zones})}"></div>
+
+        <div class="content">
+            <div class="row g-3">
+                <div class="col-md-4 col-lg-3" th:each="z : ${zones}">
+                    <div class="card section-card h-100 zone-card">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <div class="fw-bold fs-6" th:text="${z.nameAr}">Zone</div>
+                                <div class="text-muted small" th:text="${z.name}">Zone EN</div>
+                            </div>
+                            <span th:if="${z.status.name() == 'active'}" class="badge-pill badge-active" th:text="#{estate.active}">Active</span>
+                            <span th:if="${z.status.name() == 'disactive'}" class="badge-pill badge-disactive" th:text="#{estate.disactive}">Inactive</span>
+                        </div>
+
+                        <div class="d-flex gap-2 mb-3">
+                            <div class="zone-stat">
+                                <div class="zone-stat-value" th:text="${estateCounts.get(z.id)} ?: 0">0</div>
+                                <div class="zone-stat-label"><i class="bi bi-building"></i> <span th:text="#{zone.estates}">Listings</span></div>
+                            </div>
+                            <div class="zone-stat zone-stat-alt">
+                                <div class="zone-stat-value" th:text="${serviceCounts.get(z.id)} ?: 0">0</div>
+                                <div class="zone-stat-label"><i class="bi bi-tools"></i> <span th:text="#{zone.services}">Services</span></div>
+                            </div>
+                        </div>
+
+                        <div class="text-muted small">
+                            <i class="bi bi-geo-alt"></i>
+                            <span th:text="${z.latitude} + ', ' + ${z.longitude}">0, 0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
