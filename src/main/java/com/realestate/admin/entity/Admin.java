@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Admin {
 
-@Id
+   @Id
 @GeneratedValue(strategy = GenerationType.IDENTITY)
 private Integer id;
 
