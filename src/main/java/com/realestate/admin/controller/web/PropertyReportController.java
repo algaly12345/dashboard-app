@@ -64,6 +64,7 @@ public class PropertyReportController {
         long activeEstates = estates.stream().filter(e -> e.getStatus() == Estate.Status.active).count();
         long forSale = estates.stream().filter(e -> "بيع".equals(e.getAdvertisementType())).count();
         long forRent = estates.stream().filter(e -> "إيجار".equals(e.getAdvertisementType())).count();
+        long expiredLicenses = estates.stream().filter(Estate::isLicenseExpired).count();
         long totalUsers = appUserRepository.count();
         long totalZones = zoneRepository.count();
         long totalCategories = categoryRepository.count();
@@ -161,6 +162,7 @@ public class PropertyReportController {
         model.addAttribute("activeEstates", activeEstates);
         model.addAttribute("forSale", forSale);
         model.addAttribute("forRent", forRent);
+        model.addAttribute("expiredLicenses", expiredLicenses);
         model.addAttribute("totalUsers", totalUsers);
         model.addAttribute("totalZones", totalZones);
         model.addAttribute("totalCategories", totalCategories);

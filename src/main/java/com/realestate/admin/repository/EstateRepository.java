@@ -49,6 +49,23 @@ public interface EstateRepository extends JpaRepository<Estate, Long> {
     @Query("select e from Estate e where e.latitude is not null and e.latitude <> '' and e.longitude is not null and e.longitude <> '' order by e.createdAt desc")
     List<Estate> findRecentWithCoordinates(org.springframework.data.domain.Pageable pageable);
 
+    @Query(value = """
+           select count(*) from estates
+           where end_date is not null and end_date <> ''
+             and str_to_date(end_date, '%d/%m/%Y') < curdate()
+             and (:zoneId is null or zone_id = :zoneId)
+           """, nativeQuery = true)
+    long countExpiredLicenses(@Param("zoneId") Long zoneId);
+
+    @Query(value = """
+           select * from estates
+           where end_date is not null and end_date <> ''
+             and str_to_date(end_date, '%d/%m/%Y') < curdate()
+             and (:zoneId is null or zone_id = :zoneId)
+           order by str_to_date(end_date, '%d/%m/%Y') desc
+           """, nativeQuery = true)
+    List<Estate> findExpiredLicenses(@Param("zoneId") Long zoneId, Pageable pageable);
+
     @Query("select distinct e.userId from Estate e where e.userId is not null")
     List<Long> findDistinctUserIds();
 

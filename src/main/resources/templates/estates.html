@@ -12,6 +12,11 @@
 
         <div class="content">
 
+            <div th:if="${expiredOnly}" class="alert py-2 px-3 mb-3 small d-flex align-items-center justify-content-between" style="background: var(--danger-bg); color: var(--danger); border-color: var(--danger);">
+                <span><i class="bi bi-exclamation-triangle"></i> <span th:text="#{estate.expiredFilterActive}">Showing expired licenses only</span></span>
+                <a th:href="@{/estates}" class="fw-semibold" style="color: var(--danger);" th:text="#{estate.clearFilter}">Clear</a>
+            </div>
+
             <!-- Filters -->
             <form th:action="@{/estates}" method="get" class="card section-card mb-3">
                 <div class="row g-2 align-items-end">
@@ -97,7 +102,8 @@
                         <th th:text="#{estate.price}">Price</th>
                         <th th:text="#{estate.views}">Views</th>
                         <th th:text="#{estate.status}">Status</th>
-                        <th th:text="#{estate.date}">Date</th>
+                        <th th:if="${not expiredOnly}" th:text="#{estate.date}">Date</th>
+                        <th th:if="${expiredOnly}" th:text="#{estate.endDate}" style="color: var(--danger);">Expired</th>
                         <th th:text="#{estate.actions}">Actions</th>
                     </tr>
                     </thead>
@@ -127,7 +133,8 @@
                             <span th:if="${e.status.name() == 'active'}" class="badge-pill badge-active" th:text="#{estate.active}">Active</span>
                             <span th:if="${e.status.name() == 'disactive'}" class="badge-pill badge-disactive" th:text="#{estate.disactive}">Inactive</span>
                         </td>
-                        <td th:text="${#temporals.format(e.createdAt, 'yyyy-MM-dd')}">2026-01-01</td>
+                        <td th:if="${not expiredOnly}" th:text="${#temporals.format(e.createdAt, 'yyyy-MM-dd')}">2026-01-01</td>
+                        <td th:if="${expiredOnly}" style="color: var(--danger); font-weight:700;" th:text="${e.endDate}">01/01/2025</td>
                         <td>
                             <div class="d-flex gap-1">
                                 <a th:href="@{'/estates/' + ${e.id}}" class="btn-icon" title="View">
@@ -157,11 +164,11 @@
                 <div class="btn-group">
                     <a class="btn btn-outline-secondary btn-sm"
                        th:classappend="${estates.first} ? 'disabled' : ''"
-                       th:href="@{/estates(q=${q}, city=${city}, category=${category}, status=${status}, adType=${adType}, estateType=${estateType}, virtualTour=${virtualTour}, minPrice=${minPrice}, maxPrice=${maxPrice}, page=${estates.number - 1})}"
+                       th:href="@{/estates(q=${q}, city=${city}, category=${category}, status=${status}, adType=${adType}, estateType=${estateType}, virtualTour=${virtualTour}, minPrice=${minPrice}, maxPrice=${maxPrice}, licenseExpired=${licenseExpired}, zoneId=${zoneId}, page=${estates.number - 1})}"
                        th:text="#{common.prev}">Prev</a>
                     <a class="btn btn-outline-secondary btn-sm"
                        th:classappend="${estates.last} ? 'disabled' : ''"
-                       th:href="@{/estates(q=${q}, city=${city}, category=${category}, status=${status}, adType=${adType}, estateType=${estateType}, virtualTour=${virtualTour}, minPrice=${minPrice}, maxPrice=${maxPrice}, page=${estates.number + 1})}"
+                       th:href="@{/estates(q=${q}, city=${city}, category=${category}, status=${status}, adType=${adType}, estateType=${estateType}, virtualTour=${virtualTour}, minPrice=${minPrice}, maxPrice=${maxPrice}, licenseExpired=${licenseExpired}, zoneId=${zoneId}, page=${estates.number + 1})}"
                        th:text="#{common.next}">Next</a>
                 </div>
             </nav>

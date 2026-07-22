@@ -13,6 +13,8 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
 
     long countByUserType(String userType);
 
+    long countByZoneId(Long zoneId);
+
     /** Phone numbers aren't guaranteed unique in this table (dupes exist in
      *  the data) - take the first match rather than requiring one result. */
     Optional<AppUser> findFirstByPhoneOrderByIdAsc(String phone);

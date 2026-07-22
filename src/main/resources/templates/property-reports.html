@@ -121,6 +121,19 @@
                 </div>
             </div>
 
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <a th:href="@{/estates(licenseExpired='true', zoneId=${zoneId})}" class="card kpi-card d-flex flex-row align-items-center gap-3 text-decoration-none" style="border-color: var(--danger);">
+                        <div class="kpi-icon" style="position:static; background: linear-gradient(135deg, var(--coral-light), var(--danger)); flex-shrink:0;"><i class="bi bi-exclamation-triangle"></i></div>
+                        <div>
+                            <div class="kpi-label" th:text="#{kpi.expiredLicenses}">Expired licenses</div>
+                            <div class="kpi-value" style="color: var(--danger);" th:text="${expiredLicenses}">0</div>
+                        </div>
+                        <div class="text-muted small ms-auto" th:text="#{kpi.expiredLicensesHint}">Based on end_date</div>
+                    </a>
+                </div>
+            </div>
+
             <!-- Trend chart -->
             <div class="card section-card mb-4">
                 <div class="section-title" th:text="#{propReport.section.trend}">New listings trend</div>

@@ -12,14 +12,21 @@
 
         <div class="content">
 
-            <!-- Period filter -->
+            <!-- Period + zone filter -->
             <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                 <div class="period-switch">
-                    <a th:href="@{/dashboard(period='day')}" th:classappend="${period == 'day'} ? 'active' : ''" th:text="#{period.day}">Day</a>
-                    <a th:href="@{/dashboard(period='week')}" th:classappend="${period == 'week'} ? 'active' : ''" th:text="#{period.week}">Week</a>
-                    <a th:href="@{/dashboard(period='month')}" th:classappend="${period == 'month'} ? 'active' : ''" th:text="#{period.month}">Month</a>
-                    <a th:href="@{/dashboard(period='year')}" th:classappend="${period == 'year'} ? 'active' : ''" th:text="#{period.year}">Year</a>
+                    <a th:href="@{/dashboard(period='day', zoneId=${zoneId})}" th:classappend="${period == 'day'} ? 'active' : ''" th:text="#{period.day}">Day</a>
+                    <a th:href="@{/dashboard(period='week', zoneId=${zoneId})}" th:classappend="${period == 'week'} ? 'active' : ''" th:text="#{period.week}">Week</a>
+                    <a th:href="@{/dashboard(period='month', zoneId=${zoneId})}" th:classappend="${period == 'month'} ? 'active' : ''" th:text="#{period.month}">Month</a>
+                    <a th:href="@{/dashboard(period='year', zoneId=${zoneId})}" th:classappend="${period == 'year'} ? 'active' : ''" th:text="#{period.year}">Year</a>
                 </div>
+                <form th:action="@{/dashboard}" method="get" class="d-flex align-items-center gap-2">
+                    <input type="hidden" name="period" th:value="${period}"/>
+                    <select name="zoneId" class="form-select form-select-sm" style="width:auto;" onchange="this.form.submit()">
+                        <option value="" th:selected="${zoneId == null}" th:text="#{dashboard.allZones}">All zones</option>
+                        <option th:each="z : ${zones}" th:value="${z.id}" th:text="${z.nameAr}" th:selected="${z.id == zoneId}"></option>
+                    </select>
+                </form>
             </div>
 
             <!-- KPI row -->
@@ -82,6 +89,20 @@
                         <div class="kpi-label" th:text="#{kpi.totalZones}">Zones</div>
                         <div class="kpi-value" th:text="${totalZones}">0</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Expired licenses warning -->
+            <div class="row g-3 mb-4">
+                <div class="col-12">
+                    <a th:href="@{/estates(licenseExpired='true', zoneId=${zoneId})}" class="card kpi-card d-flex flex-row align-items-center gap-3 text-decoration-none" style="border-color: var(--danger);">
+                        <div class="kpi-icon" style="position:static; background: linear-gradient(135deg, var(--coral-light), var(--danger)); flex-shrink:0;"><i class="bi bi-exclamation-triangle"></i></div>
+                        <div>
+                            <div class="kpi-label" th:text="#{kpi.expiredLicenses}">Expired licenses</div>
+                            <div class="kpi-value" style="color: var(--danger);" th:text="${expiredLicenses}">0</div>
+                        </div>
+                        <div class="text-muted small ms-auto" th:text="#{kpi.expiredLicensesHint}">Based on end_date</div>
+                    </a>
                 </div>
             </div>
 

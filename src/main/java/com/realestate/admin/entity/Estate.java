@@ -275,4 +275,17 @@ public class Estate {
     public boolean isHasVirtualTour() {
         return arPath != null && !arPath.isBlank();
     }
+
+    /** end_date / creation_date are stored as dd/MM/yyyy text, not real DATE columns. */
+    @Transient
+    public boolean isLicenseExpired() {
+        if (endDate == null || endDate.isBlank()) return false;
+        try {
+            java.time.format.DateTimeFormatter fmt = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            java.time.LocalDate end = java.time.LocalDate.parse(endDate.trim(), fmt);
+            return end.isBefore(java.time.LocalDate.now());
+        } catch (Exception e) {
+            return false;
+        }
+    }
 }

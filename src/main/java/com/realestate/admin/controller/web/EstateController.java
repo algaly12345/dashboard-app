@@ -35,6 +35,8 @@ public class EstateController {
                         @RequestParam(required = false) String virtualTour,
                         @RequestParam(required = false) String minPrice,
                         @RequestParam(required = false) String maxPrice,
+                        @RequestParam(required = false) String licenseExpired,
+                        @RequestParam(required = false) String zoneId,
                         @RequestParam(defaultValue = "0") int page,
                         Model model) {
 
@@ -42,11 +44,20 @@ public class EstateController {
         Boolean virtualTourBool = (virtualTour == null || virtualTour.isBlank()) ? null : "yes".equals(virtualTour);
         Double minPriceVal = parseDoubleOrNull(minPrice);
         Double maxPriceVal = parseDoubleOrNull(maxPrice);
+        Long zoneIdLong = parseLongOrNull(zoneId);
+        boolean expiredOnly = "true".equals(licenseExpired);
 
-        Page<Estate> result = estateRepository.search(
-                blankToNull(q), statusEnum, blankToNull(city), blankToNull(category), blankToNull(adType),
-                blankToNull(estateType), virtualTourBool, minPriceVal, maxPriceVal,
-                PageRequest.of(page, 12, Sort.by(Sort.Direction.DESC, "createdAt")));
+        Page<Estate> result;
+        if (expiredOnly) {
+            List<Estate> expired = estateRepository.findExpiredLicenses(zoneIdLong, PageRequest.of(page, 12));
+            long total = estateRepository.countExpiredLicenses(zoneIdLong);
+            result = new org.springframework.data.domain.PageImpl<>(expired, PageRequest.of(page, 12), total);
+        } else {
+            result = estateRepository.search(
+                    blankToNull(q), statusEnum, blankToNull(city), blankToNull(category), blankToNull(adType),
+                    blankToNull(estateType), virtualTourBool, minPriceVal, maxPriceVal,
+                    PageRequest.of(page, 12, Sort.by(Sort.Direction.DESC, "createdAt")));
+        }
 
         List<String> cities = estateRepository.findDistinctCities();
         List<String> categories = estateRepository.findDistinctCategoryNames();
@@ -65,6 +76,9 @@ public class EstateController {
         model.addAttribute("virtualTour", virtualTour);
         model.addAttribute("minPrice", minPriceVal);
         model.addAttribute("maxPrice", maxPriceVal);
+        model.addAttribute("licenseExpired", licenseExpired);
+        model.addAttribute("zoneId", zoneId);
+        model.addAttribute("expiredOnly", expiredOnly);
         model.addAttribute("activePage", "estates");
 
         return "estates";
@@ -183,6 +197,15 @@ public class EstateController {
         if (s == null || s.isBlank()) return null;
         try {
             return Double.parseDouble(s.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private Long parseLongOrNull(String s) {
+        if (s == null || s.isBlank()) return null;
+        try {
+            return Long.parseLong(s.trim());
         } catch (NumberFormatException e) {
             return null;
         }
