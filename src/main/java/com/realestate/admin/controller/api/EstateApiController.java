@@ -68,10 +68,17 @@ public class EstateApiController {
         return result.map(EstateMapPin::from);
     }
 
-    /** Cascading district dropdown - districts narrow down to whichever city is selected. */
+    /** Cascading city dropdown - cities narrow down to whichever zone is selected. */
+    @GetMapping("/cities")
+    public List<String> cities(@RequestParam(required = false) String zoneId) {
+        return estateRepository.findDistinctCitiesByZone(parseLong(zoneId));
+    }
+
+    /** Cascading district dropdown - districts narrow down to whichever zone/city is selected. */
     @GetMapping("/districts")
-    public List<String> districts(@RequestParam(required = false) String city) {
-        return estateRepository.findDistinctDistricts(blankToNull(city));
+    public List<String> districts(@RequestParam(required = false) String city,
+                                   @RequestParam(required = false) String zoneId) {
+        return estateRepository.findDistinctDistricts(blankToNull(city), parseLong(zoneId));
     }
 
     private Long parseLong(String s) {

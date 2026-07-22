@@ -19,8 +19,11 @@ public interface EstateRepository extends JpaRepository<Estate, Long> {
     @Query("select e from Estate e where (:zoneId is null or e.zoneId = :zoneId) and (:categoryId is null or e.categoryId = :categoryId) and (:userId is null or e.userId = :userId)")
     List<Estate> findForReport(@Param("zoneId") Long zoneId, @Param("categoryId") Integer categoryId, @Param("userId") Long userId);
 
-    @Query("select distinct e.districts from Estate e where e.districts is not null and (:city is null or e.city = :city) order by e.districts")
-    List<String> findDistinctDistricts(@Param("city") String city);
+    @Query("select distinct e.city from Estate e where e.city is not null and (:zoneId is null or e.zoneId = :zoneId) order by e.city")
+    List<String> findDistinctCitiesByZone(@Param("zoneId") Long zoneId);
+
+    @Query("select distinct e.districts from Estate e where e.districts is not null and (:city is null or e.city = :city) and (:zoneId is null or e.zoneId = :zoneId) order by e.districts")
+    List<String> findDistinctDistricts(@Param("city") String city, @Param("zoneId") Long zoneId);
 
     @Query("select distinct e.advertiserName from Estate e where e.advertiserName is not null order by e.advertiserName")
     List<String> findDistinctAdvertiserNames();
@@ -42,6 +45,9 @@ public interface EstateRepository extends JpaRepository<Estate, Long> {
                                @Param("categoryId") Integer categoryId,
                                @Param("advertiserName") String advertiserName,
                                Pageable pageable);
+
+    @Query("select e from Estate e where e.latitude is not null and e.latitude <> '' and e.longitude is not null and e.longitude <> '' order by e.createdAt desc")
+    List<Estate> findRecentWithCoordinates(org.springframework.data.domain.Pageable pageable);
 
     @Query("select distinct e.userId from Estate e where e.userId is not null")
     List<Long> findDistinctUserIds();

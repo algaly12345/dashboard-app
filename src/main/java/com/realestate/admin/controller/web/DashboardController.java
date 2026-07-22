@@ -1,5 +1,6 @@
 package com.realestate.admin.controller.web;
 
+import com.realestate.admin.dto.EstateMapPin;
 import com.realestate.admin.dto.LabelCount;
 import com.realestate.admin.dto.TopProvider;
 import com.realestate.admin.entity.AppUser;
@@ -13,7 +14,9 @@ import com.realestate.admin.repository.OfferRepository;
 import com.realestate.admin.repository.OfferZoneRepository;
 import com.realestate.admin.repository.ServiceTypeRepository;
 import com.realestate.admin.repository.ZoneRepository;
+import com.realestate.admin.service.SettingsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,6 +39,7 @@ public class DashboardController {
     private final OfferZoneRepository offerZoneRepository;
     private final OfferRepository offerRepository;
     private final ServiceTypeRepository serviceTypeRepository;
+    private final SettingsService settingsService;
 
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(defaultValue = "week") String period, Model model) {
@@ -120,6 +124,11 @@ public class DashboardController {
 
         List<Estate> recent = estateRepository.findTop6ByOrderByCreatedAtDesc();
 
+        List<EstateMapPin> mapPins = estateRepository.findRecentWithCoordinates(PageRequest.of(0, 40)).stream()
+                .map(EstateMapPin::from)
+                .toList();
+        String mapApiKey = settingsService.get("map_api_key", "AIzaSyAwM15LYUky7qqVuXdBQc9zavA39y487jQ");
+
         model.addAttribute("totalEstates", totalEstates);
         model.addAttribute("activeEstates", activeEstates);
         model.addAttribute("forSale", forSale);
@@ -141,6 +150,8 @@ public class DashboardController {
         model.addAttribute("byServiceType", byServiceType);
         model.addAttribute("topProviders", topProviders);
         model.addAttribute("recentEstates", recent);
+        model.addAttribute("mapPins", mapPins);
+        model.addAttribute("mapApiKey", mapApiKey);
         model.addAttribute("activePage", "dashboard");
 
         return "dashboard";

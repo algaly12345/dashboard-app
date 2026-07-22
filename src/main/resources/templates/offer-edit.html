@@ -22,11 +22,21 @@
             <div class="row g-3">
                 <div class="col-lg-4">
                     <div class="form-section text-center">
-                        <img th:if="${offer.image}" th:src="@{'/uploads/' + ${offer.image}}"
+                        <img th:if="${offer.image}" th:src="${@imageUrlService.offerImage(offer.image)}"
                              class="w-100 rounded-3 mb-3" style="max-height:200px; object-fit:cover;" onerror="this.style.display='none'"/>
                         <div th:unless="${offer.image}" class="thumb-fallback w-100 mb-3" style="height:150px; border-radius:14px;">
                             <i class="bi bi-bag-heart" style="font-size:2rem;"></i>
                         </div>
+
+                        <div th:if="${uploadResult != null}"
+                             th:class="'alert py-2 px-2 mb-2 small ' + (${uploadResult} ? 'alert-success' : 'alert-warning')">
+                            <span th:if="${uploadResult}" th:text="#{estate.uploadSuccess}">Uploaded</span>
+                            <span th:unless="${uploadResult}" th:text="#{estate.uploadFailed} + ': ' + ${uploadError}">Failed</span>
+                        </div>
+                        <form th:action="@{'/offers/' + ${offer.id} + '/upload-image'}" method="post" enctype="multipart/form-data" class="mb-3">
+                            <input type="file" name="file" accept="image/*" class="form-control form-control-sm mb-2" required/>
+                            <button type="submit" class="btn btn-outline-gold btn-sm w-100"><i class="bi bi-upload"></i> <span th:text="#{estate.uploadPhoto}">Upload</span></button>
+                        </form>
                         <div class="offer-provider-chip mx-auto mb-2">
                             <i class="bi bi-telephone"></i>
                             <span th:text="${offer.phoneProvider}" dir="ltr">Phone</span>

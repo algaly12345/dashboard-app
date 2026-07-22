@@ -98,6 +98,7 @@
     var DETAILS_TEXT = /*[[#{map.viewDetails}]]*/ 'Details';
 
     var MAP_KEY_CONFIGURED = /*[[${mapApiKey != null and !mapApiKey.isEmpty()}]]*/ false;
+    var IMG_BASE = /*[[${estateImageBase}]]*/ '/uploads/';
     var map, markers = [], currentPage = 0;
 
     function currentFilters() {
@@ -115,9 +116,24 @@
         markers = [];
     }
 
+    function loadCities() {
+        var zoneId = $('#f-zone').val();
+        var current = $('#f-city').val();
+        var $sel = $('#f-city');
+        $.getJSON('/api/v1/estates/cities', { zoneId: zoneId }, function (list) {
+            $sel.find('option:not(:first)').remove();
+            list.forEach(function (c) {
+                $sel.append($('<option>').val(c).text(c));
+            });
+            if (list.indexOf(current) !== -1) $sel.val(current);
+            loadDistricts();
+        });
+    }
+
     function loadDistricts() {
         var city = $('#f-city').val();
-        $.getJSON('/api/v1/estates/districts', { city: city }, function (list) {
+        var zoneId = $('#f-zone').val();
+        $.getJSON('/api/v1/estates/districts', { city: city, zoneId: zoneId }, function (list) {
             var current = $('#f-district').val();
             var $sel = $('#f-district');
             $sel.find('option:not(:first)').remove();
@@ -141,7 +157,7 @@
         }
         data.content.forEach(function (e) {
             var img = e.firstImage
-                ? '<img src="/uploads/' + e.firstImage + '" class="offer-card-media" style="height:130px; object-fit:cover;" onerror="this.style.display=\'none\'"/>'
+                ? '<img src="' + IMG_BASE + e.firstImage + '" class="offer-card-media" style="height:130px; object-fit:cover;" onerror="this.style.display=\'none\'"/>'
                 : '<div class="offer-card-media" style="height:130px;"><i class="bi bi-house placeholder-icon"></i></div>';
             var card = '<div class="offer-card">' + img +
                 '<div class="offer-card-body">' +
@@ -214,7 +230,8 @@
     window.initMap = initMap;
 
     $(function () {
-        $('#f-zone, #f-category').on('change', function () { loadData(0); });
+        $('#f-zone').on('change', function () { loadCities(); loadData(0); });
+        $('#f-category').on('change', function () { loadData(0); });
         $('#f-city').on('change', function () { loadDistricts(); loadData(0); });
         $('#f-district').on('change', function () { loadData(0); });
         var advertiserTimer;

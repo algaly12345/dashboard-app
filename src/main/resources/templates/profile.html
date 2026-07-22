@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('profile.pageTitle')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('profile')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{profile.pageTitle})}"></div>
+
+        <div class="content">
+
+            <div class="card section-card mb-3">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="nav-profile-btn" style="width:56px; height:56px; border-radius:16px; font-size:1.4rem;">
+                        <i class="bi bi-person-fill"></i>
+                    </div>
+                    <div>
+                        <h2 class="mb-1" th:text="${admin.name}">Name</h2>
+                        <div class="text-muted small" th:if="${admin.createdAt != null}">
+                            <span th:text="#{profile.memberSince}">Member since</span>
+                            <span th:text="${#temporals.format(admin.createdAt, 'yyyy-MM-dd')}">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${saved}" class="alert alert-success py-2 px-3 mb-3 small" th:text="#{profile.saved}">Saved</div>
+            <div th:if="${profileError == 'password_mismatch'}" class="alert alert-warning py-2 px-3 mb-3 small" th:text="#{profile.passwordMismatch}">Mismatch</div>
+
+            <form th:action="@{/profile}" method="post">
+
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-person-badge"></i> <span th:text="#{profile.section.account}">Account</span></div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{profile.name}">Name</label>
+                            <input type="text" name="name" th:value="${admin.name}" class="form-control" required/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{profile.email}">Email</label>
+                            <input type="email" name="email" th:value="${admin.email}" class="form-control" dir="ltr" required/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label" th:text="#{profile.phone}">Phone</label>
+                            <input type="text" name="phone" th:value="${admin.phone}" class="form-control" dir="ltr" required/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-shield-lock"></i> <span th:text="#{profile.section.password}">Password</span></div>
+                    <p class="text-muted small" th:text="#{profile.passwordHint}">Hint</p>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label" th:text="#{profile.newPassword}">New password</label>
+                            <input type="password" name="newPassword" class="form-control" dir="ltr" autocomplete="new-password"/>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label" th:text="#{profile.confirmPassword}">Confirm</label>
+                            <input type="password" name="confirmPassword" class="form-control" dir="ltr" autocomplete="new-password"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sticky-save-bar">
+                    <button type="submit" class="btn btn-gold"><i class="bi bi-check2"></i> <span th:text="#{profile.save}">Save</span></button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

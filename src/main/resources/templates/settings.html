@@ -161,6 +161,15 @@
                             </div>
                         </div>
 
+                        <!-- Media storage (R2) -->
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="bi bi-cloud-arrow-up"></i> <span th:text="#{settings.section.media}">Media Storage</span></div>
+                            <p class="text-muted small" th:text="#{settings.mediaHint}">Hint</p>
+                            <label class="form-label" th:text="#{settings.r2PublicUrl}">Public URL</label>
+                            <input type="text" name="r2PublicUrl" th:value="${r2PublicUrl}" class="form-control" dir="ltr" placeholder="https://pub-xxxxxxxx.r2.dev"/>
+                            <div class="form-text" th:text="#{settings.r2PublicUrlHint}">Hint</div>
+                        </div>
+
                         <!-- Legal content -->
                         <div class="form-section">
                             <div class="form-section-title"><i class="bi bi-file-earmark-text"></i> <span th:text="#{settings.section.legal}">Legal</span></div>

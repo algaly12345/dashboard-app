@@ -105,7 +105,7 @@
                     <tr th:each="e : ${estates.content}">
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                <img th:if="${e.firstImage}" th:src="@{'/uploads/' + ${e.firstImage}}" class="thumb" onerror="this.style.display='none'"/>
+                                <img th:if="${e.firstImage}" th:src="${@imageUrlService.estateImage(e.firstImage)}" class="thumb" onerror="this.style.display='none'"/>
                                 <div th:unless="${e.firstImage}" class="thumb-fallback"><i class="bi bi-image"></i></div>
                                 <div>
                                     <div th:text="${e.shortDescription}">Title</div>

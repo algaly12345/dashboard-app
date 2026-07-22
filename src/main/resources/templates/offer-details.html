@@ -26,7 +26,7 @@
                 <div class="row g-4">
                     <div class="col-lg-5">
                         <div class="offer-card-media" style="height:100%; min-height:220px; border-radius:14px;">
-                            <img th:if="${offer.image}" th:src="@{'/uploads/' + ${offer.image}}" onerror="this.style.display='none'"/>
+                            <img th:if="${offer.image}" th:src="${@imageUrlService.offerImage(offer.image)}" onerror="this.style.display='none'"/>
                             <i th:unless="${offer.image}" class="bi bi-bag-heart placeholder-icon"></i>
 
                             <span th:if="${offer.offerType.name() == 'discount' and offer.discount != null}" class="offer-ribbon">

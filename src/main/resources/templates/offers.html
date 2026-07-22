@@ -69,7 +69,7 @@
             <div class="offer-grid" th:if="${not offers.content.isEmpty()}">
                 <div class="offer-card" th:each="o : ${offers.content}">
                     <div class="offer-card-media">
-                        <img th:if="${o.image}" th:src="@{'/uploads/' + ${o.image}}" onerror="this.style.display='none'"/>
+                        <img th:if="${o.image}" th:src="${@imageUrlService.offerImage(o.image)}" onerror="this.style.display='none'"/>
                         <i th:unless="${o.image}" class="bi bi-bag-heart placeholder-icon"></i>
 
                         <span th:if="${o.offerType.name() == 'discount' and o.discount != null}" class="offer-ribbon">

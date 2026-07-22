@@ -50,10 +50,13 @@ public class SettingsController {
         model.addAttribute("emailVerification", "1".equals(settingsService.get("email_verification", "0")));
 
         // ---- Map & regional ----
-        model.addAttribute("mapApiKey", settingsService.get("map_api_key", ""));
+        model.addAttribute("mapApiKey", settingsService.get("map_api_key", "AIzaSyAwM15LYUky7qqVuXdBQc9zavA39y487jQ"));
         model.addAttribute("countryCode", settingsService.get("country_code", ""));
         model.addAttribute("paginationLimit", settingsService.get("pagination_limit", "10"));
         model.addAttribute("timezone", settingsService.get("timezone", "UTC"));
+
+        // ---- Media storage (Cloudflare R2) ----
+        model.addAttribute("r2PublicUrl", settingsService.get("r2_public_url", ""));
 
         // ---- Legal / content pages ----
         model.addAttribute("aboutUs", settingsService.get("about_us", ""));
@@ -95,6 +98,8 @@ public class SettingsController {
         settingsService.set("country_code", form.get("countryCode"));
         settingsService.set("pagination_limit", form.get("paginationLimit"));
         settingsService.set("timezone", form.get("timezone"));
+
+        settingsService.set("r2_public_url", form.get("r2PublicUrl"));
 
         settingsService.set("about_us", form.get("aboutUs"));
         settingsService.set("terms_condition", form.get("termsCondition"));

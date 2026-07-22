@@ -2,6 +2,7 @@ package com.realestate.admin.controller.web;
 
 import com.realestate.admin.entity.Estate;
 import com.realestate.admin.repository.EstateRepository;
+import com.realestate.admin.service.R2StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -9,9 +10,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -19,6 +22,8 @@ import java.util.List;
 public class EstateController {
 
     private final EstateRepository estateRepository;
+    private final R2StorageService r2StorageService;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
     @GetMapping("/estates")
     public String list(@RequestParam(required = false) String q,
@@ -137,6 +142,31 @@ public class EstateController {
 
         estateRepository.save(estate);
         redirectAttributes.addFlashAttribute("saved", true);
+        return "redirect:/estates/" + id + "/edit";
+    }
+
+    @PostMapping("/estates/{id}/upload-image")
+    public String uploadImage(@PathVariable Long id, @RequestParam("file") MultipartFile file,
+                               RedirectAttributes redirectAttributes) {
+        Estate estate = estateRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Estate not found: " + id));
+
+        R2StorageService.UploadResult result = r2StorageService.upload(file, "estate");
+        if (result.success()) {
+            List<String> images = new ArrayList<>(estate.getImageList());
+            images.add(result.filename());
+            try {
+                estate.setImages(objectMapper.writeValueAsString(images));
+            } catch (Exception ignored) {
+                // keep the previous images value if serialization somehow fails
+            }
+            estate.setUpdatedAt(LocalDateTime.now());
+            estateRepository.save(estate);
+            redirectAttributes.addFlashAttribute("uploadResult", true);
+        } else {
+            redirectAttributes.addFlashAttribute("uploadResult", false);
+            redirectAttributes.addFlashAttribute("uploadError", result.error());
+        }
         return "redirect:/estates/" + id + "/edit";
     }
 

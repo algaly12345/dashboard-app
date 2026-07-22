@@ -43,6 +43,12 @@ spring:
     cache: false
     encoding: UTF-8
 
+  # ---- File uploads (Spring Boot defaults to 1MB, too small for photos) ----
+  servlet:
+    multipart:
+      max-file-size: 15MB
+      max-request-size: 15MB
+
 server:
   port: 8088
 
@@ -61,6 +67,25 @@ app:
     enabled: false
     credentials-path: classpath:firebase-service-account.json
     project-id: abaad-8b6a0
+
+  # ---- Cloudflare R2 media storage ----
+  # R2 speaks the S3 API, so this uses the standard AWS S3 SDK with a custom
+  # endpoint. Get these from Cloudflare dash -> R2 -> Manage R2 API Tokens
+  # -> Create API Token. NEVER put the access key / secret in this file or
+  # paste them in chat - set them as environment variables instead:
+  #   export R2_ACCOUNT_ID=xxxxxxxx
+  #   export R2_ACCESS_KEY_ID=xxxxxxxx
+  #   export R2_SECRET_ACCESS_KEY=xxxxxxxx
+  # The bucket's public read URL (pub-xxxx.r2.dev, or your own custom
+  # domain if you attached one) is NOT secret - that one's also editable
+  # live from Settings -> Media Storage, no restart needed.
+  r2:
+    enabled: false
+    account-id: ${R2_ACCOUNT_ID:}
+    access-key-id: ${R2_ACCESS_KEY_ID:}
+    secret-access-key: ${R2_SECRET_ACCESS_KEY:}
+    bucket: abaad-media-assets
+    public-base-url: ""
 
 # ---- Debug logging (remove once it connects) ----
 logging:

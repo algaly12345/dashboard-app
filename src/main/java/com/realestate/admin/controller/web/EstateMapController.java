@@ -3,6 +3,7 @@ package com.realestate.admin.controller.web;
 import com.realestate.admin.repository.CategoryRepository;
 import com.realestate.admin.repository.EstateRepository;
 import com.realestate.admin.repository.ZoneRepository;
+import com.realestate.admin.service.ImageUrlService;
 import com.realestate.admin.service.SettingsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -17,6 +18,7 @@ public class EstateMapController {
     private final CategoryRepository categoryRepository;
     private final EstateRepository estateRepository;
     private final SettingsService settingsService;
+    private final ImageUrlService imageUrlService;
 
     @GetMapping("/estates/map")
     public String map(Model model) {
@@ -24,7 +26,8 @@ public class EstateMapController {
         model.addAttribute("categories", categoryRepository.findAllByOrderByPositionAsc());
         model.addAttribute("cities", estateRepository.findDistinctCities());
         model.addAttribute("advertisers", estateRepository.findDistinctAdvertiserNames());
-        model.addAttribute("mapApiKey", settingsService.get("map_api_key", ""));
+        model.addAttribute("mapApiKey", settingsService.get("map_api_key", "AIzaSyAwM15LYUky7qqVuXdBQc9zavA39y487jQ"));
+        model.addAttribute("estateImageBase", imageUrlService.estateBase());
         model.addAttribute("activePage", "estates");
         return "estates-map";
     }

@@ -85,6 +85,18 @@
                 </div>
             </div>
 
+            <!-- Listings map -->
+            <div class="card section-card mb-4">
+                <div class="section-title">
+                    <span th:text="#{dashboard.mapTitle}">Listings map</span>
+                    <a th:href="@{/estates/map}" class="small fw-semibold" th:text="#{dashboard.viewAll}">View all</a>
+                </div>
+                <div id="dash-map" style="height:340px; border-radius:12px; background:#EEF0F4;"></div>
+                <div th:if="${mapApiKey == null or mapApiKey.isEmpty()}" class="p-3 text-center text-muted small">
+                    Google Maps API key isn't configured yet - set <code>map_api_key</code> under <a th:href="@{/settings}">Settings</a>.
+                </div>
+            </div>
+
             <!-- Charts -->
             <div class="row g-3 mb-4">
                 <div class="col-lg-4">
@@ -209,7 +221,7 @@
                     <tr th:each="e : ${recentEstates}">
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                <img th:if="${e.firstImage}" th:src="@{'/uploads/' + ${e.firstImage}}" class="thumb" onerror="this.style.display='none'"/>
+                                <img th:if="${e.firstImage}" th:src="${@imageUrlService.estateImage(e.firstImage)}" class="thumb" onerror="this.style.display='none'"/>
                                 <div th:unless="${e.firstImage}" class="thumb-fallback"><i class="bi bi-image"></i></div>
                                 <span th:text="${e.shortDescription}">Title</span>
                             </div>
@@ -232,5 +244,41 @@
         </div>
     </div>
 </div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var DASH_MAP_PINS = /*[[${mapPins}]]*/ [];
+    var DASH_MAP_KEY_CONFIGURED = /*[[${mapApiKey != null and !mapApiKey.isEmpty()}]]*/ false;
+
+    function initDashMap() {
+        if (!document.getElementById('dash-map')) return;
+        var map = new google.maps.Map(document.getElementById('dash-map'), {
+            center: { lat: 24.7136, lng: 46.6753 },
+            zoom: 6
+        });
+        var bounds = new google.maps.LatLngBounds();
+        var any = false;
+        DASH_MAP_PINS.forEach(function (e) {
+            var lat = parseFloat(e.latitude), lng = parseFloat(e.longitude);
+            if (isNaN(lat) || isNaN(lng)) return;
+            any = true;
+            var pos = { lat: lat, lng: lng };
+            var marker = new google.maps.Marker({ position: pos, map: map, title: e.title || '' });
+            var info = new google.maps.InfoWindow({
+                content: '<div style="min-width:160px;"><div style="font-weight:700;">' +
+                    (e.title || '') + '</div><div style="font-size:.8rem;color:#666;">' + (e.city || '') +
+                    '</div><a href="/estates/' + e.id + '" style="font-size:.8rem;">التفاصيل &rarr;</a></div>'
+            });
+            marker.addListener('click', function () { info.open(map, marker); });
+            bounds.extend(pos);
+        });
+        if (any) map.fitBounds(bounds);
+    }
+    window.initDashMap = initDashMap;
+    /*]]>*/
+</script>
+<script th:if="${mapApiKey != null and !mapApiKey.isEmpty()}"
+        th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${mapApiKey} + '&callback=initDashMap'}"
+        async defer></script>
 </body>
 </html>

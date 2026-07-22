@@ -11,6 +11,7 @@ import com.realestate.admin.repository.OfferRepository;
 import com.realestate.admin.repository.OfferZoneRepository;
 import com.realestate.admin.repository.ServiceTypeRepository;
 import com.realestate.admin.repository.ZoneRepository;
+import com.realestate.admin.service.R2StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
@@ -36,6 +38,7 @@ public class OfferController {
     private final OfferZoneRepository offerZoneRepository;
     private final CategoryOfferRepository categoryOfferRepository;
     private final AppUserRepository appUserRepository;
+    private final R2StorageService r2StorageService;
 
     @GetMapping("/offers")
     public String list(@RequestParam(required = false) String q,
@@ -149,6 +152,25 @@ public class OfferController {
 
         offerRepository.save(offer);
         redirectAttributes.addFlashAttribute("saved", true);
+        return "redirect:/offers/" + id + "/edit";
+    }
+
+    @PostMapping("/offers/{id}/upload-image")
+    public String uploadImage(@PathVariable Long id, @RequestParam("file") MultipartFile file,
+                               RedirectAttributes redirectAttributes) {
+        Offer offer = offerRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Offer not found: " + id));
+
+        R2StorageService.UploadResult result = r2StorageService.upload(file, "offers");
+        if (result.success()) {
+            offer.setImage(result.filename());
+            offer.setUpdatedAt(LocalDateTime.now());
+            offerRepository.save(offer);
+            redirectAttributes.addFlashAttribute("uploadResult", true);
+        } else {
+            redirectAttributes.addFlashAttribute("uploadResult", false);
+            redirectAttributes.addFlashAttribute("uploadError", result.error());
+        }
         return "redirect:/offers/" + id + "/edit";
     }
 
