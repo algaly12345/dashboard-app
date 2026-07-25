@@ -106,13 +106,22 @@
                 </div>
             </div>
 
-            <!-- Listings map -->
+            <!-- Combined map: listings / services -->
             <div class="card section-card mb-4">
                 <div class="section-title">
-                    <span th:text="#{dashboard.mapTitle}">Listings map</span>
-                    <a th:href="@{/estates/map}" class="small fw-semibold" th:text="#{dashboard.viewAll}">View all</a>
+                    <div class="map-tabs">
+                        <button type="button" class="map-tab active" data-tab="estates" onclick="switchDashMapTab('estates')">
+                            <i class="bi bi-building"></i> <span th:text="#{dashboard.mapTitle}">Listings</span>
+                            <span class="map-tab-count" th:text="${mapPins.size()}">0</span>
+                        </button>
+                        <button type="button" class="map-tab" data-tab="offers" onclick="switchDashMapTab('offers')">
+                            <i class="bi bi-tools"></i> <span th:text="#{dashboard.servicesMapTitle}">Services</span>
+                            <span class="map-tab-count" th:text="${offerMapPins.size()}">0</span>
+                        </button>
+                    </div>
+                    <a id="dash-map-view-all" th:href="@{/estates/map}" class="small fw-semibold" th:text="#{dashboard.viewAll}">View all</a>
                 </div>
-                <div id="dash-map" style="height:340px; border-radius:12px; background:#EEF0F4;"></div>
+                <div id="dash-map" style="height:380px; border-radius:12px; background:#EEF0F4;"></div>
                 <div th:if="${mapApiKey == null or mapApiKey.isEmpty()}" class="p-3 text-center text-muted small">
                     Google Maps API key isn't configured yet - set <code>map_api_key</code> under <a th:href="@{/settings}">Settings</a>.
                 </div>
@@ -269,31 +278,81 @@
 <script th:inline="javascript">
     /*<![CDATA[*/
     var DASH_MAP_PINS = /*[[${mapPins}]]*/ [];
+    var DASH_OFFER_PINS = /*[[${offerMapPins}]]*/ [];
     var DASH_MAP_KEY_CONFIGURED = /*[[${mapApiKey != null and !mapApiKey.isEmpty()}]]*/ false;
+    var OFFER_CURRENCY = /*[[#{offer.currency}]]*/ 'SAR';
+
+    var dashMap, estateMarkers = [], offerMarkers = [], activeDashTab = 'estates';
+
+    function buildEstateMarker(map, e) {
+        var lat = parseFloat(e.latitude), lng = parseFloat(e.longitude);
+        if (isNaN(lat) || isNaN(lng)) return null;
+        var pos = { lat: lat, lng: lng };
+        var marker = new google.maps.Marker({ position: pos, map: map, title: e.title || '' });
+        var info = new google.maps.InfoWindow({
+            content: '<div style="min-width:160px;"><div style="font-weight:700;">' +
+                (e.title || '') + '</div><div style="font-size:.8rem;color:#666;">' + (e.city || '') +
+                '</div><a href="/estates/' + e.id + '" style="font-size:.8rem;">التفاصيل &rarr;</a></div>'
+        });
+        marker.addListener('click', function () { info.open(map, marker); });
+        marker.__pos = pos;
+        return marker;
+    }
+
+    function buildOfferMarker(map, o) {
+        var lat = parseFloat(o.latitude), lng = parseFloat(o.longitude);
+        if (isNaN(lat) || isNaN(lng)) return null;
+        var pos = { lat: lat, lng: lng };
+        var marker = new google.maps.Marker({
+            position: pos, map: map, title: o.title || '',
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: '#1B6FE0', fillOpacity: 1, strokeColor: '#fff', strokeWeight: 2, scale: 8
+            }
+        });
+        var priceLine = o.offerType === 'discount'
+            ? (o.discount != null ? o.discount + '%' : '')
+            : (o.servicePrice != null ? o.servicePrice + ' ' + OFFER_CURRENCY : '');
+        var info = new google.maps.InfoWindow({
+            content: '<div style="min-width:160px;"><div style="font-weight:700;">' +
+                (o.title || '') + '</div><div style="font-size:.8rem;color:#666;">' + priceLine +
+                '</div><a href="/offers/' + o.id + '" style="font-size:.8rem;">التفاصيل &rarr;</a></div>'
+        });
+        marker.addListener('click', function () { info.open(map, marker); });
+        marker.__pos = pos;
+        return marker;
+    }
+
+    function fitToMarkers(markers) {
+        if (!markers.length) return;
+        var bounds = new google.maps.LatLngBounds();
+        markers.forEach(function (m) { bounds.extend(m.__pos); });
+        dashMap.fitBounds(bounds);
+    }
+
+    window.switchDashMapTab = function (tab) {
+        activeDashTab = tab;
+        document.querySelectorAll('.map-tab').forEach(function (btn) {
+            btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
+        });
+        var viewAllLink = document.getElementById('dash-map-view-all');
+        if (viewAllLink) viewAllLink.href = tab === 'estates' ? '/estates/map' : '/offers';
+
+        estateMarkers.forEach(function (m) { m.setMap(tab === 'estates' ? dashMap : null); });
+        offerMarkers.forEach(function (m) { m.setMap(tab === 'offers' ? dashMap : null); });
+        fitToMarkers(tab === 'estates' ? estateMarkers : offerMarkers);
+    };
 
     function initDashMap() {
         if (!document.getElementById('dash-map')) return;
-        var map = new google.maps.Map(document.getElementById('dash-map'), {
+        dashMap = new google.maps.Map(document.getElementById('dash-map'), {
             center: { lat: 24.7136, lng: 46.6753 },
             zoom: 6
         });
-        var bounds = new google.maps.LatLngBounds();
-        var any = false;
-        DASH_MAP_PINS.forEach(function (e) {
-            var lat = parseFloat(e.latitude), lng = parseFloat(e.longitude);
-            if (isNaN(lat) || isNaN(lng)) return;
-            any = true;
-            var pos = { lat: lat, lng: lng };
-            var marker = new google.maps.Marker({ position: pos, map: map, title: e.title || '' });
-            var info = new google.maps.InfoWindow({
-                content: '<div style="min-width:160px;"><div style="font-weight:700;">' +
-                    (e.title || '') + '</div><div style="font-size:.8rem;color:#666;">' + (e.city || '') +
-                    '</div><a href="/estates/' + e.id + '" style="font-size:.8rem;">التفاصيل &rarr;</a></div>'
-            });
-            marker.addListener('click', function () { info.open(map, marker); });
-            bounds.extend(pos);
-        });
-        if (any) map.fitBounds(bounds);
+        estateMarkers = DASH_MAP_PINS.map(function (e) { return buildEstateMarker(dashMap, e); }).filter(Boolean);
+        offerMarkers = DASH_OFFER_PINS.map(function (o) { return buildOfferMarker(dashMap, o); }).filter(Boolean);
+        offerMarkers.forEach(function (m) { m.setMap(null); }); // hidden until the "Services" tab is picked
+        fitToMarkers(estateMarkers);
     }
     window.initDashMap = initDashMap;
     /*]]>*/

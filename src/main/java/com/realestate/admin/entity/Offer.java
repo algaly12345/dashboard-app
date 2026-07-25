@@ -64,6 +64,9 @@ public class Offer {
     @Column(name = "phone_provider")
     private String phoneProvider;
 
+    private java.math.BigDecimal latitude;
+    private java.math.BigDecimal longitude;
+
     public enum OfferType { price, discount }
     public enum OfferOwner { all, me }
 }

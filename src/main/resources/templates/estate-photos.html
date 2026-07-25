@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('estate.photosTitle')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('estates')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{estate.photosTitle})}"></div>
+
+        <div class="content">
+
+            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                <a th:href="@{/estates}" class="btn btn-outline-gold">
+                    <i class="bi bi-arrow-right"></i> <span th:text="#{estate.backToList}">Back</span>
+                </a>
+                <div class="d-flex gap-2">
+                    <a th:href="@{'/estates/' + ${estate.id}}" class="btn btn-outline-gold">
+                        <i class="bi bi-eye"></i> <span th:text="#{estate.viewDetails}">View</span>
+                    </a>
+                    <a th:href="@{'/estates/' + ${estate.id} + '/edit'}" class="btn btn-gold">
+                        <i class="bi bi-pencil"></i> <span th:text="#{estate.edit}">Edit</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Estate summary strip -->
+            <div class="card section-card mb-3">
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <img th:if="${estate.firstImage}" th:src="${@imageUrlService.estateImage(estate.firstImage)}"
+                         style="width:64px; height:64px; object-fit:cover; border-radius:12px;" onerror="this.style.display='none'"/>
+                    <div th:unless="${estate.firstImage}" class="thumb-fallback" style="width:64px; height:64px;"><i class="bi bi-image"></i></div>
+                    <div>
+                        <h2 class="mb-1" th:text="${estate.title != null ? estate.title : estate.shortDescription}">Title</h2>
+                        <div class="text-muted small">
+                            <i class="bi bi-geo-alt"></i> <span th:text="${estate.city}">City</span>
+                            <span th:if="${estate.districts}"> · <span th:text="${estate.districts}">District</span></span>
+                        </div>
+                    </div>
+                    <span class="badge-pill badge-tour ms-auto" th:text="${estate.imageList.size()} + ' ' + #{estate.photosCount}">0 photos</span>
+                </div>
+            </div>
+
+            <div th:if="${uploadResult != null}"
+                 th:class="'alert py-2 px-3 mb-3 small ' + (${uploadResult} ? 'alert-success' : 'alert-warning')">
+                <span th:if="${uploadResult}" th:text="#{estate.uploadSuccess}">Uploaded</span>
+                <span th:unless="${uploadResult}" th:text="#{estate.uploadFailed} + ': ' + ${uploadError}">Failed</span>
+            </div>
+
+            <!-- Upload -->
+            <div class="form-section">
+                <div class="form-section-title"><i class="bi bi-cloud-arrow-up"></i> <span th:text="#{estate.addPhotos}">Add photos</span></div>
+                <form th:action="@{'/estates/' + ${estate.id} + '/upload-image'}" method="post" enctype="multipart/form-data" class="d-flex gap-2 flex-wrap">
+                    <input type="hidden" name="redirectTo" th:value="@{'/estates/' + ${estate.id} + '/photos'}"/>
+                    <input type="file" name="file" accept="image/*" class="form-control" style="max-width:340px;" required/>
+                    <button type="submit" class="btn btn-gold text-nowrap"><i class="bi bi-upload"></i> <span th:text="#{estate.uploadPhoto}">Upload</span></button>
+                </form>
+            </div>
+
+            <!-- Gallery -->
+            <div class="form-section">
+                <div class="form-section-title"><i class="bi bi-images"></i> <span th:text="#{estate.section.gallery}">Photos</span></div>
+
+                <div th:if="${estate.imageList.isEmpty()}" class="text-center text-muted py-5">
+                    <i class="bi bi-images fs-2 d-block mb-2"></i>
+                    <span th:text="#{estate.noPhotos}">No photos</span>
+                </div>
+
+                <div class="photo-grid" th:unless="${estate.imageList.isEmpty()}">
+                    <div class="photo-card" th:each="img, iter : ${estate.imageList}">
+                        <img th:src="${@imageUrlService.estateImage(img)}" onerror="this.closest('.photo-card').style.display='none'"/>
+                        <span th:if="${iter.first}" class="photo-card-badge" th:text="#{estate.coverPhoto}">Cover</span>
+                        <form th:action="@{'/estates/' + ${estate.id} + '/delete-image'}" method="post"
+                              class="photo-card-delete" onsubmit="return confirm('حذف هذي الصورة؟');">
+                            <input type="hidden" name="filename" th:value="${img}"/>
+                            <input type="hidden" name="redirectTo" th:value="@{'/estates/' + ${estate.id} + '/photos'}"/>
+                            <button type="submit" title="Delete"><i class="bi bi-trash3"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Master plan images -->
+            <div class="form-section">
+                <div class="form-section-title"><i class="bi bi-vector-pen"></i> <span th:text="#{estate.section.plan}">Master plan</span></div>
+
+                <div th:if="${estate.plannedList.isEmpty()}" class="text-center text-muted py-4">
+                    <i class="bi bi-vector-pen fs-2 d-block mb-2"></i>
+                    <span th:text="#{estate.noPlan}">No plan images</span>
+                </div>
+
+                <div class="photo-grid mb-3" th:unless="${estate.plannedList.isEmpty()}">
+                    <div class="photo-card" th:each="img : ${estate.plannedList}">
+                        <img th:src="${@imageUrlService.estateImage(img)}" onerror="this.closest('.photo-card').style.display='none'"/>
+                        <form th:action="@{'/estates/' + ${estate.id} + '/delete-plan'}" method="post"
+                              class="photo-card-delete" onsubmit="return confirm('حذف هذي الصورة؟');">
+                            <input type="hidden" name="filename" th:value="${img}"/>
+                            <input type="hidden" name="redirectTo" th:value="@{'/estates/' + ${estate.id} + '/photos'}"/>
+                            <button type="submit" title="Delete"><i class="bi bi-trash3"></i></button>
+                        </form>
+                    </div>
+                </div>
+
+                <form th:action="@{'/estates/' + ${estate.id} + '/upload-plan'}" method="post" enctype="multipart/form-data" class="d-flex gap-2 flex-wrap">
+                    <input type="hidden" name="redirectTo" th:value="@{'/estates/' + ${estate.id} + '/photos'}"/>
+                    <input type="file" name="file" accept="image/*" class="form-control" style="max-width:340px;" required/>
+                    <button type="submit" class="btn btn-outline-gold text-nowrap"><i class="bi bi-upload"></i> <span th:text="#{estate.addPlan}">Add plan image</span></button>
+                </form>
+            </div>
+
+            <div class="row g-3">
+                <!-- Video -->
+                <div class="col-lg-6">
+                    <div class="form-section h-100">
+                        <div class="form-section-title"><i class="bi bi-camera-reels"></i> <span th:text="#{estate.section.video}">Video</span></div>
+                        <video th:if="${estate.videoUrl}" th:src="${@imageUrlService.video(estate.videoUrl)}" controls
+                               style="width:100%; border-radius:12px; margin-bottom:14px; max-height:220px; background:#000;"></video>
+                        <div th:unless="${estate.videoUrl}" class="thumb-fallback w-100 mb-3" style="height:140px; border-radius:14px;">
+                            <i class="bi bi-camera-reels" style="font-size:2rem;"></i>
+                        </div>
+                        <form th:action="@{'/estates/' + ${estate.id} + '/upload-video'}" method="post" enctype="multipart/form-data" class="d-flex gap-2">
+                            <input type="hidden" name="redirectTo" th:value="@{'/estates/' + ${estate.id} + '/photos'}"/>
+                            <input type="file" name="file" accept="video/*" class="form-control" required/>
+                            <button type="submit" class="btn btn-outline-gold text-nowrap"><i class="bi bi-upload"></i></button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Skyview -->
+                <div class="col-lg-6">
+                    <div class="form-section h-100">
+                        <div class="form-section-title"><i class="bi bi-airplane"></i> <span th:text="#{estate.section.skyview}">Sky view</span></div>
+                        <video th:if="${estate.skyview}" th:src="${@imageUrlService.video(estate.skyview)}" controls
+                               style="width:100%; border-radius:12px; margin-bottom:14px; max-height:220px; background:#000;"></video>
+                        <div th:unless="${estate.skyview}" class="thumb-fallback w-100 mb-3" style="height:140px; border-radius:14px;">
+                            <i class="bi bi-airplane" style="font-size:2rem;"></i>
+                        </div>
+                        <form th:action="@{'/estates/' + ${estate.id} + '/upload-skyview'}" method="post" enctype="multipart/form-data" class="d-flex gap-2">
+                            <input type="hidden" name="redirectTo" th:value="@{'/estates/' + ${estate.id} + '/photos'}"/>
+                            <input type="file" name="file" accept="video/*" class="form-control" required/>
+                            <button type="submit" class="btn btn-outline-gold text-nowrap"><i class="bi bi-upload"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

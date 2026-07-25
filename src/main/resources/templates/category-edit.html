@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('category.editTitle')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('categories')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{category.editTitle})}"></div>
+
+        <div class="content">
+
+            <a th:href="@{/categories}" class="btn btn-outline-gold mb-3">
+                <i class="bi bi-arrow-right"></i> <span th:text="#{estate.backToList}">Back</span>
+            </a>
+
+            <div th:if="${saved}" class="alert alert-success py-2 px-3 mb-3 small" th:text="#{category.saved}">Saved</div>
+            <div th:if="${uploadResult != null}"
+                 th:class="'alert py-2 px-3 mb-3 small ' + (${uploadResult} ? 'alert-success' : 'alert-warning')">
+                <span th:if="${uploadResult}" th:text="#{estate.uploadSuccess}">Uploaded</span>
+                <span th:unless="${uploadResult}" th:text="#{estate.uploadFailed} + ': ' + ${uploadError}">Failed</span>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-lg-4">
+                    <div class="form-section text-center">
+                        <img th:if="${category.image}" th:src="${@imageUrlService.categoryImage(category.image)}"
+                             class="w-100 rounded-3 mb-3" style="max-height:200px; object-fit:cover;" onerror="this.style.display='none'"/>
+                        <div th:unless="${category.image}" class="thumb-fallback w-100 mb-3" style="height:150px; border-radius:14px;">
+                            <i class="bi bi-tags" style="font-size:2rem;"></i>
+                        </div>
+                        <form th:action="@{'/categories/' + ${category.id} + '/upload-image'}" method="post" enctype="multipart/form-data">
+                            <input type="file" name="file" accept="image/*" class="form-control form-control-sm mb-2" required/>
+                            <button type="submit" class="btn btn-outline-gold btn-sm w-100"><i class="bi bi-upload"></i> <span th:text="#{estate.uploadPhoto}">Upload</span></button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <form th:action="@{'/categories/' + ${category.id}}" method="post">
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="bi bi-tags"></i> <span th:text="#{category.editTitle}">Category</span></div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{category.name}">Name</label>
+                                    <input type="text" name="name" th:value="${category.name}" class="form-control" required/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{category.nameAr}">Arabic name</label>
+                                    <input type="text" name="nameAr" th:value="${category.nameAr}" class="form-control" required/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{category.type}">Type</label>
+                                    <input type="text" name="type" th:value="${category.type}" class="form-control"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{category.status}">Home status</label>
+                                    <select name="statusHome" class="form-select">
+                                        <option value="active" th:selected="${category.statusHome != null and category.statusHome.name() == 'active'}" th:text="#{estate.active}">Active</option>
+                                        <option value="disactive" th:selected="${category.statusHome == null or category.statusHome.name() == 'disactive'}" th:text="#{estate.disactive}">Inactive</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label" th:text="#{category.slug}">Slug</label>
+                                    <input type="text" th:value="${category.slug}" class="form-control" dir="ltr" disabled/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sticky-save-bar">
+                            <button type="submit" class="btn btn-gold"><i class="bi bi-check2"></i> <span th:text="#{category.save}">Save</span></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

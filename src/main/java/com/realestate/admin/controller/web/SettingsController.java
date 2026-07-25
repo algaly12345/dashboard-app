@@ -57,6 +57,10 @@ public class SettingsController {
 
         // ---- Media storage (Cloudflare R2) ----
         model.addAttribute("r2PublicUrl", settingsService.get("r2_public_url", ""));
+        model.addAttribute("r2AccountId", settingsService.get("r2_account_id", "c33f368b51e236e8892b759dab9c1549"));
+        model.addAttribute("r2Bucket", settingsService.get("r2_bucket", "abaad-media-assets"));
+        model.addAttribute("r2AccessKeyId", settingsService.get("r2_access_key_id", ""));
+        model.addAttribute("r2HasSecret", !settingsService.get("r2_secret_access_key", "").isBlank());
 
         // ---- Legal / content pages ----
         model.addAttribute("aboutUs", settingsService.get("about_us", ""));
@@ -100,6 +104,12 @@ public class SettingsController {
         settingsService.set("timezone", form.get("timezone"));
 
         settingsService.set("r2_public_url", form.get("r2PublicUrl"));
+        settingsService.set("r2_account_id", form.get("r2AccountId"));
+        settingsService.set("r2_bucket", form.get("r2Bucket"));
+        settingsService.set("r2_access_key_id", form.get("r2AccessKeyId"));
+        if (form.get("r2SecretAccessKey") != null && !form.get("r2SecretAccessKey").isBlank()) {
+            settingsService.set("r2_secret_access_key", form.get("r2SecretAccessKey"));
+        }
 
         settingsService.set("about_us", form.get("aboutUs"));
         settingsService.set("terms_condition", form.get("termsCondition"));

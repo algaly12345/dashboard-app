@@ -2,6 +2,7 @@ package com.realestate.admin.controller.web;
 
 import com.realestate.admin.dto.EstateMapPin;
 import com.realestate.admin.dto.LabelCount;
+import com.realestate.admin.dto.OfferMapPin;
 import com.realestate.admin.dto.TopProvider;
 import com.realestate.admin.entity.AppUser;
 import com.realestate.admin.entity.Estate;
@@ -153,6 +154,13 @@ public class DashboardController {
                 .toList();
         String mapApiKey = settingsService.get("map_api_key", "AIzaSyAwM15LYUky7qqVuXdBQc9zavA39y487jQ");
 
+        List<OfferMapPin> offerMapPins = offers.stream()
+                .filter(o -> o.getLatitude() != null && o.getLongitude() != null)
+                .sorted(Comparator.comparing(Offer::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                .limit(40)
+                .map(OfferMapPin::from)
+                .toList();
+
         model.addAttribute("totalEstates", totalEstates);
         model.addAttribute("activeEstates", activeEstates);
         model.addAttribute("forSale", forSale);
@@ -175,6 +183,7 @@ public class DashboardController {
         model.addAttribute("topProviders", topProviders);
         model.addAttribute("recentEstates", recent);
         model.addAttribute("mapPins", mapPins);
+        model.addAttribute("offerMapPins", offerMapPins);
         model.addAttribute("mapApiKey", mapApiKey);
         model.addAttribute("zones", zoneRepository.findAll());
         model.addAttribute("zoneId", zoneIdLong);

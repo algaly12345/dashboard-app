@@ -159,8 +159,18 @@ public class EstateController {
         return "redirect:/estates/" + id + "/edit";
     }
 
+    @GetMapping("/estates/{id}/photos")
+    public String photos(@PathVariable Long id, Model model) {
+        Estate estate = estateRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Estate not found: " + id));
+        model.addAttribute("estate", estate);
+        model.addAttribute("activePage", "estates");
+        return "estate-photos";
+    }
+
     @PostMapping("/estates/{id}/upload-image")
     public String uploadImage(@PathVariable Long id, @RequestParam("file") MultipartFile file,
+                               @RequestParam(required = false) String redirectTo,
                                RedirectAttributes redirectAttributes) {
         Estate estate = estateRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Estate not found: " + id));
@@ -181,7 +191,113 @@ public class EstateController {
             redirectAttributes.addFlashAttribute("uploadResult", false);
             redirectAttributes.addFlashAttribute("uploadError", result.error());
         }
-        return "redirect:/estates/" + id + "/edit";
+        return "redirect:" + (redirectTo != null && !redirectTo.isBlank() ? redirectTo : "/estates/" + id + "/edit");
+    }
+
+    @PostMapping("/estates/{id}/delete-image")
+    public String deleteImage(@PathVariable Long id, @RequestParam("filename") String filename,
+                               @RequestParam(required = false) String redirectTo,
+                               RedirectAttributes redirectAttributes) {
+        Estate estate = estateRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Estate not found: " + id));
+
+        List<String> images = new ArrayList<>(estate.getImageList());
+        images.remove(filename);
+        try {
+            estate.setImages(objectMapper.writeValueAsString(images));
+            estate.setUpdatedAt(LocalDateTime.now());
+            estateRepository.save(estate);
+        } catch (Exception ignored) {
+            // keep the previous images value if serialization somehow fails
+        }
+        // Note: this only unlinks the photo from the listing - it doesn't
+        // delete the underlying object from R2, so nothing else that might
+        // still reference the same file (a shared/reused image) breaks.
+        return "redirect:" + (redirectTo != null && !redirectTo.isBlank() ? redirectTo : "/estates/" + id + "/edit");
+    }
+
+    @PostMapping("/estates/{id}/upload-plan")
+    public String uploadPlan(@PathVariable Long id, @RequestParam("file") MultipartFile file,
+                              @RequestParam(required = false) String redirectTo,
+                              RedirectAttributes redirectAttributes) {
+        Estate estate = estateRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Estate not found: " + id));
+
+        R2StorageService.UploadResult result = r2StorageService.upload(file, "estate");
+        if (result.success()) {
+            List<String> planned = new ArrayList<>(estate.getPlannedList());
+            planned.add(result.filename());
+            try {
+                estate.setPlanned(objectMapper.writeValueAsString(planned));
+            } catch (Exception ignored) {
+                // keep the previous value if serialization somehow fails
+            }
+            estate.setUpdatedAt(LocalDateTime.now());
+            estateRepository.save(estate);
+            redirectAttributes.addFlashAttribute("uploadResult", true);
+        } else {
+            redirectAttributes.addFlashAttribute("uploadResult", false);
+            redirectAttributes.addFlashAttribute("uploadError", result.error());
+        }
+        return "redirect:" + (redirectTo != null && !redirectTo.isBlank() ? redirectTo : "/estates/" + id + "/photos");
+    }
+
+    @PostMapping("/estates/{id}/delete-plan")
+    public String deletePlan(@PathVariable Long id, @RequestParam("filename") String filename,
+                              @RequestParam(required = false) String redirectTo) {
+        Estate estate = estateRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Estate not found: " + id));
+
+        List<String> planned = new ArrayList<>(estate.getPlannedList());
+        planned.remove(filename);
+        try {
+            estate.setPlanned(objectMapper.writeValueAsString(planned));
+            estate.setUpdatedAt(LocalDateTime.now());
+            estateRepository.save(estate);
+        } catch (Exception ignored) {
+            // keep the previous value if serialization somehow fails
+        }
+        return "redirect:" + (redirectTo != null && !redirectTo.isBlank() ? redirectTo : "/estates/" + id + "/photos");
+    }
+
+    @PostMapping("/estates/{id}/upload-video")
+    public String uploadVideo(@PathVariable Long id, @RequestParam("file") MultipartFile file,
+                               @RequestParam(required = false) String redirectTo,
+                               RedirectAttributes redirectAttributes) {
+        Estate estate = estateRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Estate not found: " + id));
+
+        R2StorageService.UploadResult result = r2StorageService.upload(file, "videos");
+        if (result.success()) {
+            estate.setVideoUrl(result.filename());
+            estate.setUpdatedAt(LocalDateTime.now());
+            estateRepository.save(estate);
+            redirectAttributes.addFlashAttribute("uploadResult", true);
+        } else {
+            redirectAttributes.addFlashAttribute("uploadResult", false);
+            redirectAttributes.addFlashAttribute("uploadError", result.error());
+        }
+        return "redirect:" + (redirectTo != null && !redirectTo.isBlank() ? redirectTo : "/estates/" + id + "/photos");
+    }
+
+    @PostMapping("/estates/{id}/upload-skyview")
+    public String uploadSkyview(@PathVariable Long id, @RequestParam("file") MultipartFile file,
+                                 @RequestParam(required = false) String redirectTo,
+                                 RedirectAttributes redirectAttributes) {
+        Estate estate = estateRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Estate not found: " + id));
+
+        R2StorageService.UploadResult result = r2StorageService.upload(file, "videos");
+        if (result.success()) {
+            estate.setSkyview(result.filename());
+            estate.setUpdatedAt(LocalDateTime.now());
+            estateRepository.save(estate);
+            redirectAttributes.addFlashAttribute("uploadResult", true);
+        } else {
+            redirectAttributes.addFlashAttribute("uploadResult", false);
+            redirectAttributes.addFlashAttribute("uploadError", result.error());
+        }
+        return "redirect:" + (redirectTo != null && !redirectTo.isBlank() ? redirectTo : "/estates/" + id + "/photos");
     }
 
     private Integer parseIntOrNull(String s) {

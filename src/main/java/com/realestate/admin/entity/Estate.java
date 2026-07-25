@@ -258,6 +258,18 @@ public class Estate {
         return out;
     }
 
+    /** Same JSON-ish array format as `images`, but for master-plan/blueprint photos. */
+    @Transient
+    public java.util.List<String> getPlannedList() {
+        if (planned == null || planned.isBlank()) return java.util.List.of();
+        String stripped = planned.replaceAll("[\\[\\]\"\\\\]", "");
+        java.util.List<String> out = new java.util.ArrayList<>();
+        for (String part : stripped.split(",")) {
+            if (!part.isBlank()) out.add(part.trim());
+        }
+        return out;
+    }
+
     /** `property` is a small JSON array like [{"name":"حمام","number":"3"}, ...]. */
     @Transient
     public java.util.List<java.util.Map<String, String>> getRoomBreakdown() {

@@ -123,8 +123,19 @@
                     </div>
 
                     <div class="d-flex flex-wrap gap-2 mb-3" th:if="${not estate.imageList.isEmpty()}">
-                        <img th:each="img : ${estate.imageList}" th:src="${@imageUrlService.estateImage(img)}"
-                             style="width:70px; height:70px; object-fit:cover; border-radius:10px;" onerror="this.style.display='none'"/>
+                        <div th:each="img : ${estate.imageList}" style="position:relative; width:70px; height:70px;">
+                            <img th:src="${@imageUrlService.estateImage(img)}"
+                                 style="width:70px; height:70px; object-fit:cover; border-radius:10px;" onerror="this.style.display='none'"/>
+                            <form th:action="@{'/estates/' + ${estate.id} + '/delete-image'}" method="post"
+                                  style="position:absolute; top:-6px; inset-inline-end:-6px;"
+                                  onsubmit="return confirm('حذف هذي الصورة؟');">
+                                <input type="hidden" name="filename" th:value="${img}"/>
+                                <button type="submit" class="btn-icon" title="Delete"
+                                        style="width:22px; height:22px; border-radius:50%; background:var(--danger); color:#fff; border:2px solid #fff; font-size:.7rem;">
+                                    <i class="bi bi-x"></i>
+                                </button>
+                            </form>
+                        </div>
                     </div>
 
                     <form th:action="@{'/estates/' + ${estate.id} + '/upload-image'}" method="post" enctype="multipart/form-data" class="d-flex gap-2 mb-4">

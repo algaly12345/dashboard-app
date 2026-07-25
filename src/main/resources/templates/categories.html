@@ -11,30 +11,27 @@
         <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{nav.categories})}"></div>
 
         <div class="content">
-            <div class="card table-card">
-                <table class="data-table">
-                    <thead>
-                    <tr>
-                        <th th:text="#{category.name}">Name</th>
-                        <th th:text="#{category.nameAr}">Arabic name</th>
-                        <th th:text="#{category.slug}">Slug</th>
-                        <th th:text="#{category.type}">Type</th>
-                        <th th:text="#{category.status}">Home status</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="c : ${categories}">
-                        <td th:text="${c.name}">Name</td>
-                        <td th:text="${c.nameAr}">Arabic name</td>
-                        <td><code th:text="${c.slug}">slug</code></td>
-                        <td th:text="${c.type}">Type</td>
-                        <td>
+            <div class="offer-grid">
+                <div class="offer-card" th:each="c : ${categories}">
+                    <div class="offer-card-media">
+                        <img th:if="${c.image}" th:src="${@imageUrlService.categoryImage(c.image)}" onerror="this.style.display='none'"/>
+                        <i th:unless="${c.image}" class="bi bi-tags placeholder-icon"></i>
+                        <span class="offer-card-status">
                             <span th:if="${c.statusHome != null and c.statusHome.name() == 'active'}" class="badge-pill badge-active" th:text="#{estate.active}">Active</span>
                             <span th:if="${c.statusHome == null or c.statusHome.name() == 'disactive'}" class="badge-pill badge-disactive" th:text="#{estate.disactive}">Inactive</span>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+                        </span>
+                    </div>
+                    <div class="offer-card-body">
+                        <div class="offer-card-title" th:text="${c.nameAr}">Name</div>
+                        <div class="offer-card-desc" th:text="${c.name}">Name EN</div>
+                    </div>
+                    <div class="offer-card-footer">
+                        <code class="small" th:text="${c.slug}">slug</code>
+                        <a th:href="@{'/categories/' + ${c.id} + '/edit'}" class="btn-icon" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

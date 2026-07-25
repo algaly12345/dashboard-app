@@ -575,6 +575,54 @@ a.report-estate-chip:hover{ border-color: var(--violet); background:#F5F9FF; }
 .notif-preview-title{ font-weight:800; font-size:.85rem; color:var(--text); }
 .notif-preview-body{ font-size:.78rem; color:var(--text-muted); margin-top:2px; word-break:break-word; }
 
+/* ---------- Dashboard map tabs ---------- */
+.map-tabs{ display:flex; gap:6px; }
+.map-tab{
+  display:flex; align-items:center; gap:7px;
+  padding:8px 14px; border-radius:10px; border:1px solid transparent;
+  background:transparent; color:var(--text-muted); font-weight:700; font-size:.86rem;
+  transition: all .18s ease;
+}
+.map-tab:hover{ background: var(--canvas); color: var(--text); }
+.map-tab.active{
+  background: linear-gradient(135deg, var(--violet-light), var(--violet));
+  color:#fff; box-shadow: var(--glow);
+}
+.map-tab-count{
+  font-size:.7rem; font-weight:800; padding:1px 7px; border-radius:999px;
+  background: rgba(255,255,255,.25); color:inherit;
+}
+.map-tab:not(.active) .map-tab-count{ background:#EFEDFA; color: var(--violet); }
+
+/* ---------- Estate photo gallery management ---------- */
+.photo-grid{
+  display:grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap:14px;
+}
+.photo-card{
+  position:relative; aspect-ratio:1; border-radius: var(--radius-sm); overflow:hidden;
+  background:#F0EEFA; box-shadow: var(--shadow);
+}
+.photo-card img{ width:100%; height:100%; object-fit:cover; transition: transform .25s ease; }
+.photo-card:hover img{ transform: scale(1.06); }
+.photo-card-badge{
+  position:absolute; top:8px; inset-inline-start:8px;
+  background: linear-gradient(135deg, var(--violet-light), var(--violet));
+  color:#fff; font-size:.68rem; font-weight:800; padding:3px 10px; border-radius:999px;
+  box-shadow: var(--glow);
+}
+.photo-card-delete{ position:absolute; top:8px; inset-inline-end:8px; margin:0; }
+.photo-card-delete button{
+  width:30px; height:30px; border-radius:50%; border:none;
+  background: rgba(20,10,40,.55); color:#fff; font-size:.85rem;
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; transition: all .18s ease; backdrop-filter: blur(4px);
+}
+.photo-card:hover .photo-card-delete button{ opacity:1; }
+.photo-card-delete button:hover{ background: var(--danger); }
+@media (max-width: 600px){
+  .photo-card-delete button{ opacity:1; } /* no hover on touch devices - always visible */
+}
+
 /* ---------- Topbar dropdowns (notifications, profile) ---------- */
 .nav-dropdown{ position:relative; }
 .nav-icon-btn{
