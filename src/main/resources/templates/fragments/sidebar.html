@@ -41,6 +41,9 @@
         <a th:href="@{/zones}" class="nav-link" th:classappend="${active == 'zones'} ? 'active' : ''">
             <i class="bi bi-map"></i><span th:text="#{nav.zones}">Zones</span>
         </a>
+        <a th:href="@{/banners}" class="nav-link" th:classappend="${active == 'banners'} ? 'active' : ''">
+            <i class="bi bi-images"></i><span th:text="#{nav.banners}">Banners</span>
+        </a>
     </nav>
 
     <div class="sidebar-footer">

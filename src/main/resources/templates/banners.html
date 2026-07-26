@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('banner.pageTitle')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('banners')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{banner.pageTitle})}"></div>
+
+        <div class="content">
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div th:if="${saved != null or created != null or deleted != null}"
+                     class="alert alert-success py-2 px-3 mb-0 small">
+                    <span th:if="${saved}" th:text="#{banner.saved}">Saved</span>
+                    <span th:if="${created}" th:text="#{banner.created}">Created</span>
+                    <span th:if="${deleted}" th:text="#{banner.deleted}">Deleted</span>
+                </div>
+                <a th:href="@{/banners/create}" class="btn btn-gold ms-auto">
+                    <i class="bi bi-plus-lg"></i> <span th:text="#{banner.add}">New Banner</span>
+                </a>
+            </div>
+
+            <div class="offer-grid" th:if="${not banners.isEmpty()}">
+                <div class="offer-card" th:each="b : ${banners}">
+                    <div class="offer-card-media">
+                        <img th:if="${b.image}" th:src="${@imageUrlService.bannerImage(b.image)}" onerror="this.style.display='none'"/>
+                        <i th:unless="${b.image}" class="bi bi-image placeholder-icon"></i>
+                        <span class="offer-card-status">
+                            <span th:if="${b.status}" class="badge-pill badge-active" th:text="#{estate.active}">Active</span>
+                            <span th:unless="${b.status}" class="badge-pill badge-disactive" th:text="#{estate.disactive}">Inactive</span>
+                        </span>
+                    </div>
+                    <div class="offer-card-body">
+                        <div class="offer-card-title" th:text="${b.title}">Title</div>
+                        <div class="offer-card-desc" th:text="${b.description}">Description</div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge-pill badge-tour" th:if="${b.zoneId != null}">
+                                <i class="bi bi-geo-alt"></i>
+                                <span th:if="${zoneNames.containsKey(b.zoneId)}" th:text="${zoneNames.get(b.zoneId)}">Zone</span>
+                                <span th:unless="${zoneNames.containsKey(b.zoneId)}" th:text="'#' + ${b.zoneId}">#0</span>
+                            </span>
+                            <span class="badge-pill badge-rent" th:if="${b.providerId != null}">
+                                <i class="bi bi-person"></i>
+                                <span th:if="${providerNames.containsKey(b.providerId)}" th:text="${providerNames.get(b.providerId)}">Provider</span>
+                                <span th:unless="${providerNames.containsKey(b.providerId)}" th:text="'#' + ${b.providerId}">#0</span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="offer-card-footer">
+                        <a th:href="@{'/banners/' + ${b.id} + '/edit'}" class="btn-icon" title="Edit">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <form th:action="@{'/banners/' + ${b.id} + '/delete'}" method="post"
+                              onsubmit="return confirm('حذف هذا البنر؟');">
+                            <button type="submit" class="btn-icon" title="Delete"><i class="bi bi-trash3"></i></button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div th:if="${banners.isEmpty()}" class="card section-card text-center text-muted py-5">
+                <i class="bi bi-images fs-3 d-block mb-2"></i>
+                <span th:text="#{banner.noResults}">No banners</span>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

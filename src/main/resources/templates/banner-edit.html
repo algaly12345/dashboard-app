@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('banner.editTitle')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('banners')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{banner.editTitle})}"></div>
+
+        <div class="content">
+
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <a th:href="@{/banners}" class="btn btn-outline-gold">
+                    <i class="bi bi-arrow-right"></i> <span th:text="#{estate.backToList}">Back</span>
+                </a>
+                <form th:action="@{'/banners/' + ${banner.id} + '/delete'}" method="post"
+                      onsubmit="return confirm('حذف هذا البنر؟');">
+                    <button type="submit" class="btn btn-outline-gold" style="border-color: var(--danger); color: var(--danger);">
+                        <i class="bi bi-trash3"></i> <span th:text="#{banner.delete}">Delete</span>
+                    </button>
+                </form>
+            </div>
+
+            <div th:if="${saved != null or created != null}" class="alert alert-success py-2 px-3 mb-3 small">
+                <span th:if="${saved}" th:text="#{banner.saved}">Saved</span>
+                <span th:if="${created}" th:text="#{banner.created}">Created</span>
+            </div>
+            <div th:if="${uploadResult != null}"
+                 th:class="'alert py-2 px-3 mb-3 small ' + (${uploadResult} ? 'alert-success' : 'alert-warning')">
+                <span th:if="${uploadResult}" th:text="#{estate.uploadSuccess}">Uploaded</span>
+                <span th:unless="${uploadResult}" th:text="#{estate.uploadFailed} + ': ' + ${uploadError}">Failed</span>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-lg-4">
+                    <div class="form-section text-center">
+                        <img th:if="${banner.image}" th:src="${@imageUrlService.bannerImage(banner.image)}"
+                             class="w-100 rounded-3 mb-3" style="max-height:200px; object-fit:cover;" onerror="this.style.display='none'"/>
+                        <div th:unless="${banner.image}" class="thumb-fallback w-100 mb-3" style="height:150px; border-radius:14px;">
+                            <i class="bi bi-image" style="font-size:2rem;"></i>
+                        </div>
+                        <form th:action="@{'/banners/' + ${banner.id} + '/upload-image'}" method="post" enctype="multipart/form-data">
+                            <input type="file" name="file" accept="image/*" class="form-control form-control-sm mb-2" required/>
+                            <button type="submit" class="btn btn-outline-gold btn-sm w-100"><i class="bi bi-upload"></i> <span th:text="#{estate.uploadPhoto}">Upload</span></button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="col-lg-8">
+                    <form th:action="@{'/banners/' + ${banner.id}}" method="post">
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="bi bi-image"></i> <span th:text="#{banner.editTitle}">Banner</span></div>
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label" th:text="#{banner.title}">Title</label>
+                                    <input type="text" name="title" th:value="${banner.title}" class="form-control" required/>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label" th:text="#{banner.description}">Description</label>
+                                    <textarea name="description" rows="3" class="form-control" th:text="${banner.description}"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{banner.zone}">Zone</label>
+                                    <select name="zoneId" class="form-select">
+                                        <option value="" th:text="#{banner.allZones}">All zones</option>
+                                        <option th:each="z : ${zones}" th:value="${z.id}" th:text="${z.nameAr}" th:selected="${z.id == banner.zoneId}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{banner.provider}">Provider</label>
+                                    <select name="providerId" class="form-select">
+                                        <option value="" th:text="#{banner.noProvider}">No provider</option>
+                                        <option th:each="p : ${providerOptions}" th:value="${p.value}" th:text="${p.label}"
+                                                th:selected="${p.value == (banner.providerId != null ? #strings.toString(banner.providerId) : null)}"></option>
+                                    </select>
+                                </div>
+                                <div class="col-12 form-check form-switch">
+                                    <input type="checkbox" name="status" th:checked="${banner.status}" class="form-check-input" id="bannerStatus"/>
+                                    <label class="form-check-label" for="bannerStatus" th:text="#{banner.status}">Active</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="sticky-save-bar">
+                            <button type="submit" class="btn btn-gold"><i class="bi bi-check2"></i> <span th:text="#{banner.save}">Save</span></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

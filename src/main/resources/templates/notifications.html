@@ -50,7 +50,8 @@
                             </span>
                             <span class="badge-pill badge-rent" th:if="${n.zoneId != null}">
                                 <i class="bi bi-geo-alt"></i>
-                                <span th:text="${zoneNames.get(n.zoneId)} ?: ('#' + ${n.zoneId})">Zone</span>
+                                <span th:if="${zoneNames.containsKey(n.zoneId)}" th:text="${zoneNames.get(n.zoneId)}">Zone</span>
+                                <span th:unless="${zoneNames.containsKey(n.zoneId)}" th:text="'#' + ${n.zoneId}">#0</span>
                             </span>
                             <span class="report-date">
                                 <i class="bi bi-clock"></i>

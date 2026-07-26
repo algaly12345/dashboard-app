@@ -59,9 +59,24 @@
     });
   }
 
+  // ---- Safe "confirm before submit" - use <form data-confirm="message"> instead
+  //      of building onsubmit="..." strings inline (which is fragile with
+  //      quotes/escaping inside Thymeleaf attribute expressions). ----
+  function initConfirmSubmit() {
+    document.addEventListener("submit", function (e) {
+      var form = e.target;
+      if (form && form.hasAttribute && form.hasAttribute("data-confirm")) {
+        if (!window.confirm(form.getAttribute("data-confirm"))) {
+          e.preventDefault();
+        }
+      }
+    });
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
     initCountUp();
     initBars();
     initRipples();
+    initConfirmSubmit();
   });
 })();

@@ -24,6 +24,7 @@ public class ImageUrlService {
     public String offerImage(String filename) { return build("offers", filename); }
     public String categoryImage(String filename) { return build("categories", filename); }
     public String zoneImage(String filename) { return build("zone", filename); }
+    public String bannerImage(String filename) { return build("banners", filename); }
     public String profileImage(String filename) { return build("profile", filename); }
     public String providerImage(String filename) { return build("service-providers", filename); }
     public String video(String filename) { return build("videos", filename); }
