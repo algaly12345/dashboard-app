@@ -14,10 +14,13 @@ public class SettingsService {
 
     private final BusinessSettingRepository repository;
 
-    /** Latest value for this setting type, or the given default if it has never been set. */
+    /** Latest value for this setting type, or the given default if it has never been set
+     *  (or if the stored value is itself null - some legacy rows have that). */
     public String get(String type, String defaultValue) {
         List<BusinessSetting> rows = repository.findByTypeOrderByIdDesc(type);
-        return rows.isEmpty() ? defaultValue : rows.get(0).getValue();
+        if (rows.isEmpty()) return defaultValue;
+        String value = rows.get(0).getValue();
+        return value != null ? value : defaultValue;
     }
 
     /** Updates the latest row for this type in place, or creates the first one if none exists yet. */
