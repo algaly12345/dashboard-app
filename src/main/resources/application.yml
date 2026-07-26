@@ -78,5 +78,7 @@ app:
 # ---- Debug logging (remove once it connects) ----
 logging:
   level:
-    com.zaxxer.hikari: DEBUG
-    org.hibernate: DEBUG
+    com.zaxxer.hikari: WARN
+    org.hibernate: WARN
+    org.springframework.web: INFO
+    com.realestate.admin: DEBUG
