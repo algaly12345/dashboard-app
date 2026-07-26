@@ -132,9 +132,67 @@
                                 <input type="checkbox" name="phoneVerification" th:checked="${phoneVerification}" class="form-check-input" id="phoneVer"/>
                                 <label class="form-check-label small" for="phoneVer" th:text="#{settings.phoneVerification}">Phone</label>
                             </div>
-                            <div class="form-check form-switch">
+                            <div class="form-check form-switch mb-2">
                                 <input type="checkbox" name="emailVerification" th:checked="${emailVerification}" class="form-check-input" id="emailVer"/>
                                 <label class="form-check-label small" for="emailVer" th:text="#{settings.emailVerification}">Email</label>
+                            </div>
+                            <hr/>
+                            <div class="form-check form-switch mb-2">
+                                <input type="checkbox" name="walletStatus" th:checked="${walletStatus}" class="form-check-input" id="walletStat"/>
+                                <label class="form-check-label small" for="walletStat" th:text="#{settings.walletStatus}">Wallet</label>
+                            </div>
+                            <div class="form-check form-switch mb-2">
+                                <input type="checkbox" name="loyaltyPointStatus" th:checked="${loyaltyPointStatus}" class="form-check-input" id="loyaltyStat"/>
+                                <label class="form-check-label small" for="loyaltyStat" th:text="#{settings.loyaltyPointStatus}">Loyalty points</label>
+                            </div>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" name="guestCheckoutStatus" th:checked="${guestCheckoutStatus}" class="form-check-input" id="guestStat"/>
+                                <label class="form-check-label small" for="guestStat" th:text="#{settings.guestCheckoutStatus}">Guest checkout</label>
+                            </div>
+                            <hr/>
+                            <div class="form-check form-switch">
+                                <input type="checkbox" name="maintenanceMode" th:checked="${maintenanceMode}" class="form-check-input" id="maintMode"/>
+                                <label class="form-check-label small" for="maintMode" th:text="#{settings.maintenanceMode}">Maintenance mode</label>
+                            </div>
+                            <div class="form-text" th:text="#{settings.maintenanceModeHint}">Hint</div>
+                        </div>
+
+                        <!-- App version gate -->
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="bi bi-phone"></i> <span th:text="#{settings.section.appVersion}">App version</span></div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{settings.appMinVersionAndroid}">Min Android version</label>
+                                    <input type="text" name="appMinVersionAndroid" th:value="${appMinVersionAndroid}" class="form-control" dir="ltr"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{settings.appMinVersionIos}">Min iOS version</label>
+                                    <input type="text" name="appMinVersionIos" th:value="${appMinVersionIos}" class="form-control" dir="ltr"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Logos -->
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="bi bi-image"></i> <span th:text="#{settings.section.logos}">Logos</span></div>
+                            <p class="text-muted small" th:text="#{settings.logosHint}">Hint</p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{settings.webLogo}">Web logo</label>
+                                    <input type="text" name="webLogo" th:value="${webLogo}" class="form-control" dir="ltr"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{settings.mobLogo}">Mobile logo</label>
+                                    <input type="text" name="mobLogo" th:value="${mobLogo}" class="form-control" dir="ltr"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{settings.favIcon}">Favicon</label>
+                                    <input type="text" name="favIcon" th:value="${favIcon}" class="form-control" dir="ltr"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{settings.footerLogo}">Footer logo</label>
+                                    <input type="text" name="footerLogo" th:value="${footerLogo}" class="form-control" dir="ltr"/>
+                                </div>
                             </div>
                         </div>
 
@@ -217,6 +275,33 @@
                             <div>
                                 <label class="form-label" th:text="#{settings.privacyPolicy}">Privacy</label>
                                 <textarea name="privacyPolicy" rows="4" class="form-control" dir="ltr" style="font-family:monospace; font-size:.78rem;" th:text="${privacyPolicy}"></textarea>
+                            </div>
+
+                            <hr/>
+                            <p class="text-muted small" th:text="#{settings.legalWebHint}">Hint</p>
+                            <div class="mb-3">
+                                <label class="form-label" th:text="#{settings.termsAndConditions}">Terms & Conditions (web)</label>
+                                <textarea name="termsAndConditions" rows="3" class="form-control" dir="ltr" style="font-family:monospace; font-size:.78rem;" th:text="${termsAndConditions}"></textarea>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{settings.aboutUsWeb}">About us (web, EN)</label>
+                                    <textarea name="aboutUsWeb" rows="3" class="form-control" dir="ltr" style="font-family:monospace; font-size:.78rem;" th:text="${aboutUsWeb}"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{settings.aboutUsWebAr}">About us (web, AR)</label>
+                                    <textarea name="aboutUsWebAr" rows="3" class="form-control" th:text="${aboutUsWebAr}"></textarea>
+                                </div>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{settings.privacyPolicyWeb}">Privacy policy (web, EN)</label>
+                                    <textarea name="privacyPolicyWeb" rows="3" class="form-control" dir="ltr" style="font-family:monospace; font-size:.78rem;" th:text="${privacyPolicyWeb}"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{settings.privacyPolicyWebAr}">Privacy policy (web, AR)</label>
+                                    <textarea name="privacyPolicyWebAr" rows="3" class="form-control" th:text="${privacyPolicyWebAr}"></textarea>
+                                </div>
                             </div>
                         </div>
 

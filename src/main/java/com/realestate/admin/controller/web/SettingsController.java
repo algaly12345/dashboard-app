@@ -66,6 +66,28 @@ public class SettingsController {
         model.addAttribute("aboutUs", settingsService.get("about_us", ""));
         model.addAttribute("termsCondition", settingsService.get("terms_condition", ""));
         model.addAttribute("privacyPolicy", settingsService.get("privacy_policy", ""));
+        // "_web" variants - the Laravel front-end reads these separately from the app-facing ones above
+        model.addAttribute("aboutUsWeb", settingsService.get("about_us_web", ""));
+        model.addAttribute("aboutUsWebAr", settingsService.get("about_us_web_ar", ""));
+        model.addAttribute("privacyPolicyWeb", settingsService.get("privacy_policy_web", ""));
+        model.addAttribute("privacyPolicyWebAr", settingsService.get("privacy_policy_web_ar", ""));
+        model.addAttribute("termsAndConditions", settingsService.get("terms_and_conditions", ""));
+
+        // ---- Company logos (filenames) ----
+        model.addAttribute("webLogo", settingsService.get("company_web_logo", ""));
+        model.addAttribute("mobLogo", settingsService.get("company_mobile_logo", ""));
+        model.addAttribute("favIcon", settingsService.get("company_fav_icon", ""));
+        model.addAttribute("footerLogo", settingsService.get("company_footer_logo", ""));
+
+        // ---- Extra feature toggles used by the Laravel front-end ----
+        model.addAttribute("walletStatus", "1".equals(settingsService.get("wallet_status", "0")));
+        model.addAttribute("loyaltyPointStatus", "1".equals(settingsService.get("loyalty_point_status", "0")));
+        model.addAttribute("guestCheckoutStatus", "1".equals(settingsService.get("guest_checkout", "0")));
+        model.addAttribute("maintenanceMode", "1".equals(settingsService.get("maintenance_mode", "0")));
+
+        // ---- Mobile app version gate ----
+        model.addAttribute("appMinVersionAndroid", settingsService.get("app_min_version_android", "1.0"));
+        model.addAttribute("appMinVersionIos", settingsService.get("app_min_version_ios", "1.0"));
 
         model.addAttribute("activePage", "settings");
         return "settings";
@@ -114,6 +136,24 @@ public class SettingsController {
         settingsService.set("about_us", form.get("aboutUs"));
         settingsService.set("terms_condition", form.get("termsCondition"));
         settingsService.set("privacy_policy", form.get("privacyPolicy"));
+        settingsService.set("about_us_web", form.get("aboutUsWeb"));
+        settingsService.set("about_us_web_ar", form.get("aboutUsWebAr"));
+        settingsService.set("privacy_policy_web", form.get("privacyPolicyWeb"));
+        settingsService.set("privacy_policy_web_ar", form.get("privacyPolicyWebAr"));
+        settingsService.set("terms_and_conditions", form.get("termsAndConditions"));
+
+        settingsService.set("company_web_logo", form.get("webLogo"));
+        settingsService.set("company_mobile_logo", form.get("mobLogo"));
+        settingsService.set("company_fav_icon", form.get("favIcon"));
+        settingsService.set("company_footer_logo", form.get("footerLogo"));
+
+        settingsService.set("wallet_status", form.containsKey("walletStatus") ? "1" : "0");
+        settingsService.set("loyalty_point_status", form.containsKey("loyaltyPointStatus") ? "1" : "0");
+        settingsService.set("guest_checkout", form.containsKey("guestCheckoutStatus") ? "1" : "0");
+        settingsService.set("maintenance_mode", form.containsKey("maintenanceMode") ? "1" : "0");
+
+        settingsService.set("app_min_version_android", form.get("appMinVersionAndroid"));
+        settingsService.set("app_min_version_ios", form.get("appMinVersionIos"));
 
         redirectAttributes.addFlashAttribute("saved", true);
         return "redirect:/settings";
