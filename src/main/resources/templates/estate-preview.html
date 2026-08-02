@@ -20,51 +20,85 @@
                 <i class="bi bi-check-circle"></i> تم جلب البيانات من هيئة العقار بنجاح. راجعها قبل الحفظ.
             </div>
 
+            <!-- Advertiser / user card -->
+            <div class="card section-card mb-3">
+                <div class="d-flex align-items-center gap-3 flex-wrap">
+                    <div class="thumb-fallback" style="width:56px; height:56px;"><i class="bi bi-person"></i></div>
+                    <div>
+                        <div class="fw-bold" th:text="${advertiserName} ?: '-'">Advertiser</div>
+                        <div class="text-muted small" dir="ltr" th:text="${phoneNumber} ?: '-'">phone</div>
+                    </div>
+                    <span class="badge-pill ms-auto" th:if="${existingUserFound}" style="background:#E7F6EC; color:#1E8E4B;">
+                        <i class="bi bi-check-circle"></i> مستخدم موجود مسبقًا: <span th:text="${existingUserName}">name</span>
+                    </span>
+                    <span class="badge-pill ms-auto" th:unless="${existingUserFound}" style="background:#FFF4E5; color:#B5690A;">
+                        <i class="bi bi-person-plus"></i> بيتم إنشاء مستخدم جديد بهذا الرقم
+                    </span>
+                </div>
+            </div>
+
+            <!-- Core property facts -->
             <div class="form-section">
-                <div class="form-section-title"><i class="bi bi-clipboard-check"></i> معاينة بيانات العقار</div>
-
+                <div class="form-section-title"><i class="bi bi-house-door"></i> بيانات العقار الأساسية</div>
                 <div class="row g-3">
-                    <div class="col-md-4"><div class="text-muted small">اسم المعلن</div><div class="fw-bold" th:text="${advertiserName} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">رقم الجوال</div><div class="fw-bold" dir="ltr" th:text="${phoneNumber} ?: '-'">-</div></div>
                     <div class="col-md-4"><div class="text-muted small">نوع العقار</div><div class="fw-bold" th:text="${propertyType} ?: '-'">-</div></div>
+                    <div class="col-md-4"><div class="text-muted small">نوع الإعلان</div><div class="fw-bold" th:text="${advertisementType} ?: '-'">-</div></div>
+                    <div class="col-md-4"><div class="text-muted small">واجهة العقار</div><div class="fw-bold" th:text="${propertyFace} ?: '-'">-</div></div>
+                    <div class="col-md-4"><div class="text-muted small">عدد الغرف</div><div class="fw-bold" th:text="${numberOfRooms} ?: '-'">-</div></div>
+                    <div class="col-md-4"><div class="text-muted small">السعر الإجمالي</div><div class="fw-bold" th:text="${totalPrice} ?: '-'">-</div></div>
+                    <div class="col-md-4"><div class="text-muted small">استخدام الأرض الرئيسي</div><div class="fw-bold" th:text="${mainLandUseTypeName} ?: '-'">-</div></div>
+                </div>
+            </div>
 
+            <!-- Location -->
+            <div class="form-section">
+                <div class="form-section-title"><i class="bi bi-geo-alt"></i> الموقع</div>
+                <div class="row g-3">
                     <div class="col-md-4"><div class="text-muted small">المدينة</div><div class="fw-bold" th:text="${city} ?: '-'">-</div></div>
                     <div class="col-md-4"><div class="text-muted small">الحي</div><div class="fw-bold" th:text="${districts} ?: '-'">-</div></div>
                     <div class="col-md-4"><div class="text-muted small">الرمز البريدي</div><div class="fw-bold" th:text="${postalCode} ?: '-'">-</div></div>
+                    <div class="col-md-6"><div class="text-muted small">خط العرض</div><div class="fw-bold" dir="ltr" th:text="${latitude} ?: '-'">-</div></div>
+                    <div class="col-md-6"><div class="text-muted small">خط الطول</div><div class="fw-bold" dir="ltr" th:text="${longitude} ?: '-'">-</div></div>
+                </div>
+            </div>
 
+            <!-- Legal / deed -->
+            <div class="form-section">
+                <div class="form-section-title"><i class="bi bi-file-earmark-text"></i> البيانات القانونية والصك</div>
+                <div class="row g-3">
                     <div class="col-md-4"><div class="text-muted small">رقم الصك</div><div class="fw-bold" dir="ltr" th:text="${deedNumber} ?: '-'">-</div></div>
                     <div class="col-md-4"><div class="text-muted small">نوع الصك</div><div class="fw-bold" th:text="${titleDeedTypeName} ?: '-'">-</div></div>
                     <div class="col-md-4"><div class="text-muted small">رقم قطعة الأرض</div><div class="fw-bold" dir="ltr" th:text="${landNumber} ?: '-'">-</div></div>
-
                     <div class="col-md-4"><div class="text-muted small">تاريخ الإنشاء</div><div class="fw-bold" th:text="${creationDate} ?: '-'">-</div></div>
                     <div class="col-md-4"><div class="text-muted small">تاريخ الانتهاء</div><div class="fw-bold" th:text="${endDate} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">السعر الإجمالي</div><div class="fw-bold" th:text="${totalPrice} ?: '-'">-</div></div>
-
-                    <div class="col-md-4"><div class="text-muted small">واجهة العقار</div><div class="fw-bold" th:text="${propertyFace} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">عدد الغرف</div><div class="fw-bold" th:text="${numberOfRooms} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">نوع الإعلان</div><div class="fw-bold" th:text="${advertisementType} ?: '-'">-</div></div>
-
-                    <div class="col-md-6"><div class="text-muted small">رقم رخصة التسويق العقاري</div><div class="fw-bold" dir="ltr" th:text="${brokerageAndMarketingLicenseNumber} ?: '-'">-</div></div>
-                    <div class="col-md-6"><div class="text-muted small">رقم رخصة الإعلان</div><div class="fw-bold" dir="ltr" th:text="${adLicenseNumber} ?: '-'">-</div></div>
-
-                    <div class="col-12" th:if="${locationDescriptionOnMOJDeed}">
-                        <div class="text-muted small">الوصف حسب صك وزارة العدل</div>
-                        <div th:text="${locationDescriptionOnMOJDeed}">-</div>
+                    <div class="col-md-4"><div class="text-muted small">رقم رخصة الإعلان</div><div class="fw-bold" dir="ltr" th:text="${adLicenseNumber} ?: '-'">-</div></div>
+                    <div class="col-md-6"><div class="text-muted small">رقم رخصة التسويق العقاري (فال)</div><div class="fw-bold" dir="ltr" th:text="${brokerageAndMarketingLicenseNumber} ?: '-'">-</div></div>
+                    <div class="col-md-6" th:if="${adLicenseUrl}">
+                        <div class="text-muted small">رابط رخصة الإعلان</div>
+                        <a th:href="${adLicenseUrl}" target="_blank" class="fw-bold">فتح الرابط <i class="bi bi-box-arrow-up-right"></i></a>
                     </div>
-                    <div class="col-12" th:if="${guaranteesAndTheirDuration}">
-                        <div class="text-muted small">الضمانات ومدتها</div>
-                        <div th:text="${guaranteesAndTheirDuration}">-</div>
-                    </div>
-                    <div class="col-12" th:if="${obligationsOnTheProperty}">
-                        <div class="text-muted small">الالتزامات على العقار</div>
-                        <div th:text="${obligationsOnTheProperty}">-</div>
-                    </div>
+                </div>
+            </div>
+
+            <!-- Free-text details -->
+            <div class="form-section" th:if="${locationDescriptionOnMOJDeed} or ${guaranteesAndTheirDuration} or ${obligationsOnTheProperty}">
+                <div class="form-section-title"><i class="bi bi-card-text"></i> تفاصيل إضافية</div>
+                <div class="mb-3" th:if="${locationDescriptionOnMOJDeed}">
+                    <div class="text-muted small mb-1">الوصف حسب صك وزارة العدل</div>
+                    <div th:text="${locationDescriptionOnMOJDeed}">-</div>
+                </div>
+                <div class="mb-3" th:if="${guaranteesAndTheirDuration}">
+                    <div class="text-muted small mb-1">الضمانات ومدتها</div>
+                    <div th:text="${guaranteesAndTheirDuration}">-</div>
+                </div>
+                <div th:if="${obligationsOnTheProperty}">
+                    <div class="text-muted small mb-1">الالتزامات على العقار</div>
+                    <div th:text="${obligationsOnTheProperty}">-</div>
                 </div>
             </div>
 
             <form th:action="@{/estates/confirm}" method="post">
                 <input type="hidden" name="zoneId" th:value="${zoneId}"/>
-                <input type="hidden" name="userId" th:value="${userId}"/>
                 <input type="hidden" name="licenseNumber" th:value="${licenseNumber}"/>
                 <input type="hidden" name="deedNumber" th:value="${deedNumber}"/>
                 <input type="hidden" name="advertiserName" th:value="${advertiserName}"/>

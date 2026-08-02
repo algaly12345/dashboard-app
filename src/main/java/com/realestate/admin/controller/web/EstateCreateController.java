@@ -2,8 +2,10 @@ package com.realestate.admin.controller.web;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.realestate.admin.entity.AppUser;
 import com.realestate.admin.entity.Category;
 import com.realestate.admin.entity.Estate;
+import com.realestate.admin.repository.AppUserRepository;
 import com.realestate.admin.repository.CategoryRepository;
 import com.realestate.admin.repository.EstateRepository;
 import com.realestate.admin.repository.ZoneRepository;
@@ -17,16 +19,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 /**
  * Admin-driven estate creation via the NHC registry lookup.
  *
  * Flow: /estates/new (form: license number, advertiser/national ID number,
  * ID type, zone) -> POST /estates/lookup calls NHC and, on success, renders
- * a PREVIEW (nothing saved yet) with every field NHC returned shown as
- * read-only text plus mirrored into hidden inputs -> POST /estates/confirm
- * takes those hidden inputs and actually creates the row. NHC is only ever
- * called once per attempt - confirm just persists what was already fetched.
+ * a PREVIEW (nothing saved yet) with every field NHC returned, plus a
+ * preview of whether the advertiser's phone matches an existing user ->
+ * POST /estates/confirm actually creates the estate AND finds-or-creates
+ * the AppUser by phone number (linking the estate to whichever user id
+ * results), so licensed advertisers end up as real accounts in `users`.
  */
 @Controller
 @RequiredArgsConstructor
@@ -36,6 +40,7 @@ public class EstateCreateController {
     private final EstateRepository estateRepository;
     private final ZoneRepository zoneRepository;
     private final CategoryRepository categoryRepository;
+    private final AppUserRepository appUserRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @GetMapping("/estates/new")
@@ -51,7 +56,6 @@ public class EstateCreateController {
                           @RequestParam String advertiserNumber,
                           @RequestParam String idType,
                           @RequestParam(required = false) String zoneId,
-                          @RequestParam(required = false) String userId,
                           Model model,
                           RedirectAttributes redirectAttributes) {
 
@@ -66,10 +70,7 @@ public class EstateCreateController {
 
         JsonNode ad = result.advertisement();
 
-        // Everything below is what NHC returned - shown for review, nothing
-        // touches the database yet.
         model.addAttribute("zoneId", zoneId);
-        model.addAttribute("userId", userId);
         model.addAttribute("licenseNumber", licenseNumber);
 
         model.addAttribute("deedNumber", text(ad, "deedNumber"));
@@ -99,7 +100,6 @@ public class EstateCreateController {
 
         // Same swap as the existing Laravel implementation - mainLandUseTypeName
         // gets propertyUsages[0], propertyUsages gets mainLandUseTypeName.
-        // Kept identical on purpose for behavior parity; flag if you want it fixed.
         String propertyUsagesFirst = ad.path("propertyUsages").isArray() && ad.path("propertyUsages").size() > 0
                 ? ad.path("propertyUsages").get(0).asText() : null;
         model.addAttribute("mainLandUseTypeName", propertyUsagesFirst);
@@ -107,6 +107,13 @@ public class EstateCreateController {
 
         String categoryName = text(ad, "propertyType");
         model.addAttribute("categoryName", categoryName);
+
+        // Preview whether this advertiser already has an account (matched by phone).
+        String phone = text(ad, "phoneNumber");
+        Optional<AppUser> existing = (phone != null && !phone.isBlank())
+                ? appUserRepository.findByPhone(phone) : Optional.empty();
+        model.addAttribute("existingUserFound", existing.isPresent());
+        model.addAttribute("existingUserName", existing.map(AppUser::getName).orElse(null));
 
         model.addAttribute("activePage", "estates");
         return "estate-preview";
@@ -116,18 +123,49 @@ public class EstateCreateController {
     public String confirm(@RequestParam java.util.Map<String, String> form,
                            RedirectAttributes redirectAttributes) {
 
+        Long zoneId = parseLongOrNull(form.get("zoneId"));
+        String phone = form.get("phoneNumber");
+        String advertiserName = form.get("advertiserName");
+        String falLicense = form.get("brokerageAndMarketingLicenseNumber");
+
+        // ---- Find-or-create the advertiser as a real user account, matched by phone ----
+        Long resolvedUserId = null;
+        if (phone != null && !phone.isBlank()) {
+            AppUser user = appUserRepository.findByPhone(phone).orElse(null);
+            if (user == null) {
+                user = new AppUser();
+                user.setId(appUserRepository.findMaxId() + 1);
+                user.setName(advertiserName != null ? advertiserName : phone);
+                user.setPhone(phone);
+                user.setIsActive(AppUser.Status.active);
+                user.setUserType("provider");
+                user.setZoneId(zoneId);
+                user.setFalLicenseNumber(falLicense);
+                user.setCreatedAt(LocalDateTime.now());
+                user.setUpdatedAt(LocalDateTime.now());
+                appUserRepository.save(user);
+            } else if (falLicense != null && !falLicense.isBlank()
+                    && (user.getFalLicenseNumber() == null || user.getFalLicenseNumber().isBlank())) {
+                // existing user, but their FAL license wasn't on file yet - fill it in
+                user.setFalLicenseNumber(falLicense);
+                user.setUpdatedAt(LocalDateTime.now());
+                appUserRepository.save(user);
+            }
+            resolvedUserId = user.getId();
+        }
+
         Estate estate = new Estate();
         estate.setStatus(Estate.Status.active);
-        estate.setZoneId(parseLongOrNull(form.get("zoneId")));
-        estate.setUserId(parseLongOrNull(form.get("userId")));
+        estate.setZoneId(zoneId);
+        estate.setUserId(resolvedUserId);
         estate.setImages("[]");
         estate.setCreatedAt(LocalDateTime.now());
         estate.setUpdatedAt(LocalDateTime.now());
 
         estate.setLicenseNumber(form.get("licenseNumber"));
         estate.setDeedNumber(form.get("deedNumber"));
-        estate.setAdvertiserName(form.get("advertiserName"));
-        estate.setPhoneNumber(form.get("phoneNumber"));
+        estate.setAdvertiserName(advertiserName);
+        estate.setPhoneNumber(phone);
         estate.setPropertyType(form.get("propertyType"));
         estate.setAdvertisementType(form.get("advertisementType"));
         estate.setPostalCode(parseIntOrNull(form.get("postalCode")));
@@ -147,7 +185,7 @@ public class EstateCreateController {
         estate.setLocationDescriptionOnMOJDeed(form.get("locationDescriptionOnMOJDeed"));
         estate.setGuaranteesAndTheirDuration(form.get("guaranteesAndTheirDuration"));
         estate.setObligationsOnTheProperty(form.get("obligationsOnTheProperty"));
-        estate.setBrokerageAndMarketingLicenseNumber(form.get("brokerageAndMarketingLicenseNumber"));
+        estate.setBrokerageAndMarketingLicenseNumber(falLicense);
         estate.setPropertyUtilities(form.get("propertyUtilities"));
         estate.setMainLandUseTypeName(form.get("mainLandUseTypeName"));
         estate.setPropertyUsages(form.get("propertyUsages"));
