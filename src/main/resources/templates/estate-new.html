@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head(${#messages.msg('estate.newTitle')})}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('estates')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, #{estate.newTitle})}"></div>
+
+        <div class="content">
+
+            <a th:href="@{/estates}" class="btn btn-outline-gold mb-3">
+                <i class="bi bi-arrow-right"></i> <span th:text="#{estate.backToList}">Back</span>
+            </a>
+
+            <div th:unless="${nhcConfigured}" class="alert alert-warning small mb-3">
+                لازم تضبط مفاتيح NHC أول من <a th:href="@{/settings}">الإعدادات</a> قبل ما تقدر تستخدم هذي الميزة.
+            </div>
+
+            <div th:if="${lookupError != null}" class="alert alert-danger small mb-3">
+                تعذّر جلب بيانات العقار (<span th:text="${lookupError}">error</span>) — تأكد من صحة رقم الرخصة والرقم الموحد.
+            </div>
+
+            <form th:action="@{/estates/lookup}" method="post">
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-search"></i> <span th:text="#{estate.newTitle}">Add property from NHC</span></div>
+                    <p class="text-muted small">أدخل بيانات الترخيص بس — باقي بيانات العقار تُجلب تلقائيًا من هيئة العقار.</p>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">رقم رخصة الإعلان</label>
+                            <input type="text" name="licenseNumber" th:value="${licenseNumber}" class="form-control" dir="ltr" required/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">الرقم الموحد / رقم الهوية</label>
+                            <input type="text" name="advertiserNumber" th:value="${advertiserNumber}" class="form-control" dir="ltr" required/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">نوع الهوية</label>
+                            <select name="idType" class="form-select" required>
+                                <option value="1">فرد</option>
+                                <option value="2">منشأة</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">المنطقة</label>
+                            <select name="zoneId" class="form-select">
+                                <option value="">اختر المنطقة</option>
+                                <option th:each="z : ${zones}" th:value="${z.id}" th:text="${z.nameAr}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">معرّف المستخدم (اختياري)</label>
+                            <input type="text" name="userId" class="form-control" dir="ltr" placeholder="user_id"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sticky-save-bar">
+                    <button type="submit" class="btn btn-gold" th:disabled="${not nhcConfigured}">
+                        <i class="bi bi-cloud-download"></i> جلب البيانات وإضافة العقار
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

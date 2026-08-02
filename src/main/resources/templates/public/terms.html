@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="${companyName} + ' — الشروط والأحكام'">الشروط والأحكام</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <style>
+        :root{
+            --ink:#0A1E3D; --ink-2:#102A52; --violet:#1B6FE0; --violet-light:#5B9EF5;
+            --canvas:#EAF0F8; --surface:#fff; --text:#14213D; --text-muted:#66738F; --border:#E1E8F5;
+        }
+        *{ box-sizing:border-box; }
+        body{ font-family:'Cairo',sans-serif; background:var(--canvas); color:var(--text); margin:0; line-height:1.9; }
+        .header{ background:linear-gradient(135deg,var(--ink),var(--ink-2)); color:#fff; padding:48px 20px; text-align:center; }
+        .header h1{ margin:0 0 8px; font-size:1.6rem; }
+        .header p{ margin:0; color:#AEB9D4; font-size:.9rem; }
+        .wrap{ max-width:820px; margin:-30px auto 60px; padding:0 20px; }
+        .card{ background:var(--surface); border:1px solid var(--border); border-radius:18px; box-shadow:0 20px 50px -30px rgba(10,30,61,.3); padding:36px 32px; }
+        .content{ white-space:pre-line; font-size:.95rem; }
+        .contact{ margin-top:30px; padding-top:20px; border-top:1px solid var(--border); font-size:.9rem; color:var(--text-muted); }
+        .empty{ text-align:center; color:var(--text-muted); padding:40px 0; }
+        .footer{ text-align:center; color:var(--text-muted); font-size:.8rem; padding:20px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>الشروط والأحكام</h1>
+        <p th:text="${companyName}">أبعاد</p>
+    </div>
+    <div class="wrap">
+        <div class="card">
+            <div class="content" th:if="${contentAr != null and not #strings.isEmpty(contentAr)}" th:utext="${contentAr}">المحتوى</div>
+            <div class="empty" th:if="${contentAr == null or #strings.isEmpty(contentAr)}">
+                لا يوجد محتوى منشور بعد. يمكن إضافته من لوحة التحكم — الإعدادات → المحتوى القانوني.
+            </div>
+            <div class="contact" th:if="${email != null and not #strings.isEmpty(email)}">
+                للتواصل: <span th:text="${email}">email</span>
+                <span th:if="${phone != null and not #strings.isEmpty(phone)}"> · <span th:text="${phone}" dir="ltr">phone</span></span>
+            </div>
+        </div>
+    </div>
+    <div class="footer">&copy; <span th:text="${#calendars.format(#calendars.createNow(),'yyyy')}">2026</span> <span th:text="${companyName}">أبعاد</span></div>
+</body>
+</html>
