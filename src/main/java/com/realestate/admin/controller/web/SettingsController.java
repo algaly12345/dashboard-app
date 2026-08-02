@@ -90,6 +90,13 @@ public class SettingsController {
         model.addAttribute("appMinVersionIos", settingsService.get("app_min_version_ios", "1.0"));
 
         model.addAttribute("activePage", "settings");
+
+
+        // ---- NHC (real estate authority) API credentials ----
+model.addAttribute("nhcClientId", settingsService.get("nhc_client_id", ""));
+model.addAttribute("nhcHasSecret", !settingsService.get("nhc_client_secret", "").isBlank());
+
+
         return "settings";
     }
 
@@ -154,6 +161,13 @@ public class SettingsController {
 
         settingsService.set("app_min_version_android", form.get("appMinVersionAndroid"));
         settingsService.set("app_min_version_ios", form.get("appMinVersionIos"));
+
+
+        // ---- NHC credentials ----
+settingsService.set("nhc_client_id", form.get("nhcClientId"));
+if (form.get("nhcClientSecret") != null && !form.get("nhcClientSecret").isBlank()) {
+    settingsService.set("nhc_client_secret", form.get("nhcClientSecret"));
+}
 
         redirectAttributes.addFlashAttribute("saved", true);
         return "redirect:/settings";
