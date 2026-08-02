@@ -19,6 +19,12 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
      *  the data) - take the first match rather than requiring one result. */
     Optional<AppUser> findFirstByPhoneOrderByIdAsc(String phone);
 
+
+    Optional<AppUser> findByPhone(String phone);
+
+@org.springframework.data.jpa.repository.Query("select coalesce(max(u.id), 0) from AppUser u")
+Long findMaxId();
+
     @Query("""
            select u from AppUser u
            where (:q is null or lower(u.name) like lower(concat('%', :q, '%'))
