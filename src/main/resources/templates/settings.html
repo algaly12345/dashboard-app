@@ -305,6 +305,33 @@
                             </div>
                         </div>
 
+
+
+                        <!-- NHC (real estate authority) credentials -->
+<div class="form-section">
+    <div class="form-section-title"><i class="bi bi-bank"></i> <span th:text="#{settings.section.nhc}">NHC Integration</span></div>
+
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <strong class="small" th:text="#{settings.nhcCredentials}">Credentials</strong>
+        <span th:if="${nhcHasSecret}" class="badge-pill badge-active"><i class="bi bi-check-circle"></i> <span th:text="#{settings.r2Configured}">Configured</span></span>
+        <span th:unless="${nhcHasSecret}" class="badge-pill badge-disactive"><i class="bi bi-exclamation-triangle"></i> <span th:text="#{settings.r2NotConfigured}">Not configured</span></span>
+    </div>
+    <p class="text-muted small" th:text="#{settings.nhcHint}">Hint</p>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label" th:text="#{settings.nhcClientId}">Client ID</label>
+            <input type="text" name="nhcClientId" th:value="${nhcClientId}" class="form-control" dir="ltr" autocomplete="off"/>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" th:text="#{settings.nhcClientSecret}">Client Secret</label>
+            <input type="password" name="nhcClientSecret" class="form-control" dir="ltr" autocomplete="new-password"
+                   th:placeholder="${nhcHasSecret} ? '••••••••••••••••' : ''"/>
+            <div class="form-text" th:text="#{settings.r2SecretHint}">Leave blank to keep current</div>
+        </div>
+    </div>
+</div>
+
                     </div>
                 </div>
 
