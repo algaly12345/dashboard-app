@@ -132,19 +132,20 @@ public class EstateCreateController {
         Long resolvedUserId = null;
         if (phone != null && !phone.isBlank()) {
             AppUser user = appUserRepository.findByPhone(phone).orElse(null);
-            if (user == null) {
-                user = new AppUser();
-                user.setId(appUserRepository.findMaxId() + 1);
-                user.setName(advertiserName != null ? advertiserName : phone);
-                user.setPhone(phone);
-                user.setIsActive(AppUser.Status.active);
-                user.setUserType("provider");
-                user.setZoneId(zoneId);
-                user.setFalLicenseNumber(falLicense);
-                user.setCreatedAt(LocalDateTime.now());
-                user.setUpdatedAt(LocalDateTime.now());
-                appUserRepository.save(user);
-            } else if (falLicense != null && !falLicense.isBlank()
+         if (user == null) {
+    user = new AppUser();
+    user.setId(appUserRepository.findMaxId() + 1);
+    user.setName(advertiserName != null ? advertiserName : phone);
+    user.setPhone(phone);
+    user.setIsActive(AppUser.Status.active);
+    user.setUserType("provider");
+    user.setZoneId(zoneId);
+    user.setFalLicenseNumber(falLicense);
+    user.setWalletBalance(java.math.BigDecimal.ZERO);
+    user.setCreatedAt(LocalDateTime.now());
+    user.setUpdatedAt(LocalDateTime.now());
+    appUserRepository.save(user);
+} else if (falLicense != null && !falLicense.isBlank()
                     && (user.getFalLicenseNumber() == null || user.getFalLicenseNumber().isBlank())) {
                 // existing user, but their FAL license wasn't on file yet - fill it in
                 user.setFalLicenseNumber(falLicense);
