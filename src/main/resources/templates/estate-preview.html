@@ -137,7 +137,6 @@
             </div>
 
             <form th:action="@{/estates/confirm}" method="post">
-                <input type="hidden" name="zoneId" th:value="${zoneId}"/>
                 <input type="hidden" name="advertiserNumber" th:value="${advertiserNumber}"/>
                 <input type="hidden" name="idType" th:value="${idType}"/>
                 <input type="hidden" name="licenseNumber" th:value="${licenseNumber}"/>
@@ -168,6 +167,22 @@
                 <input type="hidden" name="mainLandUseTypeName" th:value="${mainLandUseTypeName}"/>
                 <input type="hidden" name="propertyUsages" th:value="${propertyUsages}"/>
                 <input type="hidden" name="categoryName" th:value="${categoryName}"/>
+
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-geo-alt"></i> اختر المنطقة</div>
+                    <p class="text-muted small" th:if="${suggestedZoneId == null}">
+                        NHC ما يرجّع "المنطقة" بمفهوم النظام (بس مدينة/حي إداري) — اختر المنطقة المناسبة يدويًا.
+                    </p>
+                    <div class="zone-suggest-hint" th:if="${suggestedZoneId != null}">
+                        <i class="bi bi-magic"></i>
+                        اقترحنا هذي المنطقة بناءً على مدينة العقار (<strong th:text="${city}">-</strong>) — تأكد منها أو غيّرها لو لزم
+                    </div>
+                    <select name="zoneId" class="form-select form-select-lg" required>
+                        <option value="">اختر المنطقة</option>
+                        <option th:each="z : ${zones}" th:value="${z.id}" th:text="${z.nameAr}"
+                                th:selected="${suggestedZoneId != null and z.id == suggestedZoneId}"></option>
+                    </select>
+                </div>
 
                 <div class="sticky-save-bar">
                     <button type="submit" class="btn btn-gold">

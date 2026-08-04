@@ -62,7 +62,6 @@ public class EstateCreateController {
     public String lookup(@RequestParam String licenseNumber,
                           @RequestParam String advertiserNumber,
                           @RequestParam String idType,
-                          @RequestParam(required = false) String zoneId,
                           Model model,
                           RedirectAttributes redirectAttributes) {
 
@@ -79,10 +78,21 @@ public class EstateCreateController {
         JsonNode ad = result.advertisement();
         model.addAttribute("rawJson", result.rawResponse());
 
-        model.addAttribute("zoneId", zoneId);
         model.addAttribute("licenseNumber", licenseNumber);
         model.addAttribute("advertiserNumber", advertiserNumber);
         model.addAttribute("idType", idType);
+
+        // ---- Zones - not returned by NHC (it's an internal platform concept,
+        //      not an administrative region), but we suggest the closest match
+        //      by city name so the admin isn't picking from scratch. ----
+        java.util.List<com.realestate.admin.entity.Zone> allZones = zoneRepository.findAll();
+        String cityText = text(ad, "location", "city");
+        Long suggestedZoneId = allZones.stream()
+                .filter(z -> cityText != null && z.getNameAr() != null && z.getNameAr().contains(cityText))
+                .map(com.realestate.admin.entity.Zone::getId)
+                .findFirst().orElse(null);
+        model.addAttribute("zones", allZones);
+        model.addAttribute("suggestedZoneId", suggestedZoneId);
 
         // ---- People / identity ----
         model.addAttribute("advertiserName", text(ad, "advertiserName"));
