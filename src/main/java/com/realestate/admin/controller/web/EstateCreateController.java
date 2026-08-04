@@ -219,6 +219,7 @@ public class EstateCreateController {
         }
 
         Estate estate = new Estate();
+        estate.setId(estateRepository.findMaxId() + 1);
         estate.setStatus(Estate.Status.active);
         estate.setZoneId(zoneId);
         estate.setUserId(resolvedUserId);

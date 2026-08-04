@@ -12,6 +12,9 @@ import java.util.List;
 
 public interface EstateRepository extends JpaRepository<Estate, Long> {
 
+@org.springframework.data.jpa.repository.Query("select coalesce(max(e.id), 0) from Estate e")
+Long findMaxId();
+
     long countByStatus(Estate.Status status);
 
     long countByAdvertisementType(String advertisementType);
