@@ -231,6 +231,7 @@ public class EstateCreateController {
         Estate estate = new Estate();
         estate.setId(estateRepository.findMaxId() + 1);
         estate.setStatus(Estate.Status.active);
+        estate.setView(0);
         estate.setZoneId(zoneId);
         estate.setUserId(resolvedUserId);
         estate.setImages("[]");
