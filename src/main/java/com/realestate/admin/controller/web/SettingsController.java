@@ -24,79 +24,67 @@ public class SettingsController {
 
     @GetMapping("/settings")
     public String settings(Model model) {
-        // ---- Company info ----
         model.addAttribute("companyName", settingsService.get("company_name", ""));
         model.addAttribute("companyPhone", settingsService.get("company_phone", ""));
         model.addAttribute("companyEmail", settingsService.get("company_email", ""));
         model.addAttribute("address", settingsService.get("address", ""));
         model.addAttribute("copyrightText", settingsService.get("company_copyright_text", ""));
 
-        // ---- Brand colors ----
         model.addAttribute("colors", readColors());
 
-        // ---- App store links ----
         model.addAttribute("googleStore", readStoreLink("download_app_google_stroe"));
         model.addAttribute("appleStore", readStoreLink("download_app_apple_stroe"));
 
-        // ---- Push notifications (FCM legacy settings) ----
         model.addAttribute("fcmTopic", settingsService.get("fcm_topic", ""));
         model.addAttribute("fcmProjectId", settingsService.get("fcm_project_id", ""));
         model.addAttribute("pushNotificationKey", settingsService.get("push_notification_key", ""));
 
-        // ---- Registration & verification toggles ----
         model.addAttribute("agentRegistration", "1".equals(settingsService.get("agent_registration", "0")));
         model.addAttribute("sellerRegistration", "1".equals(settingsService.get("seller_registration", "0")));
         model.addAttribute("phoneVerification", "1".equals(settingsService.get("phone_verification", "0")));
         model.addAttribute("emailVerification", "1".equals(settingsService.get("email_verification", "0")));
 
-        // ---- Map & regional ----
         model.addAttribute("mapApiKey", settingsService.get("map_api_key", "AIzaSyAwM15LYUky7qqVuXdBQc9zavA39y487jQ"));
         model.addAttribute("countryCode", settingsService.get("country_code", ""));
         model.addAttribute("paginationLimit", settingsService.get("pagination_limit", "10"));
         model.addAttribute("timezone", settingsService.get("timezone", "UTC"));
 
-        // ---- Media storage (Cloudflare R2) ----
         model.addAttribute("r2PublicUrl", settingsService.get("r2_public_url", ""));
         model.addAttribute("r2AccountId", settingsService.get("r2_account_id", "c33f368b51e236e8892b759dab9c1549"));
         model.addAttribute("r2Bucket", settingsService.get("r2_bucket", "abaad-media-assets"));
         model.addAttribute("r2AccessKeyId", settingsService.get("r2_access_key_id", ""));
         model.addAttribute("r2HasSecret", !settingsService.get("r2_secret_access_key", "").isBlank());
 
-        // ---- Legal / content pages ----
         model.addAttribute("aboutUs", settingsService.get("about_us", ""));
         model.addAttribute("termsCondition", settingsService.get("terms_condition", ""));
         model.addAttribute("privacyPolicy", settingsService.get("privacy_policy", ""));
-        // "_web" variants - the Laravel front-end reads these separately from the app-facing ones above
         model.addAttribute("aboutUsWeb", settingsService.get("about_us_web", ""));
         model.addAttribute("aboutUsWebAr", settingsService.get("about_us_web_ar", ""));
         model.addAttribute("privacyPolicyWeb", settingsService.get("privacy_policy_web", ""));
         model.addAttribute("privacyPolicyWebAr", settingsService.get("privacy_policy_web_ar", ""));
         model.addAttribute("termsAndConditions", settingsService.get("terms_and_conditions", ""));
 
-        // ---- Company logos (filenames) ----
         model.addAttribute("webLogo", settingsService.get("company_web_logo", ""));
         model.addAttribute("mobLogo", settingsService.get("company_mobile_logo", ""));
         model.addAttribute("favIcon", settingsService.get("company_fav_icon", ""));
         model.addAttribute("footerLogo", settingsService.get("company_footer_logo", ""));
 
-        // ---- Extra feature toggles used by the Laravel front-end ----
         model.addAttribute("walletStatus", "1".equals(settingsService.get("wallet_status", "0")));
         model.addAttribute("loyaltyPointStatus", "1".equals(settingsService.get("loyalty_point_status", "0")));
         model.addAttribute("guestCheckoutStatus", "1".equals(settingsService.get("guest_checkout", "0")));
-        model.addAttribute("maintenanceMode", "1".equals(settingsService.get("maintenance_mode", "0")));
 
-        // ---- Mobile app version gate ----
+        // maintenance_mode uses literal "true"/"false" strings (matches json_decode()
+        // on the Laravel side turning them into real booleans) - NOT "1"/"0" like the
+        // other toggles above.
+        model.addAttribute("maintenanceMode", "true".equals(settingsService.get("maintenance_mode", "false")));
+
         model.addAttribute("appMinVersionAndroid", settingsService.get("app_min_version_android", "1.0"));
         model.addAttribute("appMinVersionIos", settingsService.get("app_min_version_ios", "1.0"));
 
+        model.addAttribute("nhcClientId", settingsService.get("nhc_client_id", ""));
+        model.addAttribute("nhcHasSecret", !settingsService.get("nhc_client_secret", "").isBlank());
+
         model.addAttribute("activePage", "settings");
-
-
-        // ---- NHC (real estate authority) API credentials ----
-model.addAttribute("nhcClientId", settingsService.get("nhc_client_id", ""));
-model.addAttribute("nhcHasSecret", !settingsService.get("nhc_client_secret", "").isBlank());
-
-
         return "settings";
     }
 
@@ -157,17 +145,17 @@ model.addAttribute("nhcHasSecret", !settingsService.get("nhc_client_secret", "")
         settingsService.set("wallet_status", form.containsKey("walletStatus") ? "1" : "0");
         settingsService.set("loyalty_point_status", form.containsKey("loyaltyPointStatus") ? "1" : "0");
         settingsService.set("guest_checkout", form.containsKey("guestCheckoutStatus") ? "1" : "0");
-        settingsService.set("maintenance_mode", form.containsKey("maintenanceMode") ? "1" : "0");
+
+        // maintenance_mode: literal "true"/"false" strings - see note in settings() above
+        settingsService.set("maintenance_mode", form.containsKey("maintenanceMode") ? "true" : "false");
 
         settingsService.set("app_min_version_android", form.get("appMinVersionAndroid"));
         settingsService.set("app_min_version_ios", form.get("appMinVersionIos"));
 
-
-        // ---- NHC credentials ----
-settingsService.set("nhc_client_id", form.get("nhcClientId"));
-if (form.get("nhcClientSecret") != null && !form.get("nhcClientSecret").isBlank()) {
-    settingsService.set("nhc_client_secret", form.get("nhcClientSecret"));
-}
+        settingsService.set("nhc_client_id", form.get("nhcClientId"));
+        if (form.get("nhcClientSecret") != null && !form.get("nhcClientSecret").isBlank()) {
+            settingsService.set("nhc_client_secret", form.get("nhcClientSecret"));
+        }
 
         redirectAttributes.addFlashAttribute("saved", true);
         return "redirect:/settings";

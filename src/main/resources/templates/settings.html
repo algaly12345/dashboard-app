@@ -12,9 +12,34 @@
 
         <div class="content">
 
-            <div th:if="${saved}" class="alert alert-success py-2 px-3 mb-3 small" th:text="#{settings.saved}">Saved</div>
+            <div th:if="${saved}" class="alert alert-success py-2 px-3 mb-3 small">
+                <i class="bi bi-check-circle"></i> <span th:text="#{settings.saved}">Saved</span>
+            </div>
 
             <form th:action="@{/settings/save}" method="post">
+
+                <!-- ================= Maintenance mode - prominent banner ================= -->
+                <div class="card mb-4" th:classappend="${maintenanceMode} ? 'maint-banner-on' : 'maint-banner-off'"
+                     style="border-radius:16px; padding:22px 26px; border:2px solid;">
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <div class="maint-icon">
+                            <i class="bi" th:classappend="${maintenanceMode} ? 'bi-cone-striped' : 'bi-check-circle'"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold fs-6" th:text="#{settings.maintenanceMode}">Maintenance mode</div>
+                            <div class="text-muted small" th:text="#{settings.maintenanceModeHint}">Hint</div>
+                        </div>
+                        <span th:if="${maintenanceMode}" class="badge-pill" style="background:#FDE4E1; color:#B3261E;">
+                            <i class="bi bi-exclamation-triangle"></i> <span th:text="#{settings.maintenanceActive}">Active now</span>
+                        </span>
+                        <span th:unless="${maintenanceMode}" class="badge-pill badge-active">
+                            <i class="bi bi-check-circle"></i> <span th:text="#{settings.maintenanceInactive}">App is live</span>
+                        </span>
+                        <div class="form-check form-switch fs-4 mb-0">
+                            <input type="checkbox" name="maintenanceMode" th:checked="${maintenanceMode}" class="form-check-input" id="maintMode"/>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="row g-3">
                     <div class="col-lg-6">
@@ -70,25 +95,23 @@
                         <!-- App store links -->
                         <div class="form-section">
                             <div class="form-section-title"><i class="bi bi-shop-window"></i> <span th:text="#{settings.section.stores}">Stores</span></div>
-                            <div class="row g-3 align-items-end">
-                                <div class="col-12"><strong class="small" th:text="#{settings.googleStore}">Google Play</strong></div>
-                                <div class="col-md-8">
-                                    <label class="form-label" th:text="#{settings.storeLink}">URL</label>
-                                    <input type="text" name="googleStoreLink" th:value="${googleStore.link}" class="form-control" dir="ltr"/>
+                            <div class="store-row mb-3">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <strong class="small"><i class="bi bi-google-play"></i> <span th:text="#{settings.googleStore}">Google Play</span></strong>
+                                    <div class="form-check form-switch mb-0">
+                                        <input type="checkbox" name="googleStoreEnabled" th:checked="${googleStore.enabled}" class="form-check-input" id="googleEnabled"/>
+                                    </div>
                                 </div>
-                                <div class="col-md-4 form-check pb-2">
-                                    <input type="checkbox" name="googleStoreEnabled" th:checked="${googleStore.enabled}" class="form-check-input" id="googleEnabled"/>
-                                    <label class="form-check-label small" for="googleEnabled" th:text="#{settings.storeEnabled}">Enabled</label>
+                                <input type="text" name="googleStoreLink" th:value="${googleStore.link}" class="form-control" dir="ltr" placeholder="https://play.google.com/..."/>
+                            </div>
+                            <div class="store-row">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <strong class="small"><i class="bi bi-apple"></i> <span th:text="#{settings.appleStore}">App Store</span></strong>
+                                    <div class="form-check form-switch mb-0">
+                                        <input type="checkbox" name="appleStoreEnabled" th:checked="${appleStore.enabled}" class="form-check-input" id="appleEnabled"/>
+                                    </div>
                                 </div>
-                                <div class="col-12"><hr/><strong class="small" th:text="#{settings.appleStore}">App Store</strong></div>
-                                <div class="col-md-8">
-                                    <label class="form-label" th:text="#{settings.storeLink}">URL</label>
-                                    <input type="text" name="appleStoreLink" th:value="${appleStore.link}" class="form-control" dir="ltr"/>
-                                </div>
-                                <div class="col-md-4 form-check pb-2">
-                                    <input type="checkbox" name="appleStoreEnabled" th:checked="${appleStore.enabled}" class="form-check-input" id="appleEnabled"/>
-                                    <label class="form-check-label small" for="appleEnabled" th:text="#{settings.storeEnabled}">Enabled</label>
-                                </div>
+                                <input type="text" name="appleStoreLink" th:value="${appleStore.link}" class="form-control" dir="ltr" placeholder="https://apps.apple.com/..."/>
                             </div>
                         </div>
 
@@ -113,53 +136,72 @@
                             </div>
                         </div>
 
+                        <!-- NHC (real estate authority) credentials -->
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="bi bi-bank"></i> <span th:text="#{settings.section.nhc}">NHC Integration</span></div>
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <strong class="small" th:text="#{settings.nhcCredentials}">Credentials</strong>
+                                <span th:if="${nhcHasSecret}" class="badge-pill badge-active"><i class="bi bi-check-circle"></i> <span th:text="#{settings.r2Configured}">Configured</span></span>
+                                <span th:unless="${nhcHasSecret}" class="badge-pill badge-disactive"><i class="bi bi-exclamation-triangle"></i> <span th:text="#{settings.r2NotConfigured}">Not configured</span></span>
+                            </div>
+                            <p class="text-muted small" th:text="#{settings.nhcHint}">Hint</p>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{settings.nhcClientId}">Client ID</label>
+                                    <input type="text" name="nhcClientId" th:value="${nhcClientId}" class="form-control" dir="ltr" autocomplete="off"/>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label" th:text="#{settings.nhcClientSecret}">Client Secret</label>
+                                    <input type="password" name="nhcClientSecret" class="form-control" dir="ltr" autocomplete="new-password"
+                                           th:placeholder="${nhcHasSecret} ? '••••••••••••••••' : ''"/>
+                                    <div class="form-text" th:text="#{settings.r2SecretHint}">Leave blank to keep current</div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
 
                     <div class="col-lg-6">
 
-                        <!-- Registration -->
+                        <!-- Registration & feature toggles -->
                         <div class="form-section">
                             <div class="form-section-title"><i class="bi bi-person-check"></i> <span th:text="#{settings.section.registration}">Registration</span></div>
-                            <div class="form-check form-switch mb-2">
-                                <input type="checkbox" name="agentRegistration" th:checked="${agentRegistration}" class="form-check-input" id="agentReg"/>
-                                <label class="form-check-label small" for="agentReg" th:text="#{settings.agentRegistration}">Agent</label>
+
+                            <div class="toggle-grid">
+                                <label class="toggle-row">
+                                    <span><i class="bi bi-person-badge"></i> <span th:text="#{settings.agentRegistration}">Agent</span></span>
+                                    <input type="checkbox" name="agentRegistration" th:checked="${agentRegistration}" class="form-check-input"/>
+                                </label>
+                                <label class="toggle-row">
+                                    <span><i class="bi bi-shop"></i> <span th:text="#{settings.sellerRegistration}">Seller</span></span>
+                                    <input type="checkbox" name="sellerRegistration" th:checked="${sellerRegistration}" class="form-check-input"/>
+                                </label>
+                                <label class="toggle-row">
+                                    <span><i class="bi bi-phone"></i> <span th:text="#{settings.phoneVerification}">Phone</span></span>
+                                    <input type="checkbox" name="phoneVerification" th:checked="${phoneVerification}" class="form-check-input"/>
+                                </label>
+                                <label class="toggle-row">
+                                    <span><i class="bi bi-envelope-check"></i> <span th:text="#{settings.emailVerification}">Email</span></span>
+                                    <input type="checkbox" name="emailVerification" th:checked="${emailVerification}" class="form-check-input"/>
+                                </label>
+                                <label class="toggle-row">
+                                    <span><i class="bi bi-wallet2"></i> <span th:text="#{settings.walletStatus}">Wallet</span></span>
+                                    <input type="checkbox" name="walletStatus" th:checked="${walletStatus}" class="form-check-input"/>
+                                </label>
+                                <label class="toggle-row">
+                                    <span><i class="bi bi-star"></i> <span th:text="#{settings.loyaltyPointStatus}">Loyalty points</span></span>
+                                    <input type="checkbox" name="loyaltyPointStatus" th:checked="${loyaltyPointStatus}" class="form-check-input"/>
+                                </label>
+                                <label class="toggle-row">
+                                    <span><i class="bi bi-bag-check"></i> <span th:text="#{settings.guestCheckoutStatus}">Guest checkout</span></span>
+                                    <input type="checkbox" name="guestCheckoutStatus" th:checked="${guestCheckoutStatus}" class="form-check-input"/>
+                                </label>
                             </div>
-                            <div class="form-check form-switch mb-2">
-                                <input type="checkbox" name="sellerRegistration" th:checked="${sellerRegistration}" class="form-check-input" id="sellerReg"/>
-                                <label class="form-check-label small" for="sellerReg" th:text="#{settings.sellerRegistration}">Seller</label>
-                            </div>
-                            <div class="form-check form-switch mb-2">
-                                <input type="checkbox" name="phoneVerification" th:checked="${phoneVerification}" class="form-check-input" id="phoneVer"/>
-                                <label class="form-check-label small" for="phoneVer" th:text="#{settings.phoneVerification}">Phone</label>
-                            </div>
-                            <div class="form-check form-switch mb-2">
-                                <input type="checkbox" name="emailVerification" th:checked="${emailVerification}" class="form-check-input" id="emailVer"/>
-                                <label class="form-check-label small" for="emailVer" th:text="#{settings.emailVerification}">Email</label>
-                            </div>
-                            <hr/>
-                            <div class="form-check form-switch mb-2">
-                                <input type="checkbox" name="walletStatus" th:checked="${walletStatus}" class="form-check-input" id="walletStat"/>
-                                <label class="form-check-label small" for="walletStat" th:text="#{settings.walletStatus}">Wallet</label>
-                            </div>
-                            <div class="form-check form-switch mb-2">
-                                <input type="checkbox" name="loyaltyPointStatus" th:checked="${loyaltyPointStatus}" class="form-check-input" id="loyaltyStat"/>
-                                <label class="form-check-label small" for="loyaltyStat" th:text="#{settings.loyaltyPointStatus}">Loyalty points</label>
-                            </div>
-                            <div class="form-check form-switch">
-                                <input type="checkbox" name="guestCheckoutStatus" th:checked="${guestCheckoutStatus}" class="form-check-input" id="guestStat"/>
-                                <label class="form-check-label small" for="guestStat" th:text="#{settings.guestCheckoutStatus}">Guest checkout</label>
-                            </div>
-                            <hr/>
-                            <div class="form-check form-switch">
-                                <input type="checkbox" name="maintenanceMode" th:checked="${maintenanceMode}" class="form-check-input" id="maintMode"/>
-                                <label class="form-check-label small" for="maintMode" th:text="#{settings.maintenanceMode}">Maintenance mode</label>
-                            </div>
-                            <div class="form-text" th:text="#{settings.maintenanceModeHint}">Hint</div>
                         </div>
 
                         <!-- App version gate -->
                         <div class="form-section">
-                            <div class="form-section-title"><i class="bi bi-phone"></i> <span th:text="#{settings.section.appVersion}">App version</span></div>
+                            <div class="form-section-title"><i class="bi bi-phone-vibrate"></i> <span th:text="#{settings.section.appVersion}">App version</span></div>
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label class="form-label" th:text="#{settings.appMinVersionAndroid}">Min Android version</label>
@@ -304,33 +346,6 @@
                                 </div>
                             </div>
                         </div>
-
-
-
-                        <!-- NHC (real estate authority) credentials -->
-<div class="form-section">
-    <div class="form-section-title"><i class="bi bi-bank"></i> <span th:text="#{settings.section.nhc}">NHC Integration</span></div>
-
-    <div class="d-flex align-items-center justify-content-between mb-2">
-        <strong class="small" th:text="#{settings.nhcCredentials}">Credentials</strong>
-        <span th:if="${nhcHasSecret}" class="badge-pill badge-active"><i class="bi bi-check-circle"></i> <span th:text="#{settings.r2Configured}">Configured</span></span>
-        <span th:unless="${nhcHasSecret}" class="badge-pill badge-disactive"><i class="bi bi-exclamation-triangle"></i> <span th:text="#{settings.r2NotConfigured}">Not configured</span></span>
-    </div>
-    <p class="text-muted small" th:text="#{settings.nhcHint}">Hint</p>
-
-    <div class="row g-3">
-        <div class="col-md-6">
-            <label class="form-label" th:text="#{settings.nhcClientId}">Client ID</label>
-            <input type="text" name="nhcClientId" th:value="${nhcClientId}" class="form-control" dir="ltr" autocomplete="off"/>
-        </div>
-        <div class="col-md-6">
-            <label class="form-label" th:text="#{settings.nhcClientSecret}">Client Secret</label>
-            <input type="password" name="nhcClientSecret" class="form-control" dir="ltr" autocomplete="new-password"
-                   th:placeholder="${nhcHasSecret} ? '••••••••••••••••' : ''"/>
-            <div class="form-text" th:text="#{settings.r2SecretHint}">Leave blank to keep current</div>
-        </div>
-    </div>
-</div>
 
                     </div>
                 </div>
