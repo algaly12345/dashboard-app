@@ -237,7 +237,6 @@ public class EstateCreateController {
         estate.setImages("[]");
         estate.setCreatedAt(LocalDateTime.now());
         estate.setUpdatedAt(LocalDateTime.now());
-
         estate.setLicenseNumber(form.get("licenseNumber"));
         estate.setDeedNumber(form.get("deedNumber"));
         estate.setAdvertiserName(advertiserName);
