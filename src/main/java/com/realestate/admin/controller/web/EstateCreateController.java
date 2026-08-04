@@ -250,7 +250,10 @@ public class EstateCreateController {
         estate.setLongitude(form.get("longitude"));
         estate.setCreationDate(form.get("creationDate"));
         estate.setEndDate(form.get("endDate"));
-        estate.setTotalPrice(form.get("landTotalPrice"));
+        String priceValue = form.get("propertyPrice");
+if (priceValue == null || priceValue.isBlank()) priceValue = form.get("landTotalPrice");
+if (priceValue == null || priceValue.isBlank()) priceValue = "0";
+estate.setPrice(priceValue);
         estate.setPropertyFace(form.get("propertyFace"));
         estate.setAdLicenseNumber(form.get("adLicenseNumber"));
         estate.setLandNumber(form.get("landNumber"));

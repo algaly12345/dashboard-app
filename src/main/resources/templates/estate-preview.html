@@ -137,6 +137,7 @@
             </div>
 
             <form th:action="@{/estates/confirm}" method="post">
+                <input type="hidden" name="propertyPrice" th:value="${propertyPrice}"/>
                 <input type="hidden" name="advertiserNumber" th:value="${advertiserNumber}"/>
                 <input type="hidden" name="idType" th:value="${idType}"/>
                 <input type="hidden" name="licenseNumber" th:value="${licenseNumber}"/>
