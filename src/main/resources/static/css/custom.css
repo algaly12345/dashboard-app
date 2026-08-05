@@ -680,3 +680,45 @@ a.report-estate-chip:hover{ border-color: var(--violet); background:#F5F9FF; }
   color:var(--violet); border-top:1px solid var(--border); background: var(--canvas);
 }
 .nav-dropdown-footer:hover{ color: var(--violet-2); }
+
+
+
+
+/* ---------- NHC wizard ---------- */
+.nhc-wizard{ max-width:560px; margin:0 auto; }
+.nhc-steps{ display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:24px; }
+.nhc-step{ display:flex; flex-direction:column; align-items:center; gap:6px; opacity:.4; }
+.nhc-step.active{ opacity:1; }
+.nhc-step-num{
+  width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  background:var(--canvas); color:var(--text-muted); font-weight:800; font-size:.85rem;
+  border:2px solid var(--border);
+}
+.nhc-step.active .nhc-step-num{
+  background: linear-gradient(135deg, var(--violet-light), var(--violet));
+  color:#fff; border-color:transparent; box-shadow: var(--glow);
+}
+.nhc-step span{ font-size:.72rem; font-weight:700; color:var(--text-muted); white-space:nowrap; }
+.nhc-step.active span{ color:var(--violet); }
+.nhc-step-line{ width:40px; height:2px; background:var(--border); margin-top:-20px; }
+.nhc-hero{
+  display:flex; align-items:center; gap:16px;
+  background: linear-gradient(135deg, var(--canvas), #fff);
+  border:1px solid var(--border); border-radius:16px; padding:18px 22px;
+}
+.nhc-hero-icon{
+  width:52px; height:52px; border-radius:14px; flex-shrink:0;
+  background: linear-gradient(135deg, var(--violet-light), var(--violet));
+  color:#fff; display:flex; align-items:center; justify-content:center; font-size:1.4rem;
+  box-shadow: var(--glow);
+}
+.id-type-toggle{ display:flex; gap:10px; }
+.id-type-option{
+  flex:1; display:flex; align-items:center; justify-content:center; gap:8px;
+  padding:14px; border:2px solid var(--border); border-radius:12px; cursor:pointer;
+  font-weight:700; color:var(--text-muted); transition: all .15s ease;
+}
+.id-type-option input{ display:none; }
+.id-type-option:has(input:checked){
+  border-color:var(--violet); background:#F0EEFA; color:var(--violet);
+}

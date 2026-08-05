@@ -17,49 +17,80 @@
             </a>
 
             <div th:unless="${nhcConfigured}" class="alert alert-warning small mb-3">
-                لازم تضبط مفاتيح NHC أول من <a th:href="@{/settings}">الإعدادات</a> قبل ما تقدر تستخدم هذي الميزة.
+                <i class="bi bi-exclamation-triangle"></i> لازم تضبط مفاتيح NHC أول من <a th:href="@{/settings}">الإعدادات</a> قبل ما تقدر تستخدم هذي الميزة.
             </div>
 
             <div th:if="${lookupError != null}" class="alert alert-danger small mb-3">
-                تعذّر جلب بيانات العقار (<span th:text="${lookupError}">error</span>) — تأكد من صحة رقم الرخصة والرقم الموحد.
+                <i class="bi bi-x-circle"></i> تعذّر جلب بيانات العقار (<span th:text="${lookupError}">error</span>) — تأكد من صحة رقم الرخصة والرقم الموحد.
             </div>
 
-            <form th:action="@{/estates/lookup}" method="post">
-                <div class="form-section">
-                    <div class="form-section-title"><i class="bi bi-search"></i> <span th:text="#{estate.newTitle}">Add property from NHC</span></div>
-                    <p class="text-muted small">أدخل بيانات الترخيص بس — باقي بيانات العقار تُجلب تلقائيًا من هيئة العقار.</p>
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label">رقم رخصة الإعلان</label>
-                            <input type="text" name="licenseNumber" th:value="${licenseNumber}" class="form-control" dir="ltr" required/>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">الرقم الموحد / رقم الهوية</label>
-                            <input type="text" name="advertiserNumber" th:value="${advertiserNumber}" class="form-control" dir="ltr" required/>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">نوع الهوية</label>
-                            <select name="idType" class="form-select" required>
-                                <option value="1">فرد</option>
-                                <option value="2">منشأة</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">المنطقة</label>
-                            <select name="zoneId" class="form-select">
-                                <option value="">اختر المنطقة</option>
-                                <option th:each="z : ${zones}" th:value="${z.id}" th:text="${z.nameAr}"></option>
-                            </select>
-                        </div>
+            <div class="nhc-wizard">
+
+                <!-- Steps indicator -->
+                <div class="nhc-steps">
+                    <div class="nhc-step active">
+                        <div class="nhc-step-num">1</div>
+                        <span>بيانات الترخيص</span>
+                    </div>
+                    <div class="nhc-step-line"></div>
+                    <div class="nhc-step">
+                        <div class="nhc-step-num">2</div>
+                        <span>معاينة البيانات</span>
+                    </div>
+                    <div class="nhc-step-line"></div>
+                    <div class="nhc-step">
+                        <div class="nhc-step-num">3</div>
+                        <span>تأكيد الحفظ</span>
                     </div>
                 </div>
 
-                <div class="sticky-save-bar">
-                    <button type="submit" class="btn btn-gold" th:disabled="${not nhcConfigured}">
-                        <i class="bi bi-cloud-download"></i> جلب البيانات وإضافة العقار
-                    </button>
+                <div class="nhc-hero mb-4">
+                    <div class="nhc-hero-icon"><i class="bi bi-bank"></i></div>
+                    <div>
+                        <div class="fw-bold fs-6" th:text="#{estate.newTitle}">Add property from NHC</div>
+                        <div class="text-muted small">أدخل بيانات الترخيص بس — باقي بيانات العقار تُجلب تلقائيًا من هيئة العقار</div>
+                    </div>
                 </div>
-            </form>
+
+                <form th:action="@{/estates/lookup}" method="post">
+                    <div class="form-section nhc-card">
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-file-earmark-text"></i> رقم رخصة الإعلان</label>
+                            <input type="text" name="licenseNumber" th:value="${licenseNumber}" class="form-control form-control-lg" dir="ltr" placeholder="7100XXXXXX" required/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-person-vcard"></i> الرقم الموحد / رقم الهوية</label>
+                            <input type="text" name="advertiserNumber" th:value="${advertiserNumber}" class="form-control form-control-lg" dir="ltr" placeholder="10XXXXXXXX" required/>
+                        </div>
+                        <div>
+                            <label class="form-label"><i class="bi bi-person-badge"></i> نوع الهوية</label>
+                            <div class="id-type-toggle">
+                                <label class="id-type-option">
+                                    <input type="radio" name="idType" value="1" checked/>
+                                    <span><i class="bi bi-person"></i> فرد</span>
+                                </label>
+                                <label class="id-type-option">
+                                    <input type="radio" name="idType" value="2"/>
+                                    <span><i class="bi bi-building"></i> منشأة</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sticky-save-bar nhc-card">
+                        <button type="submit" class="btn btn-gold w-100 btn-lg" th:disabled="${not nhcConfigured}">
+                            <i class="bi bi-cloud-download"></i> جلب بيانات العقار
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Raw response for debugging, only shown if a lookup just failed -->
+                <div th:if="${rawJson != null}" class="form-section nhc-card mt-3">
+                    <div class="form-section-title">بيانات الرد الخام</div>
+                    <textarea readonly rows="8" class="form-control" dir="ltr" style="font-family:monospace; font-size:.75rem;" onclick="this.select()" th:text="${rawJson}"></textarea>
+                </div>
+
+            </div>
 
         </div>
     </div>
