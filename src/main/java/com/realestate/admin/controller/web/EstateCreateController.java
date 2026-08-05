@@ -198,6 +198,7 @@ public class EstateCreateController {
             // ---- Genuinely new advertiser: create both `users` and `agents` ----
             AppUser user = new AppUser();
             user.setId(appUserRepository.findMaxId() + 1);
+            
             user.setName(advertiserName != null ? advertiserName : advertiserNumber);
             user.setPhone(phone != null ? phone : "");
             user.setIsActive(AppUser.Status.active);
@@ -230,6 +231,9 @@ public class EstateCreateController {
 
         Estate estate = new Estate();
         estate.setId(estateRepository.findMaxId() + 1);
+        estate.setTitle(form.get("title"));
+estate.setShortDescription(form.get("shortDescription"));
+estate.setLongDescription(form.get("longDescription"));
         estate.setStatus(Estate.Status.active);
         estate.setView(0);
         estate.setZoneId(zoneId);

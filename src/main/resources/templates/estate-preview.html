@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
       th:lang="${#locale.language}"
       th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
@@ -17,10 +16,9 @@
             </a>
 
             <div class="alert alert-success small mb-3">
-                <i class="bi bi-check-circle"></i> تم جلب البيانات من هيئة العقار بنجاح. راجعها قبل الحفظ.
+                <i class="bi bi-check-circle"></i> تم جلب البيانات من هيئة العقار بنجاح. راجعها وعدّل ما تحتاجه قبل الحفظ.
             </div>
 
-            <!-- Constraint flags - only shown if any is true, red warning banner -->
             <div class="alert alert-danger small mb-3" th:if="${isConstrained} or ${isPawned} or ${isHalted} or ${isTestment}">
                 <i class="bi bi-exclamation-triangle"></i> تنبيه — على هذا العقار قيود:
                 <span th:if="${isConstrained}" class="badge-pill" style="background:#FDE4E1; color:#B3261E;">مقيّد</span>
@@ -47,92 +45,6 @@
                 <div class="row g-3 mt-1" th:if="${responsibleEmployeeName}">
                     <div class="col-md-6"><div class="text-muted small">اسم الموظف المسؤول</div><div class="fw-bold" th:text="${responsibleEmployeeName}">-</div></div>
                     <div class="col-md-6"><div class="text-muted small">جوال الموظف المسؤول</div><div class="fw-bold" dir="ltr" th:text="${responsibleEmployeePhoneNumber} ?: '-'">-</div></div>
-                </div>
-            </div>
-
-            <!-- Core property facts -->
-            <div class="form-section">
-                <div class="form-section-title"><i class="bi bi-house-door"></i> بيانات العقار الأساسية</div>
-                <div class="row g-3">
-                    <div class="col-md-3"><div class="text-muted small">نوع العقار</div><div class="fw-bold" th:text="${propertyType} ?: '-'">-</div></div>
-                    <div class="col-md-3"><div class="text-muted small">نوع الإعلان</div><div class="fw-bold" th:text="${advertisementType} ?: '-'">-</div></div>
-                    <div class="col-md-3"><div class="text-muted small">عمر العقار</div><div class="fw-bold" th:text="${propertyAge} ?: '-'">-</div></div>
-                    <div class="col-md-3"><div class="text-muted small">واجهة العقار</div><div class="fw-bold" th:text="${propertyFace} ?: '-'">-</div></div>
-                    <div class="col-md-3"><div class="text-muted small">المساحة (م²)</div><div class="fw-bold" th:text="${propertyArea} ?: '-'">-</div></div>
-                    <div class="col-md-3"><div class="text-muted small">عرض الشارع</div><div class="fw-bold" th:text="${streetWidth} ?: '-'">-</div></div>
-                    <div class="col-md-3"><div class="text-muted small">عدد الغرف</div><div class="fw-bold" th:text="${numberOfRooms} ?: '-'">-</div></div>
-                    <div class="col-md-3"><div class="text-muted small">استخدام الأرض</div><div class="fw-bold" th:text="${mainLandUseTypeName} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">سعر العقار</div><div class="fw-bold" th:text="${propertyPrice} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">إجمالي سعر الأرض</div><div class="fw-bold" th:text="${landTotalPrice} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">نطاق المنطقة الحمراء</div><div class="fw-bold" th:text="${redZoneTypeName} ?: '-'">-</div></div>
-                </div>
-            </div>
-
-            <!-- Location -->
-            <div class="form-section">
-                <div class="form-section-title"><i class="bi bi-geo-alt"></i> الموقع</div>
-                <div class="row g-3">
-                    <div class="col-md-4"><div class="text-muted small">المنطقة</div><div class="fw-bold" th:text="${region} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">المدينة</div><div class="fw-bold" th:text="${city} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">الحي</div><div class="fw-bold" th:text="${districts} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">الشارع</div><div class="fw-bold" th:text="${street} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">رقم المبنى</div><div class="fw-bold" dir="ltr" th:text="${buildingNumber} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">الرقم الإضافي</div><div class="fw-bold" dir="ltr" th:text="${additionalNumber} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">الرمز البريدي</div><div class="fw-bold" th:text="${postalCode} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">خط العرض</div><div class="fw-bold" dir="ltr" th:text="${latitude} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">خط الطول</div><div class="fw-bold" dir="ltr" th:text="${longitude} ?: '-'">-</div></div>
-                </div>
-            </div>
-
-            <!-- Legal / deed -->
-            <div class="form-section">
-                <div class="form-section-title"><i class="bi bi-file-earmark-text"></i> البيانات القانونية والصك</div>
-                <div class="row g-3">
-                    <div class="col-md-4"><div class="text-muted small">رقم الصك</div><div class="fw-bold" dir="ltr" th:text="${deedNumber} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">نوع الصك</div><div class="fw-bold" th:text="${titleDeedTypeName} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">رقم قطعة الأرض</div><div class="fw-bold" dir="ltr" th:text="${landNumber} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">رقم المخطط</div><div class="fw-bold" dir="ltr" th:text="${planNumber} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">تاريخ الإنشاء</div><div class="fw-bold" th:text="${creationDate} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">تاريخ الانتهاء</div><div class="fw-bold" th:text="${endDate} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">رقم رخصة الإعلان</div><div class="fw-bold" dir="ltr" th:text="${adLicenseNumber} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">رقم رخصة التسويق (فال)</div><div class="fw-bold" dir="ltr" th:text="${brokerageAndMarketingLicenseNumber} ?: '-'">-</div></div>
-                    <div class="col-md-4"><div class="text-muted small">مصدر الإعلان</div><div class="fw-bold" th:text="${adSource} ?: '-'">-</div></div>
-                    <div class="col-md-6" th:if="${adLicenseUrl}">
-                        <div class="text-muted small">رابط رخصة الإعلان</div>
-                        <a th:href="${adLicenseUrl}" target="_blank" class="fw-bold">فتح الرابط <i class="bi bi-box-arrow-up-right"></i></a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Borders -->
-            <div class="form-section" th:if="${northLimit} or ${eastLimit} or ${westLimit} or ${southLimit}">
-                <div class="form-section-title"><i class="bi bi-bounding-box"></i> حدود العقار</div>
-                <div class="row g-3">
-                    <div class="col-md-6" th:if="${northLimit}"><div class="text-muted small">الحد الشمالي</div><div th:text="${northLimit}">-</div></div>
-                    <div class="col-md-6" th:if="${eastLimit}"><div class="text-muted small">الحد الشرقي</div><div th:text="${eastLimit}">-</div></div>
-                    <div class="col-md-6" th:if="${westLimit}"><div class="text-muted small">الحد الغربي</div><div th:text="${westLimit}">-</div></div>
-                    <div class="col-md-6" th:if="${southLimit}"><div class="text-muted small">الحد الجنوبي</div><div th:text="${southLimit}">-</div></div>
-                </div>
-            </div>
-
-            <!-- Free-text details -->
-            <div class="form-section" th:if="${locationDescriptionOnMOJDeed} or ${guaranteesAndTheirDuration} or ${obligationsOnTheProperty} or ${notes}">
-                <div class="form-section-title"><i class="bi bi-card-text"></i> تفاصيل إضافية</div>
-                <div class="mb-3" th:if="${locationDescriptionOnMOJDeed}">
-                    <div class="text-muted small mb-1">الوصف حسب صك وزارة العدل</div>
-                    <div th:text="${locationDescriptionOnMOJDeed}">-</div>
-                </div>
-                <div class="mb-3" th:if="${guaranteesAndTheirDuration}">
-                    <div class="text-muted small mb-1">الضمانات ومدتها</div>
-                    <div th:text="${guaranteesAndTheirDuration}">-</div>
-                </div>
-                <div class="mb-3" th:if="${obligationsOnTheProperty}">
-                    <div class="text-muted small mb-1">الالتزامات على العقار</div>
-                    <div th:text="${obligationsOnTheProperty}">-</div>
-                </div>
-                <div th:if="${notes}">
-                    <div class="text-muted small mb-1">ملاحظات</div>
-                    <div th:text="${notes}">-</div>
                 </div>
             </div>
 
@@ -169,14 +81,35 @@
                 <input type="hidden" name="propertyUsages" th:value="${propertyUsages}"/>
                 <input type="hidden" name="categoryName" th:value="${categoryName}"/>
 
+                <!-- Editable: title / descriptions - pre-filled from NHC, admin can change before saving -->
+                <div class="form-section editable-section">
+                    <div class="form-section-title">
+                        <i class="bi bi-pencil-square"></i> العنوان والوصف
+                        <span class="badge-pill badge-tour ms-2"><i class="bi bi-magic"></i> معبّاة تلقائيًا، قابلة للتعديل</span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">العنوان</label>
+                        <input type="text" name="title" th:value="${suggestedTitle}" class="form-control form-control-lg" required/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">الوصف المختصر</label>
+                        <input type="text" name="shortDescription" th:value="${suggestedShortDescription}" class="form-control"/>
+                    </div>
+                    <div>
+                        <label class="form-label fw-bold">الوصف الكامل</label>
+                        <textarea name="longDescription" rows="5" class="form-control" th:text="${suggestedLongDescription}"></textarea>
+                    </div>
+                </div>
+
+                <!-- Zone -->
                 <div class="form-section">
                     <div class="form-section-title"><i class="bi bi-geo-alt"></i> اختر المنطقة</div>
                     <p class="text-muted small" th:if="${suggestedZoneId == null}">
-                        NHC ما يرجّع "المنطقة" بمفهوم النظام (بس مدينة/حي إداري) — اختر المنطقة المناسبة يدويًا.
+                        <i class="bi bi-info-circle"></i> ما قدرنا نحدد منطقة مطابقة تلقائيًا — اختر المنطقة المناسبة يدويًا.
                     </p>
                     <div class="zone-suggest-hint" th:if="${suggestedZoneId != null}">
                         <i class="bi bi-magic"></i>
-                        اقترحنا هذي المنطقة بناءً على مدينة العقار (<strong th:text="${city}">-</strong>) — تأكد منها أو غيّرها لو لزم
+                        اقترحنا هذي المنطقة بناءً على منطقة العقار الإدارية (<strong th:text="${region} ?: city">-</strong>) — تأكد منها أو غيّرها لو لزم
                     </div>
                     <select name="zoneId" class="form-select form-select-lg" required>
                         <option value="">اختر المنطقة</option>
@@ -185,8 +118,94 @@
                     </select>
                 </div>
 
+                <!-- Core property facts (read-only reference) -->
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-house-door"></i> بيانات العقار الأساسية (من الهيئة)</div>
+                    <div class="row g-3">
+                        <div class="col-md-3"><div class="text-muted small">نوع العقار</div><div class="fw-bold" th:text="${propertyType} ?: '-'">-</div></div>
+                        <div class="col-md-3"><div class="text-muted small">نوع الإعلان</div><div class="fw-bold" th:text="${advertisementType} ?: '-'">-</div></div>
+                        <div class="col-md-3"><div class="text-muted small">عمر العقار</div><div class="fw-bold" th:text="${propertyAge} ?: '-'">-</div></div>
+                        <div class="col-md-3"><div class="text-muted small">واجهة العقار</div><div class="fw-bold" th:text="${propertyFace} ?: '-'">-</div></div>
+                        <div class="col-md-3"><div class="text-muted small">المساحة (م²)</div><div class="fw-bold" th:text="${propertyArea} ?: '-'">-</div></div>
+                        <div class="col-md-3"><div class="text-muted small">عرض الشارع</div><div class="fw-bold" th:text="${streetWidth} ?: '-'">-</div></div>
+                        <div class="col-md-3"><div class="text-muted small">عدد الغرف</div><div class="fw-bold" th:text="${numberOfRooms} ?: '-'">-</div></div>
+                        <div class="col-md-3"><div class="text-muted small">استخدام الأرض</div><div class="fw-bold" th:text="${mainLandUseTypeName} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">سعر العقار</div><div class="fw-bold" th:text="${propertyPrice} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">إجمالي سعر الأرض</div><div class="fw-bold" th:text="${landTotalPrice} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">نطاق المنطقة الحمراء</div><div class="fw-bold" th:text="${redZoneTypeName} ?: '-'">-</div></div>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-geo-alt"></i> الموقع (من الهيئة)</div>
+                    <div class="row g-3">
+                        <div class="col-md-4"><div class="text-muted small">المنطقة الإدارية</div><div class="fw-bold" th:text="${region} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">المدينة</div><div class="fw-bold" th:text="${city} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">الحي</div><div class="fw-bold" th:text="${districts} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">الشارع</div><div class="fw-bold" th:text="${street} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">رقم المبنى</div><div class="fw-bold" dir="ltr" th:text="${buildingNumber} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">الرقم الإضافي</div><div class="fw-bold" dir="ltr" th:text="${additionalNumber} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">الرمز البريدي</div><div class="fw-bold" th:text="${postalCode} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">خط العرض</div><div class="fw-bold" dir="ltr" th:text="${latitude} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">خط الطول</div><div class="fw-bold" dir="ltr" th:text="${longitude} ?: '-'">-</div></div>
+                    </div>
+                </div>
+
+                <!-- Legal / deed -->
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-file-earmark-text"></i> البيانات القانونية والصك</div>
+                    <div class="row g-3">
+                        <div class="col-md-4"><div class="text-muted small">رقم الصك</div><div class="fw-bold" dir="ltr" th:text="${deedNumber} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">نوع الصك</div><div class="fw-bold" th:text="${titleDeedTypeName} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">رقم قطعة الأرض</div><div class="fw-bold" dir="ltr" th:text="${landNumber} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">رقم المخطط</div><div class="fw-bold" dir="ltr" th:text="${planNumber} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">تاريخ الإنشاء</div><div class="fw-bold" th:text="${creationDate} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">تاريخ الانتهاء</div><div class="fw-bold" th:text="${endDate} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">رقم رخصة الإعلان</div><div class="fw-bold" dir="ltr" th:text="${adLicenseNumber} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">رقم رخصة التسويق (فال)</div><div class="fw-bold" dir="ltr" th:text="${brokerageAndMarketingLicenseNumber} ?: '-'">-</div></div>
+                        <div class="col-md-4"><div class="text-muted small">مصدر الإعلان</div><div class="fw-bold" th:text="${adSource} ?: '-'">-</div></div>
+                        <div class="col-md-6" th:if="${adLicenseUrl}">
+                            <div class="text-muted small">رابط رخصة الإعلان</div>
+                            <a th:href="${adLicenseUrl}" target="_blank" class="fw-bold">فتح الرابط <i class="bi bi-box-arrow-up-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Borders -->
+                <div class="form-section" th:if="${northLimit} or ${eastLimit} or ${westLimit} or ${southLimit}">
+                    <div class="form-section-title"><i class="bi bi-bounding-box"></i> حدود العقار</div>
+                    <div class="row g-3">
+                        <div class="col-md-6" th:if="${northLimit}"><div class="text-muted small">الحد الشمالي</div><div th:text="${northLimit}">-</div></div>
+                        <div class="col-md-6" th:if="${eastLimit}"><div class="text-muted small">الحد الشرقي</div><div th:text="${eastLimit}">-</div></div>
+                        <div class="col-md-6" th:if="${westLimit}"><div class="text-muted small">الحد الغربي</div><div th:text="${westLimit}">-</div></div>
+                        <div class="col-md-6" th:if="${southLimit}"><div class="text-muted small">الحد الجنوبي</div><div th:text="${southLimit}">-</div></div>
+                    </div>
+                </div>
+
+                <!-- Free-text details -->
+                <div class="form-section" th:if="${locationDescriptionOnMOJDeed} or ${guaranteesAndTheirDuration} or ${obligationsOnTheProperty} or ${notes}">
+                    <div class="form-section-title"><i class="bi bi-card-text"></i> تفاصيل إضافية</div>
+                    <div class="mb-3" th:if="${locationDescriptionOnMOJDeed}">
+                        <div class="text-muted small mb-1">الوصف حسب صك وزارة العدل</div>
+                        <div th:text="${locationDescriptionOnMOJDeed}">-</div>
+                    </div>
+                    <div class="mb-3" th:if="${guaranteesAndTheirDuration}">
+                        <div class="text-muted small mb-1">الضمانات ومدتها</div>
+                        <div th:text="${guaranteesAndTheirDuration}">-</div>
+                    </div>
+                    <div class="mb-3" th:if="${obligationsOnTheProperty}">
+                        <div class="text-muted small mb-1">الالتزامات على العقار</div>
+                        <div th:text="${obligationsOnTheProperty}">-</div>
+                    </div>
+                    <div th:if="${notes}">
+                        <div class="text-muted small mb-1">ملاحظات</div>
+                        <div th:text="${notes}">-</div>
+                    </div>
+                </div>
+
                 <div class="sticky-save-bar">
-                    <button type="submit" class="btn btn-gold">
+                    <button type="submit" class="btn btn-gold btn-lg w-100">
                         <i class="bi bi-check2-circle"></i> تأكيد وحفظ العقار
                     </button>
                 </div>

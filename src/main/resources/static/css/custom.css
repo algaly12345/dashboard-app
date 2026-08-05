@@ -722,3 +722,16 @@ a.report-estate-chip:hover{ border-color: var(--violet); background:#F5F9FF; }
 .id-type-option:has(input:checked){
   border-color:var(--violet); background:#F0EEFA; color:var(--violet);
 }
+
+
+/* ---------- Editable NHC fields + zone suggestion hint ---------- */
+.editable-section{
+  border: 2px solid var(--violet);
+  background: linear-gradient(135deg, #F8F7FF, #fff);
+}
+.editable-section .form-section-title{ color: var(--violet); }
+.zone-suggest-hint{
+  display:flex; align-items:center; gap:8px;
+  background:#F0EEFA; color:var(--violet); border-radius:10px;
+  padding:10px 14px; font-size:.85rem; font-weight:600; margin-bottom:14px;
+}
