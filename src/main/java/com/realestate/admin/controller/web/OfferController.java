@@ -161,7 +161,7 @@ public class OfferController {
         Offer offer = offerRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Offer not found: " + id));
 
-        R2StorageService.UploadResult result = r2StorageService.upload(file, "offers");
+        R2StorageService.UploadResult result = r2StorageService.upload(file, "service-providers");
         if (result.success()) {
             offer.setImage(result.filename());
             offer.setUpdatedAt(LocalDateTime.now());
