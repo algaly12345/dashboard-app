@@ -155,25 +155,24 @@ public class OfferController {
         return "redirect:/offers/" + id + "/edit";
     }
 
-    @PostMapping("/offers/{id}/upload-image")
-    public String uploadImage(@PathVariable Long id, @RequestParam("file") MultipartFile file,
-                               RedirectAttributes redirectAttributes) {
-        Offer offer = offerRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Offer not found: " + id));
+@PostMapping("/offers/{id}/upload-image")
+public String uploadImage(@PathVariable Long id, @RequestParam("file") MultipartFile file,
+                           RedirectAttributes redirectAttributes) {
+    Offer offer = offerRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Offer not found: " + id));
 
-        R2StorageService.UploadResult result = r2StorageService.upload(file, "service-providers");
-        if (result.success()) {
-            offer.setImage(result.filename());
-            offer.setUpdatedAt(LocalDateTime.now());
-            offerRepository.save(offer);
-            redirectAttributes.addFlashAttribute("uploadResult", true);
-        } else {
-            redirectAttributes.addFlashAttribute("uploadResult", false);
-            redirectAttributes.addFlashAttribute("uploadError", result.error());
-        }
-        return "redirect:/offers/" + id + "/edit";
+    R2StorageService.UploadResult result = r2StorageService.upload(file, "service-providers");
+    if (result.success()) {
+        offer.setImage(result.filename());
+        offer.setUpdatedAt(LocalDateTime.now());
+        offerRepository.save(offer);
+        redirectAttributes.addFlashAttribute("uploadResult", true);
+    } else {
+        redirectAttributes.addFlashAttribute("uploadResult", false);
+        redirectAttributes.addFlashAttribute("uploadError", result.error());
     }
-
+    return "redirect:/offers/" + id + "/edit";
+}
     /** Quick-action approval ("اعتماد الخدمة") straight from the list. */
     @PostMapping("/offers/{id}/approve")
     public String approve(@PathVariable Long id, @RequestParam(required = false) String redirectTo) {

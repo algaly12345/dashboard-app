@@ -21,7 +21,7 @@ public class ImageUrlService {
     private final SettingsService settingsService;
 
     public String estateImage(String filename) { return build("estate", filename); }
-    public String offerImage(String filename) { return build("offers", filename); }
+public String offerImage(String filename) { return build("service-providers", filename); }
     public String categoryImage(String filename) { return build("categories", filename); }
     public String zoneImage(String filename) { return build("zone", filename); }
     public String bannerImage(String filename) { return build("banners", filename); }
