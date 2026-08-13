@@ -26,68 +26,93 @@ public class EstateController {
     private final EstateRepository estateRepository;
     private final R2StorageService r2StorageService;
     private final AppUserRepository appUserRepository;
+    private final com.realestate.admin.service.ImageUrlService imageUrlService;
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
+
+
+
     @GetMapping("/estates")
-    public String list(@RequestParam(required = false) String q,
-                        @RequestParam(required = false) String status,
-                        @RequestParam(required = false) String city,
-                        @RequestParam(required = false) String category,
-                        @RequestParam(required = false) String adType,
-                        @RequestParam(required = false) String estateType,
-                        @RequestParam(required = false) String virtualTour,
-                        @RequestParam(required = false) String minPrice,
-                        @RequestParam(required = false) String maxPrice,
-                        @RequestParam(required = false) String licenseExpired,
-                        @RequestParam(required = false) String zoneId,
-                        @RequestParam(defaultValue = "0") int page,
-                        Model model) {
+public String list(@RequestParam(required = false) String q,
+                    @RequestParam(required = false) String status,
+                    @RequestParam(required = false) String city,
+                    @RequestParam(required = false) String category,
+                    @RequestParam(required = false) String adType,
+                    @RequestParam(required = false) String estateType,
+                    @RequestParam(required = false) String virtualTour,
+                    @RequestParam(required = false) String minPrice,
+                    @RequestParam(required = false) String maxPrice,
+                    @RequestParam(required = false) String licenseExpired,
+                    @RequestParam(required = false) String zoneId,
+                    @RequestParam(defaultValue = "0") int page,
+                    Model model) {
 
-        Estate.Status statusEnum = (status != null && !status.isBlank()) ? Estate.Status.valueOf(status) : null;
-        Boolean virtualTourBool = (virtualTour == null || virtualTour.isBlank()) ? null : "yes".equals(virtualTour);
-        Double minPriceVal = parseDoubleOrNull(minPrice);
-        Double maxPriceVal = parseDoubleOrNull(maxPrice);
-        Long zoneIdLong = parseLongOrNull(zoneId);
-        boolean expiredOnly = "true".equals(licenseExpired);
+    Estate.Status statusEnum = (status != null && !status.isBlank()) ? Estate.Status.valueOf(status) : null;
+    Boolean virtualTourBool = (virtualTour == null || virtualTour.isBlank()) ? null : "yes".equals(virtualTour);
+    Double minPriceVal = parseDoubleOrNull(minPrice);
+    Double maxPriceVal = parseDoubleOrNull(maxPrice);
+    Long zoneIdLong = parseLongOrNull(zoneId);
+    boolean expiredOnly = "true".equals(licenseExpired);
 
-        Page<Estate> result;
-        if (expiredOnly) {
-            List<Estate> expired = estateRepository.findExpiredLicenses(zoneIdLong, PageRequest.of(page, 12));
-            long total = estateRepository.countExpiredLicenses(zoneIdLong);
-            result = new org.springframework.data.domain.PageImpl<>(expired, PageRequest.of(page, 12), total);
-        } else {
-            result = estateRepository.search(
-                    blankToNull(q), statusEnum, blankToNull(city), blankToNull(category), blankToNull(adType),
-                    blankToNull(estateType), virtualTourBool, minPriceVal, maxPriceVal,
-                    PageRequest.of(page, 12, Sort.by(Sort.Direction.DESC, "createdAt")));
-        }
-
-        List<String> cities = estateRepository.findDistinctCities();
-        List<String> categories = estateRepository.findDistinctCategoryNames();
-        List<String> estateTypes = estateRepository.findDistinctEstateTypes();
-
-        model.addAttribute("estates", result);
-        model.addAttribute("cities", cities);
-        model.addAttribute("categories", categories);
-        model.addAttribute("estateTypes", estateTypes);
-        model.addAttribute("q", q);
-        model.addAttribute("status", status);
-        model.addAttribute("city", city);
-        model.addAttribute("category", category);
-        model.addAttribute("adType", adType);
-        model.addAttribute("estateType", estateType);
-        model.addAttribute("virtualTour", virtualTour);
-        model.addAttribute("minPrice", minPriceVal);
-        model.addAttribute("maxPrice", maxPriceVal);
-        model.addAttribute("licenseExpired", licenseExpired);
-        model.addAttribute("zoneId", zoneId);
-        model.addAttribute("expiredOnly", expiredOnly);
-        model.addAttribute("activePage", "estates");
-
-        return "estates";
+    Page<Estate> result;
+    if (expiredOnly) {
+        List<Estate> expired = estateRepository.findExpiredLicenses(zoneIdLong, PageRequest.of(page, 12));
+        long total = estateRepository.countExpiredLicenses(zoneIdLong);
+        result = new org.springframework.data.domain.PageImpl<>(expired, PageRequest.of(page, 12), total);
+    } else {
+        result = estateRepository.search(
+                blankToNull(q), statusEnum, blankToNull(city), blankToNull(category), blankToNull(adType),
+                blankToNull(estateType), virtualTourBool, minPriceVal, maxPriceVal,
+                PageRequest.of(page, 12, Sort.by(Sort.Direction.DESC, "createdAt")));
     }
 
-    @GetMapping("/estates/{id}")
+    List<String> cities = estateRepository.findDistinctCities();
+    List<String> categories = estateRepository.findDistinctCategoryNames();
+    List<String> estateTypes = estateRepository.findDistinctEstateTypes();
+
+    // ---- Advertisers shown on this page: resolved photo URL + estate count each ----
+    List<Long> userIds = result.getContent().stream()
+            .map(Estate::getUserId)
+            .filter(java.util.Objects::nonNull)
+            .distinct()
+            .toList();
+
+    java.util.Map<Long, com.realestate.admin.dto.AdvertiserInfo> estateUsers = new java.util.HashMap<>();
+    for (AppUser u : appUserRepository.findAllById(userIds)) {
+        long estateCount = estateRepository.countByUserId(u.getId());
+        String imageUrl = (u.getImage() != null && !u.getImage().isBlank())
+                ? imageUrlService.profileImage(u.getImage()) : null;
+        estateUsers.put(u.getId(), new com.realestate.admin.dto.AdvertiserInfo(
+                u.getId(), u.getName(), u.getPhone(), u.getEmail(), u.getUnifiedNumber(),
+                u.getAdvertiserNo(), u.getFalLicenseNumber(), imageUrl,
+                u.getYoutube(), u.getSnapchat(), u.getInstagram(), u.getWebsite(), u.getTiktok(), u.getTwitter(),
+                estateCount
+        ));
+    }
+
+    model.addAttribute("estates", result);
+    model.addAttribute("estateUsers", estateUsers);
+    model.addAttribute("cities", cities);
+    model.addAttribute("categories", categories);
+    model.addAttribute("estateTypes", estateTypes);
+    model.addAttribute("q", q);
+    model.addAttribute("status", status);
+    model.addAttribute("city", city);
+    model.addAttribute("category", category);
+    model.addAttribute("adType", adType);
+    model.addAttribute("estateType", estateType);
+    model.addAttribute("virtualTour", virtualTour);
+    model.addAttribute("minPrice", minPriceVal);
+    model.addAttribute("maxPrice", maxPriceVal);
+    model.addAttribute("licenseExpired", licenseExpired);
+    model.addAttribute("zoneId", zoneId);
+    model.addAttribute("expiredOnly", expiredOnly);
+    model.addAttribute("activePage", "estates");
+
+    return "estates";
+}
+
+@GetMapping("/estates/{id}")
     public String details(@PathVariable Long id, Model model) {
         Estate estate = estateRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Estate not found: " + id));

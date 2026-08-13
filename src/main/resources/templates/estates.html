@@ -17,8 +17,15 @@
                 <a th:href="@{/estates}" class="fw-semibold" style="color: var(--danger);" th:text="#{estate.clearFilter}">Clear</a>
             </div>
 
-            <!-- Filters -->
+            <!-- Filters + Add button, same row -->
             <form th:action="@{/estates}" method="get" class="card section-card mb-3">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <div class="fw-bold"><i class="bi bi-funnel"></i> <span th:text="#{estate.filter.apply}">Filter</span></div>
+                    <a th:href="@{/estates/new}" class="btn btn-gold btn-sm">
+                        <i class="bi bi-plus-lg"></i> إضافة عقار (NHC)
+                    </a>
+                </div>
+
                 <div class="row g-2 align-items-end">
                     <div class="col-md-3">
                         <label class="form-label" th:text="#{estate.title}">Search</label>
@@ -55,7 +62,7 @@
                         </select>
                     </div>
                     <div class="col-md-1">
-                        <button type="submit" class="btn btn-gold w-100" th:text="#{estate.filter.apply}">Filter</button>
+                        <button type="submit" class="btn btn-outline-gold w-100" th:text="#{estate.filter.apply}">Filter</button>
                     </div>
                 </div>
 
@@ -96,6 +103,7 @@
                     <thead>
                     <tr>
                         <th th:text="#{estate.title}">Title</th>
+                        <th>المعلن</th>
                         <th th:text="#{estate.city}">City</th>
                         <th th:text="#{estate.district}">District</th>
                         <th th:text="#{estate.adType}">Purpose</th>
@@ -120,6 +128,16 @@
                                     </span>
                                 </div>
                             </div>
+                        </td>
+                        <td>
+                            <button type="button" th:if="${e.userId != null and estateUsers.get(e.userId) != null}"
+                                    class="advertiser-chip" th:onclick="'showAdvertiser(' + ${e.userId} + ', ' + ${e.id} + ')'">
+                                <img th:if="${estateUsers.get(e.userId).imageUrl}" th:src="${estateUsers.get(e.userId).imageUrl}"
+                                     onerror="this.style.display='none'"/>
+                                <i th:unless="${estateUsers.get(e.userId).imageUrl}" class="bi bi-person-circle"></i>
+                                <span th:text="${estateUsers.get(e.userId).name}">Name</span>
+                            </button>
+                            <span th:unless="${e.userId != null and estateUsers.get(e.userId) != null}" class="text-muted small">—</span>
                         </td>
                         <td th:text="${e.city}">City</td>
                         <td th:text="${e.districts}">District</td>
@@ -150,7 +168,7 @@
                         </td>
                     </tr>
                     <tr th:if="${estates.content.isEmpty()}">
-                        <td colspan="9" class="text-center text-muted py-4" th:text="#{estate.noResults}">No results</td>
+                        <td colspan="10" class="text-center text-muted py-4" th:text="#{estate.noResults}">No results</td>
                     </tr>
                     </tbody>
                 </table>
@@ -176,8 +194,87 @@
                 </div>
             </nav>
 
+            <!-- Advertiser details modal -->
+            <div id="advertiserModalBackdrop" class="advertiser-modal-backdrop" onclick="hideAdvertiser(event)">
+                <div class="advertiser-modal" onclick="event.stopPropagation()">
+                    <button type="button" class="advertiser-modal-close" onclick="hideAdvertiser()"><i class="bi bi-x-lg"></i></button>
+                    <div id="advertiserModalBody"></div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var ESTATE_USERS = /*[[${estateUsers}]]*/ {};
+    /*]]>*/
+
+    function escapeHtml(s) {
+        var div = document.createElement('div');
+        div.textContent = s || '';
+        return div.innerHTML;
+    }
+
+    function socialRow(icon, label, value) {
+        if (!value) return '';
+        return '<a href="' + escapeHtml(value) + '" target="_blank" class="advertiser-social-row">' +
+               '<i class="bi ' + icon + '"></i> ' + label + '</a>';
+    }
+
+    function showAdvertiser(userId, estateId) {
+        var u = ESTATE_USERS[userId];
+        if (!u) return;
+
+        var imgHtml = u.imageUrl
+            ? '<img src="' + escapeHtml(u.imageUrl) + '" class="advertiser-modal-photo"/>'
+            : '<div class="advertiser-modal-photo advertiser-modal-photo-fallback"><i class="bi bi-person"></i></div>';
+
+        var html = '' +
+            '<div class="advertiser-modal-hero">' +
+                imgHtml +
+                '<div class="fw-bold fs-5 mt-2">' + escapeHtml(u.name) + '</div>' +
+                '<div class="text-muted small" dir="ltr">' + escapeHtml(u.phone) + '</div>' +
+            '</div>' +
+
+            '<div class="advertiser-stat-card">' +
+                '<div class="advertiser-stat-icon"><i class="bi bi-houses"></i></div>' +
+                '<div>' +
+                    '<div class="advertiser-stat-value">' + u.estateCount + '</div>' +
+                    '<div class="advertiser-stat-label">عدد العقارات المضافة</div>' +
+                '</div>' +
+            '</div>' +
+
+            '<div class="advertiser-detail-grid">' +
+                (u.email ? '<div><span class="text-muted small">البريد الإلكتروني</span><div class="fw-bold">' + escapeHtml(u.email) + '</div></div>' : '') +
+                (u.unifiedNumber ? '<div><span class="text-muted small">الرقم الموحد</span><div class="fw-bold" dir="ltr">' + escapeHtml(u.unifiedNumber) + '</div></div>' : '') +
+                (u.advertiserNo ? '<div><span class="text-muted small">رقم المعلن</span><div class="fw-bold" dir="ltr">' + escapeHtml(String(u.advertiserNo)) + '</div></div>' : '') +
+                (u.falLicenseNumber ? '<div><span class="text-muted small">رخصة فال</span><div class="fw-bold" dir="ltr">' + escapeHtml(u.falLicenseNumber) + '</div></div>' : '') +
+            '</div>';
+
+        var socials = socialRow('bi-youtube', 'يوتيوب', u.youtube) +
+                      socialRow('bi-snapchat', 'سناب شات', u.snapchat) +
+                      socialRow('bi-instagram', 'انستقرام', u.instagram) +
+                      socialRow('bi-globe', 'الموقع الإلكتروني', u.website) +
+                      socialRow('bi-tiktok', 'تيك توك', u.tiktok) +
+                      socialRow('bi-twitter-x', 'إكس (تويتر)', u.twitter);
+
+        if (socials) {
+            html += '<hr/><div class="fw-bold small mb-2"><i class="bi bi-share"></i> روابط التواصل</div>' +
+                    '<div class="advertiser-social-list">' + socials + '</div>';
+        }
+
+        html += '<a class="btn btn-gold w-100 mt-4" href="/estates/' + estateId + '/edit?previewUserId=' + userId + '">' +
+                '<i class="bi bi-pencil"></i> تعديل بيانات المستخدم</a>';
+
+        document.getElementById('advertiserModalBody').innerHTML = html;
+        document.getElementById('advertiserModalBackdrop').classList.add('open');
+    }
+
+    function hideAdvertiser(e) {
+        document.getElementById('advertiserModalBackdrop').classList.remove('open');
+    }
+</script>
 </body>
 </html>
