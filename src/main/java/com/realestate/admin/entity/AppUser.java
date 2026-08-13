@@ -57,6 +57,19 @@ public class AppUser {
     @Column(name = "fal_license_number")
     private String falLicenseNumber;
 
+    @Column(name = "unified_number")
+    private String unifiedNumber;
+
+    @Column(name = "advertiser_no")
+    private Integer advertiserNo;
+
+    private String youtube;
+    private String snapchat;
+    private String instagram;
+    private String website;
+    private String tiktok;
+    private String twitter;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 

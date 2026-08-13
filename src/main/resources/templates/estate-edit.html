@@ -12,175 +12,351 @@
 
         <div class="content">
 
-            <div class="d-flex align-items-center justify-content-between mb-3">
-                <a th:href="@{/estates}" class="btn btn-outline-gold">
-                    <i class="bi bi-arrow-right"></i> <span th:text="#{estate.backToList}">Back</span>
-                </a>
-                <div th:if="${saved}" class="alert alert-success py-2 px-3 mb-0 small" th:text="#{estate.saved}">Saved</div>
+            <a th:href="@{/estates}" class="btn btn-outline-gold mb-3">
+                <i class="bi bi-arrow-right"></i> <span th:text="#{estate.backToList}">Back</span>
+            </a>
+
+            <div th:if="${saved}" class="alert alert-success py-2 px-3 mb-3 small" th:text="#{estate.saved}">Saved</div>
+            <div th:if="${created}" class="alert alert-success py-2 px-3 mb-3 small">تمت إضافة العقار بنجاح!</div>
+            <div th:if="${uploadResult != null}"
+                 th:class="'alert py-2 px-3 mb-3 small ' + (${uploadResult} ? 'alert-success' : 'alert-warning')">
+                <span th:if="${uploadResult}" th:text="#{estate.uploadSuccess}">Uploaded</span>
+                <span th:unless="${uploadResult}" th:text="#{estate.uploadFailed} + ': ' + ${uploadError}">Failed</span>
             </div>
 
-            <form th:action="@{'/estates/' + ${estate.id}}" method="post">
-
-                <div class="form-section">
-                    <div class="form-section-title"><i class="bi bi-card-heading"></i> <span th:text="#{estate.section.basic}">Basic info</span></div>
-                    <div class="row g-3">
-                        <div class="col-md-8">
-                            <label class="form-label" th:text="#{estate.title}">Title</label>
-                            <input type="text" name="title" th:value="${estate.title}" class="form-control"/>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label" th:text="#{estate.status}">Status</label>
-                            <select name="status" class="form-select">
-                                <option value="active" th:selected="${estate.status.name() == 'active'}" th:text="#{estate.active}">Active</option>
-                                <option value="disactive" th:selected="${estate.status.name() == 'disactive'}" th:text="#{estate.disactive}">Inactive</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label" th:text="#{estate.adType}">Purpose</label>
-                            <select name="advertisementType" class="form-select">
-                                <option value="بيع" th:selected="${estate.advertisementType == 'بيع'}" th:text="#{estate.sale}">Sale</option>
-                                <option value="إيجار" th:selected="${estate.advertisementType == 'إيجار'}" th:text="#{estate.rent}">Rent</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label" th:text="#{estate.type}">Estate type</label>
-                            <input type="text" name="estateType" th:value="${estate.estateType}" class="form-control"/>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label" th:text="#{estate.age}">Age</label>
-                            <input type="text" name="ageEstate" th:value="${estate.ageEstate}" class="form-control"/>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label" th:text="#{estate.title}">Short description</label>
-                            <input type="text" name="shortDescription" th:value="${estate.shortDescription}" class="form-control"/>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label" th:text="#{estate.longDescription}">Description</label>
-                            <textarea name="longDescription" rows="5" class="form-control" th:text="${estate.longDescription}"></textarea>
-                        </div>
+            <!-- ============================================================= -->
+            <!-- SECTION 1 — Estate details. Its own form, its own Save button. -->
+            <!-- ============================================================= -->
+            <div class="section-block">
+                <div class="section-block-header">
+                    <div class="section-block-icon estate-icon"><i class="bi bi-house-door"></i></div>
+                    <div>
+                        <div class="fw-bold fs-6">بيانات العقار</div>
+                        <div class="text-muted small">العنوان، السعر، الموقع، والوسائط — يُحفظ بشكل مستقل عن بيانات المعلن</div>
                     </div>
                 </div>
 
-                <div class="form-section">
-                    <div class="form-section-title"><i class="bi bi-cash-coin"></i> <span th:text="#{estate.section.pricing}">Pricing & size</span></div>
-                    <div class="row g-3">
-                        <div class="col-md-3">
-                            <label class="form-label" th:text="#{estate.price}">Price</label>
-                            <input type="text" name="price" th:value="${estate.price}" class="form-control"/>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label" th:text="#{estate.totalPrice}">Total price</label>
-                            <input type="text" name="totalPrice" th:value="${estate.totalPrice}" class="form-control"/>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label" th:text="#{estate.priceNegotiation}">Negotiable</label>
-                            <input type="text" name="priceNegotiation" th:value="${estate.priceNegotiation}" class="form-control"/>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label" th:text="#{estate.floors}">Floors</label>
-                            <input type="number" name="floors" th:value="${estate.floors}" class="form-control"/>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label" th:text="#{estate.space}">Space (m00b2)</label>
-                            <input type="text" name="space" th:value="${estate.space}" class="form-control"/>
-                        </div>
-                    </div>
-                </div>
+                <form th:action="@{'/estates/' + ${estate.id}}" method="post">
 
-                <div class="form-section">
-                    <div class="form-section-title"><i class="bi bi-geo-alt"></i> <span th:text="#{estate.section.location}">Location</span></div>
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label" th:text="#{estate.city}">City</label>
-                            <input type="text" name="city" th:value="${estate.city}" class="form-control"/>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label" th:text="#{estate.district}">District</label>
-                            <input type="text" name="districts" th:value="${estate.districts}" class="form-control"/>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label" th:text="#{estate.address}">Address</label>
-                            <input type="text" name="address" th:value="${estate.address}" class="form-control"/>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label" th:text="#{estate.latitude}">Latitude</label>
-                            <input type="text" name="latitude" th:value="${estate.latitude}" class="form-control" dir="ltr"/>
-                        </div>
-                        <div class="col-md-3">
-                            <label class="form-label" th:text="#{estate.longitude}">Longitude</label>
-                            <input type="text" name="longitude" th:value="${estate.longitude}" class="form-control" dir="ltr"/>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-section">
-                    <div class="form-section-title"><i class="bi bi-camera-reels"></i> <span th:text="#{estate.section.media}">Media & tour</span></div>
-
-                    <div th:if="${uploadResult != null}"
-                         th:class="'alert py-2 px-3 mb-3 small ' + (${uploadResult} ? 'alert-success' : 'alert-warning')">
-                        <span th:if="${uploadResult}" th:text="#{estate.uploadSuccess}">Uploaded</span>
-                        <span th:unless="${uploadResult}" th:text="#{estate.uploadFailed} + ': ' + ${uploadError}">Failed</span>
-                    </div>
-
-                    <div class="d-flex flex-wrap gap-2 mb-3" th:if="${not estate.imageList.isEmpty()}">
-                        <div th:each="img : ${estate.imageList}" style="position:relative; width:70px; height:70px;">
-                            <img th:src="${@imageUrlService.estateImage(img)}"
-                                 style="width:70px; height:70px; object-fit:cover; border-radius:10px;" onerror="this.style.display='none'"/>
-                            <form th:action="@{'/estates/' + ${estate.id} + '/delete-image'}" method="post"
-                                  style="position:absolute; top:-6px; inset-inline-end:-6px;"
-                                  onsubmit="return confirm('حذف هذي الصورة؟');">
-                                <input type="hidden" name="filename" th:value="${img}"/>
-                                <button type="submit" class="btn-icon" title="Delete"
-                                        style="width:22px; height:22px; border-radius:50%; background:var(--danger); color:#fff; border:2px solid #fff; font-size:.7rem;">
-                                    <i class="bi bi-x"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <form th:action="@{'/estates/' + ${estate.id} + '/upload-image'}" method="post" enctype="multipart/form-data" class="d-flex gap-2 mb-4">
-                        <input type="file" name="file" accept="image/*" class="form-control" required/>
-                        <button type="submit" class="btn btn-outline-gold text-nowrap"><i class="bi bi-upload"></i> <span th:text="#{estate.uploadPhoto}">Upload</span></button>
-                    </form>
-
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label" th:text="#{estate.videoUrl}">Video URL</label>
-                            <input type="text" name="videoUrl" th:value="${estate.videoUrl}" class="form-control" dir="ltr"/>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label" th:text="#{estate.arPath}">Virtual tour path/URL</label>
-                            <input type="text" name="arPath" th:value="${estate.arPath}" class="form-control" dir="ltr"/>
-                            <div class="form-text">
-                                <span th:if="${estate.hasVirtualTour}" class="badge-pill badge-tour"><i class="bi bi-box"></i> <span th:text="#{estate.virtualTour.badge}">3D tour</span></span>
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="bi bi-card-heading"></i> <span th:text="#{estate.section.basic}">Basic info</span></div>
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label" th:text="#{estate.title}">Title</label>
+                                <input type="text" name="title" th:value="${estate.title}" class="form-control"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" th:text="#{estate.status}">Status</label>
+                                <select name="status" class="form-select">
+                                    <option value="active" th:selected="${estate.status.name() == 'active'}" th:text="#{estate.active}">Active</option>
+                                    <option value="disactive" th:selected="${estate.status.name() == 'disactive'}" th:text="#{estate.disactive}">Inactive</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" th:text="#{estate.adType}">Purpose</label>
+                                <select name="advertisementType" class="form-select">
+                                    <option value="بيع" th:selected="${estate.advertisementType == 'بيع'}" th:text="#{estate.sale}">Sale</option>
+                                    <option value="إيجار" th:selected="${estate.advertisementType == 'إيجار'}" th:text="#{estate.rent}">Rent</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" th:text="#{estate.type}">Estate type</label>
+                                <input type="text" name="estateType" th:value="${estate.estateType}" class="form-control"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" th:text="#{estate.age}">Age</label>
+                                <input type="text" name="ageEstate" th:value="${estate.ageEstate}" class="form-control"/>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" th:text="#{estate.title}">Short description</label>
+                                <input type="text" name="shortDescription" th:value="${estate.shortDescription}" class="form-control"/>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label" th:text="#{estate.longDescription}">Description</label>
+                                <textarea name="longDescription" rows="5" class="form-control" th:text="${estate.longDescription}"></textarea>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="form-section">
-                    <div class="form-section-title"><i class="bi bi-person-vcard"></i> <span th:text="#{estate.section.contact}">Advertiser contact</span></div>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label class="form-label" th:text="#{estate.advertiserName}">Advertiser name</label>
-                            <input type="text" name="advertiserName" th:value="${estate.advertiserName}" class="form-control"/>
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="bi bi-cash-coin"></i> <span th:text="#{estate.section.pricing}">Pricing & size</span></div>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label" th:text="#{estate.price}">Price</label>
+                                <input type="text" name="price" th:value="${estate.price}" class="form-control"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label" th:text="#{estate.totalPrice}">Total price</label>
+                                <input type="text" name="totalPrice" th:value="${estate.totalPrice}" class="form-control"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label" th:text="#{estate.priceNegotiation}">Negotiable</label>
+                                <input type="text" name="priceNegotiation" th:value="${estate.priceNegotiation}" class="form-control"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label" th:text="#{estate.floors}">Floors</label>
+                                <input type="number" name="floors" th:value="${estate.floors}" class="form-control"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label" th:text="#{estate.space}">Space (m²)</label>
+                                <input type="text" name="space" th:value="${estate.space}" class="form-control"/>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label" th:text="#{estate.phoneNumber}">Advertiser phone</label>
-                            <input type="text" name="phoneNumber" th:value="${estate.phoneNumber}" class="form-control" dir="ltr"/>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="bi bi-geo-alt"></i> <span th:text="#{estate.section.location}">Location</span></div>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label" th:text="#{estate.city}">City</label>
+                                <input type="text" name="city" th:value="${estate.city}" class="form-control"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" th:text="#{estate.district}">District</label>
+                                <input type="text" name="districts" th:value="${estate.districts}" class="form-control"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label" th:text="#{estate.address}">Address</label>
+                                <input type="text" name="address" th:value="${estate.address}" class="form-control"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label" th:text="#{estate.latitude}">Latitude</label>
+                                <input type="text" name="latitude" th:value="${estate.latitude}" class="form-control" dir="ltr"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label" th:text="#{estate.longitude}">Longitude</label>
+                                <input type="text" name="longitude" th:value="${estate.longitude}" class="form-control" dir="ltr"/>
+                            </div>
                         </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="bi bi-camera-reels"></i> <span th:text="#{estate.section.media}">Media & tour</span></div>
+
+                        <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+                            <div class="d-flex gap-2 flex-wrap" th:if="${not estate.imageList.isEmpty()}">
+                                <img th:each="img, iter : ${estate.imageList}" th:if="${iter.index < 5}"
+                                     th:src="${@imageUrlService.estateImage(img)}"
+                                     style="width:60px; height:60px; object-fit:cover; border-radius:10px;" onerror="this.style.display='none'"/>
+                                <span th:if="${estate.imageList.size() > 5}" class="badge-pill badge-tour align-self-center">
+                                    +<span th:text="${estate.imageList.size() - 5}">0</span>
+                                </span>
+                            </div>
+                            <span th:if="${estate.imageList.isEmpty()}" class="text-muted small">لا توجد صور بعد</span>
+                            <a th:href="@{'/estates/' + ${estate.id} + '/photos'}" class="btn btn-outline-gold ms-auto">
+                                <i class="bi bi-images"></i> إدارة الصور والفيديو
+                            </a>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" th:text="#{estate.videoUrl}">Video URL</label>
+                                <input type="text" name="videoUrl" th:value="${estate.videoUrl}" class="form-control" dir="ltr"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" th:text="#{estate.arPath}">Virtual tour path/URL</label>
+                                <input type="text" name="arPath" th:value="${estate.arPath}" class="form-control" dir="ltr"/>
+                                <div class="form-text">
+                                    <span th:if="${estate.hasVirtualTour}" class="badge-pill badge-tour"><i class="bi bi-box"></i> <span th:text="#{estate.virtualTour.badge}">3D tour</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="bi bi-person-vcard"></i> <span th:text="#{estate.section.contact}">Advertiser contact (as shown on the listing)</span></div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label" th:text="#{estate.advertiserName}">Advertiser name</label>
+                                <input type="text" name="advertiserName" th:value="${estate.advertiserName}" class="form-control"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" th:text="#{estate.phoneNumber}">Advertiser phone</label>
+                                <input type="text" name="phoneNumber" th:value="${estate.phoneNumber}" class="form-control" dir="ltr"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="sticky-save-bar">
+                        <a th:href="@{/estates}" class="btn btn-outline-gold" th:text="#{common.cancel}">Cancel</a>
+                        <button type="submit" class="btn btn-gold"><i class="bi bi-check2"></i> <span th:text="#{estate.save}">Save changes</span></button>
+                    </div>
+
+                </form>
+            </div>
+
+            <!-- ================================================================= -->
+            <!-- SECTION 2 — Linked user account. Completely separate forms/design. -->
+            <!-- ================================================================= -->
+            <div class="section-block user-block">
+                <div class="section-block-header">
+                    <div class="section-block-icon user-icon"><i class="bi bi-person-check"></i></div>
+                    <div>
+                        <div class="fw-bold fs-6">صاحب الإعلان (حساب المستخدم)</div>
+                        <div class="text-muted small">ابحث عن مستخدم موجود لربطه بهذا العقار، أو عدّل بيانات حسابه — حفظ مستقل تمامًا عن بيانات العقار بالأعلى</div>
                     </div>
                 </div>
 
-                <div class="sticky-save-bar">
-                    <a th:href="@{/estates}" class="btn btn-outline-gold" th:text="#{common.cancel}">Cancel</a>
-                    <button type="submit" class="btn btn-gold" th:text="#{estate.save}">Save changes</button>
+                <div th:if="${userSaved}" class="alert alert-success py-2 px-3 mb-3 small">
+                    <i class="bi bi-check-circle"></i> تم حفظ بيانات المستخدم بنجاح.
                 </div>
 
-            </form>
+                <div class="user-search-dropdown mb-3">
+                    <input type="text" id="userSearchInput" class="form-control form-control-lg" autocomplete="off"
+                           placeholder="ابحث بالاسم أو رقم الجوال..."
+                           th:value="${selectedUser != null ? selectedUser.name + ' — ' + selectedUser.phone : ''}"/>
+                    <div id="userSearchResults" class="user-search-results"></div>
+                </div>
+
+                <div th:if="${selectedUser == null}" class="text-center text-muted py-4">
+                    <i class="bi bi-person-x fs-2 d-block mb-2"></i>
+                    هذا العقار مو مرتبط بمستخدم حاليًا — ابحث واختر واحد بالأعلى
+                </div>
+
+                <div th:if="${selectedUser != null}" class="user-preview-card">
+
+                    <!-- Photo upload - own tiny form -->
+                    <form th:action="@{'/estates/' + ${estate.id} + '/upload-user-photo'}" method="post" enctype="multipart/form-data" class="d-flex align-items-center gap-3 mb-4">
+                        <img th:if="${selectedUser.image}" th:src="${@imageUrlService.profileImage(selectedUser.image)}"
+                             style="width:64px; height:64px; object-fit:cover; border-radius:50%;" onerror="this.style.display='none'"/>
+                        <div th:unless="${selectedUser.image}" class="thumb-fallback" style="width:64px; height:64px; border-radius:50%;"><i class="bi bi-person"></i></div>
+                        <div class="flex-grow-1">
+                            <div class="fw-bold" th:text="${selectedUser.name}">Name</div>
+                            <div class="text-muted small" dir="ltr" th:text="${selectedUser.phone}">phone</div>
+                        </div>
+                        <input type="hidden" name="userId" th:value="${selectedUser.id}"/>
+                        <input type="file" name="file" accept="image/*" class="form-control" style="max-width:220px;" required/>
+                        <button type="submit" class="btn btn-outline-gold text-nowrap"><i class="bi bi-upload"></i> رفع صورة</button>
+                    </form>
+
+                    <!-- Profile + social - its own independent form/Save button -->
+                    <form th:action="@{'/estates/' + ${estate.id} + '/update-user'}" method="post">
+                        <input type="hidden" name="userId" th:value="${selectedUser.id}"/>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">الاسم</label>
+                                <input type="text" name="userName" th:value="${selectedUser.name}" class="form-control"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">الجوال</label>
+                                <input type="text" name="userPhone" th:value="${selectedUser.phone}" class="form-control" dir="ltr"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">البريد الإلكتروني</label>
+                                <input type="text" name="userEmail" th:value="${selectedUser.email}" class="form-control" dir="ltr"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">الرقم الموحد</label>
+                                <input type="text" name="userUnifiedNumber" th:value="${selectedUser.unifiedNumber}" class="form-control" dir="ltr"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">رقم المعلن</label>
+                                <input type="number" name="userAdvertiserNo" th:value="${selectedUser.advertiserNo}" class="form-control" dir="ltr"/>
+                            </div>
+                        </div>
+
+                        <hr/>
+                        <div class="fw-bold small mb-2"><i class="bi bi-share"></i> روابط التواصل الاجتماعي</div>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <label class="form-label"><i class="bi bi-youtube"></i> يوتيوب</label>
+                                <input type="text" name="userYoutube" th:value="${selectedUser.youtube}" class="form-control" dir="ltr"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label"><i class="bi bi-snapchat"></i> سناب شات</label>
+                                <input type="text" name="userSnapchat" th:value="${selectedUser.snapchat}" class="form-control" dir="ltr"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label"><i class="bi bi-instagram"></i> انستقرام</label>
+                                <input type="text" name="userInstagram" th:value="${selectedUser.instagram}" class="form-control" dir="ltr"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label"><i class="bi bi-globe"></i> الموقع الإلكتروني</label>
+                                <input type="text" name="userWebsite" th:value="${selectedUser.website}" class="form-control" dir="ltr"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label"><i class="bi bi-tiktok"></i> تيك توك</label>
+                                <input type="text" name="userTiktok" th:value="${selectedUser.tiktok}" class="form-control" dir="ltr"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label"><i class="bi bi-twitter-x"></i> إكس (تويتر)</label>
+                                <input type="text" name="userTwitter" th:value="${selectedUser.twitter}" class="form-control" dir="ltr"/>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-user-save"><i class="bi bi-check2"></i> حفظ بيانات المستخدم وربطه بالعقار</button>
+                    </form>
+
+                </div>
+            </div>
 
         </div>
     </div>
 </div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var ALL_USERS = /*[[${users}]]*/ [];
+    /*]]>*/
+
+    document.addEventListener('DOMContentLoaded', function () {
+        var input = document.getElementById('userSearchInput');
+        var results = document.getElementById('userSearchResults');
+        if (!input) return;
+
+        function escapeHtml(s) {
+            var div = document.createElement('div');
+            div.textContent = s || '';
+            return div.innerHTML;
+        }
+
+        function renderResults(list) {
+            results.innerHTML = '';
+            if (list.length === 0) {
+                results.innerHTML = '<div class="user-search-empty">لا توجد نتائج</div>';
+                results.classList.add('open');
+                return;
+            }
+            list.slice(0, 30).forEach(function (u) {
+                var item = document.createElement('div');
+                item.className = 'user-search-item';
+                item.innerHTML = '<div class="fw-bold">' + escapeHtml(u.name) + '</div>' +
+                                  '<div class="text-muted small" dir="ltr">' + escapeHtml(u.phone) + '</div>';
+                item.addEventListener('click', function () {
+                    results.classList.remove('open');
+                    var url = new URL(window.location.href);
+                    url.searchParams.set('previewUserId', u.id);
+                    window.location.href = url.toString();
+                });
+                results.appendChild(item);
+            });
+            results.classList.add('open');
+        }
+
+        input.addEventListener('input', function () {
+            var term = input.value.trim().toLowerCase();
+            if (term.length === 0) {
+                results.classList.remove('open');
+                return;
+            }
+            var filtered = ALL_USERS.filter(function (u) {
+                return (u.name && u.name.toLowerCase().includes(term)) ||
+                       (u.phone && u.phone.toLowerCase().includes(term));
+            });
+            renderResults(filtered);
+        });
+
+        input.addEventListener('focus', function () {
+            if (input.value.trim().length > 0) input.dispatchEvent(new Event('input'));
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.user-search-dropdown')) {
+                results.classList.remove('open');
+            }
+        });
+    });
+</script>
 </body>
 </html>

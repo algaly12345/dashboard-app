@@ -1,6 +1,8 @@
 package com.realestate.admin.controller.web;
 
+import com.realestate.admin.entity.AppUser;
 import com.realestate.admin.entity.Estate;
+import com.realestate.admin.repository.AppUserRepository;
 import com.realestate.admin.repository.EstateRepository;
 import com.realestate.admin.service.R2StorageService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +25,7 @@ public class EstateController {
 
     private final EstateRepository estateRepository;
     private final R2StorageService r2StorageService;
+    private final AppUserRepository appUserRepository;
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
     @GetMapping("/estates")
@@ -93,15 +96,23 @@ public class EstateController {
         return "estate-details";
     }
 
-    @GetMapping("/estates/{id}/edit")
-    public String editForm(@PathVariable Long id, Model model) {
-        Estate estate = estateRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Estate not found: " + id));
-        model.addAttribute("estate", estate);
-        model.addAttribute("activePage", "estates");
-        return "estate-edit";
+@GetMapping("/estates/{id}/edit")
+public String editForm(@PathVariable Long id,
+                        @RequestParam(required = false) Long previewUserId,
+                        Model model) {
+    Estate estate = estateRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Estate not found: " + id));
+    model.addAttribute("estate", estate);
+    model.addAttribute("users", appUserRepository.findAll());
+
+    Long userIdToShow = previewUserId != null ? previewUserId : estate.getUserId();
+    if (userIdToShow != null) {
+        appUserRepository.findById(userIdToShow).ifPresent(u -> model.addAttribute("selectedUser", u));
     }
 
+    model.addAttribute("activePage", "estates");
+    return "estate-edit";
+}
     @PostMapping("/estates/{id}")
     public String update(@PathVariable Long id,
                           @RequestParam(required = false) String title,
@@ -168,32 +179,42 @@ public class EstateController {
         return "estate-photos";
     }
 
-    @PostMapping("/estates/{id}/upload-image")
-    public String uploadImage(@PathVariable Long id, @RequestParam("file") MultipartFile file,
-                               @RequestParam(required = false) String redirectTo,
-                               RedirectAttributes redirectAttributes) {
-        Estate estate = estateRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Estate not found: " + id));
+@PostMapping("/estates/{id}/upload-image")
+public String uploadImage(@PathVariable Long id, @RequestParam("files") MultipartFile[] files,
+                           @RequestParam(required = false) String redirectTo,
+                           RedirectAttributes redirectAttributes) {
+    Estate estate = estateRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Estate not found: " + id));
 
+    List<String> images = new ArrayList<>(estate.getImageList());
+    int successCount = 0;
+    String lastError = null;
+
+    for (MultipartFile file : files) {
+        if (file.isEmpty()) continue;
         R2StorageService.UploadResult result = r2StorageService.upload(file, "estate");
         if (result.success()) {
-            List<String> images = new ArrayList<>(estate.getImageList());
             images.add(result.filename());
-            try {
-                estate.setImages(objectMapper.writeValueAsString(images));
-            } catch (Exception ignored) {
-                // keep the previous images value if serialization somehow fails
-            }
-            estate.setUpdatedAt(LocalDateTime.now());
-            estateRepository.save(estate);
-            redirectAttributes.addFlashAttribute("uploadResult", true);
+            successCount++;
         } else {
-            redirectAttributes.addFlashAttribute("uploadResult", false);
-            redirectAttributes.addFlashAttribute("uploadError", result.error());
+            lastError = result.error();
         }
-        return "redirect:" + (redirectTo != null && !redirectTo.isBlank() ? redirectTo : "/estates/" + id + "/edit");
     }
 
+    if (successCount > 0) {
+        try {
+            estate.setImages(objectMapper.writeValueAsString(images));
+        } catch (Exception ignored) {
+        }
+        estate.setUpdatedAt(LocalDateTime.now());
+        estateRepository.save(estate);
+        redirectAttributes.addFlashAttribute("uploadResult", true);
+    } else {
+        redirectAttributes.addFlashAttribute("uploadResult", false);
+        redirectAttributes.addFlashAttribute("uploadError", lastError);
+    }
+    return "redirect:" + (redirectTo != null && !redirectTo.isBlank() ? redirectTo : "/estates/" + id + "/edit");
+}
     @PostMapping("/estates/{id}/delete-image")
     public String deleteImage(@PathVariable Long id, @RequestParam("filename") String filename,
                                @RequestParam(required = false) String redirectTo,
@@ -330,4 +351,70 @@ public class EstateController {
     private String blankToNull(String s) {
         return (s == null || s.isBlank()) ? null : s;
     }
+
+
+    @PostMapping("/estates/{id}/upload-user-photo")
+public String uploadUserPhoto(@PathVariable Long id, @RequestParam("file") MultipartFile file,
+                               @RequestParam Long userId,
+                               RedirectAttributes redirectAttributes) {
+    AppUser user = appUserRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+
+    R2StorageService.UploadResult result = r2StorageService.upload(file, "profile");
+    if (result.success()) {
+        user.setImage(result.filename());
+        user.setUpdatedAt(LocalDateTime.now());
+        appUserRepository.save(user);
+        redirectAttributes.addFlashAttribute("uploadResult", true);
+    } else {
+        redirectAttributes.addFlashAttribute("uploadResult", false);
+        redirectAttributes.addFlashAttribute("uploadError", result.error());
+    }
+    return "redirect:/estates/" + id + "/edit?previewUserId=" + userId;
+}
+
+
+
+@PostMapping("/estates/{id}/update-user")
+public String updateUser(@PathVariable Long id,
+                          @RequestParam Long userId,
+                          @RequestParam(required = false) String userName,
+                          @RequestParam(required = false) String userPhone,
+                          @RequestParam(required = false) String userEmail,
+                          @RequestParam(required = false) String userUnifiedNumber,
+                          @RequestParam(required = false) Integer userAdvertiserNo,
+                          @RequestParam(required = false) String userYoutube,
+                          @RequestParam(required = false) String userSnapchat,
+                          @RequestParam(required = false) String userInstagram,
+                          @RequestParam(required = false) String userWebsite,
+                          @RequestParam(required = false) String userTiktok,
+                          @RequestParam(required = false) String userTwitter,
+                          RedirectAttributes redirectAttributes) {
+
+    AppUser user = appUserRepository.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("User not found: " + userId));
+
+    user.setName(userName);
+    user.setPhone(userPhone);
+    user.setEmail(userEmail);
+    user.setUnifiedNumber(userUnifiedNumber);
+    user.setAdvertiserNo(userAdvertiserNo);
+    user.setYoutube(userYoutube);
+    user.setSnapchat(userSnapchat);
+    user.setInstagram(userInstagram);
+    user.setWebsite(userWebsite);
+    user.setTiktok(userTiktok);
+    user.setTwitter(userTwitter);
+    user.setUpdatedAt(LocalDateTime.now());
+    appUserRepository.save(user);
+
+    Estate estate = estateRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Estate not found: " + id));
+    estate.setUserId(userId);
+    estate.setUpdatedAt(LocalDateTime.now());
+    estateRepository.save(estate);
+
+    redirectAttributes.addFlashAttribute("userSaved", true);
+    return "redirect:/estates/" + id + "/edit?previewUserId=" + userId;
+}
 }

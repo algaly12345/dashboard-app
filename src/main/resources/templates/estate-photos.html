@@ -26,7 +26,6 @@
                 </div>
             </div>
 
-            <!-- Estate summary strip -->
             <div class="card section-card mb-3">
                 <div class="d-flex align-items-center gap-3 flex-wrap">
                     <img th:if="${estate.firstImage}" th:src="${@imageUrlService.estateImage(estate.firstImage)}"
@@ -49,17 +48,22 @@
                 <span th:unless="${uploadResult}" th:text="#{estate.uploadFailed} + ': ' + ${uploadError}">Failed</span>
             </div>
 
-            <!-- Upload -->
             <div class="form-section">
                 <div class="form-section-title"><i class="bi bi-cloud-arrow-up"></i> <span th:text="#{estate.addPhotos}">Add photos</span></div>
-                <form th:action="@{'/estates/' + ${estate.id} + '/upload-image'}" method="post" enctype="multipart/form-data" class="d-flex gap-2 flex-wrap">
+                <form th:action="@{'/estates/' + ${estate.id} + '/upload-image'}" method="post" enctype="multipart/form-data">
                     <input type="hidden" name="redirectTo" th:value="@{'/estates/' + ${estate.id} + '/photos'}"/>
-                    <input type="file" name="file" accept="image/*" class="form-control" style="max-width:340px;" required/>
-                    <button type="submit" class="btn btn-gold text-nowrap"><i class="bi bi-upload"></i> <span th:text="#{estate.uploadPhoto}">Upload</span></button>
+                    <label class="multi-upload-drop" id="photoDropZone">
+                        <i class="bi bi-images fs-2"></i>
+                        <div class="fw-bold">اختر صورًا متعددة أو اسحبها هنا</div>
+                        <div class="text-muted small" id="photoFileCount">يدعم اختيار أكثر من صورة دفعة وحدة</div>
+                        <input type="file" name="files" accept="image/*" multiple required id="photoFileInput" hidden/>
+                    </label>
+                    <button type="submit" class="btn btn-gold mt-3">
+                        <i class="bi bi-upload"></i> <span th:text="#{estate.uploadPhoto}">Upload</span>
+                    </button>
                 </form>
             </div>
 
-            <!-- Gallery -->
             <div class="form-section">
                 <div class="form-section-title"><i class="bi bi-images"></i> <span th:text="#{estate.section.gallery}">Photos</span></div>
 
@@ -82,7 +86,6 @@
                 </div>
             </div>
 
-            <!-- Master plan images -->
             <div class="form-section">
                 <div class="form-section-title"><i class="bi bi-vector-pen"></i> <span th:text="#{estate.section.plan}">Master plan</span></div>
 
@@ -103,15 +106,20 @@
                     </div>
                 </div>
 
-                <form th:action="@{'/estates/' + ${estate.id} + '/upload-plan'}" method="post" enctype="multipart/form-data" class="d-flex gap-2 flex-wrap">
+                <form th:action="@{'/estates/' + ${estate.id} + '/upload-plan'}" method="post" enctype="multipart/form-data">
                     <input type="hidden" name="redirectTo" th:value="@{'/estates/' + ${estate.id} + '/photos'}"/>
-                    <input type="file" name="file" accept="image/*" class="form-control" style="max-width:340px;" required/>
-                    <button type="submit" class="btn btn-outline-gold text-nowrap"><i class="bi bi-upload"></i> <span th:text="#{estate.addPlan}">Add plan image</span></button>
+                    <label class="multi-upload-drop multi-upload-drop-sm" id="planDropZone">
+                        <i class="bi bi-vector-pen fs-4"></i>
+                        <div class="fw-bold small">اختر صور مخطط (يدعم التعدد)</div>
+                        <input type="file" name="files" accept="image/*" multiple required id="planFileInput" hidden/>
+                    </label>
+                    <button type="submit" class="btn btn-outline-gold mt-3">
+                        <i class="bi bi-upload"></i> <span th:text="#{estate.addPlan}">Add plan image</span>
+                    </button>
                 </form>
             </div>
 
             <div class="row g-3">
-                <!-- Video -->
                 <div class="col-lg-6">
                     <div class="form-section h-100">
                         <div class="form-section-title"><i class="bi bi-camera-reels"></i> <span th:text="#{estate.section.video}">Video</span></div>
@@ -128,7 +136,6 @@
                     </div>
                 </div>
 
-                <!-- Skyview -->
                 <div class="col-lg-6">
                     <div class="form-section h-100">
                         <div class="form-section-title"><i class="bi bi-airplane"></i> <span th:text="#{estate.section.skyview}">Sky view</span></div>
@@ -149,5 +156,37 @@
         </div>
     </div>
 </div>
+
+<script>
+    function wireMultiUpload(inputId, zoneId, countId) {
+        var input = document.getElementById(inputId);
+        var zone = document.getElementById(zoneId);
+        if (!input || !zone) return;
+        input.addEventListener('change', function () {
+            var n = input.files ? input.files.length : 0;
+            var countEl = countId ? document.getElementById(countId) : null;
+            if (n > 0) {
+                zone.classList.add('has-files');
+                if (countEl) countEl.textContent = n + ' صورة محددة جاهزة للرفع';
+            } else if (countEl) {
+                countEl.textContent = 'يدعم اختيار أكثر من صورة دفعة وحدة';
+            }
+        });
+        zone.addEventListener('dragover', function (e) { e.preventDefault(); zone.classList.add('dragging'); });
+        zone.addEventListener('dragleave', function () { zone.classList.remove('dragging'); });
+        zone.addEventListener('drop', function (e) {
+            e.preventDefault();
+            zone.classList.remove('dragging');
+            if (e.dataTransfer && e.dataTransfer.files.length) {
+                input.files = e.dataTransfer.files;
+                input.dispatchEvent(new Event('change'));
+            }
+        });
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        wireMultiUpload('photoFileInput', 'photoDropZone', 'photoFileCount');
+        wireMultiUpload('planFileInput', 'planDropZone', null);
+    });
+</script>
 </body>
 </html>

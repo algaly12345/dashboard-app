@@ -24,8 +24,9 @@ public class Agent {
     @Column(name = "unified_number")
     private String unifiedNumber;
 
-    @Column(name = "advertiser_no")
-    private String advertiserNo;
+ @Column(name = "advertiser_no")
+private String advertiserNo;
+
 
     @Column(name = "agent_type", nullable = false)
     private String agentType;
