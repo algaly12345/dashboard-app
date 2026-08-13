@@ -884,3 +884,23 @@ a.report-estate-chip:hover{ border-color: var(--violet); background:#F5F9FF; }
 }
 .advertiser-stat-value{ font-size:1.4rem; font-weight:800; color:var(--violet); line-height:1.1; }
 .advertiser-stat-label{ font-size:.78rem; color:var(--text-muted); font-weight:600; }
+
+/* ---------- Preview page - quick-glance summary strip ---------- */
+.preview-hero{
+  display:flex; flex-wrap:wrap; gap:0; background:#fff; border-radius:16px;
+  box-shadow: var(--shadow); margin-bottom:16px; overflow:hidden;
+}
+.preview-hero-item{
+  flex:1; min-width:140px; display:flex; align-items:center; gap:10px;
+  padding:16px 18px; border-inline-end:1px solid var(--border);
+}
+.preview-hero-item:last-child{ border-inline-end:none; }
+.preview-hero-item i{
+  font-size:1.3rem; color:var(--violet); width:36px; height:36px; border-radius:10px;
+  background:#F0EEFA; display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.preview-hero-value{ font-weight:800; font-size:.92rem; color:var(--text); }
+.preview-hero-label{ font-size:.72rem; color:var(--text-muted); }
+@media (max-width: 900px){
+  .preview-hero-item{ border-inline-end:none; border-bottom:1px solid var(--border); flex:1 1 45%; }
+}

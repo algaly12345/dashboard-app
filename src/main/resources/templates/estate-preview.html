@@ -81,6 +81,12 @@
                 <input type="hidden" name="propertyUsages" th:value="${propertyUsages}"/>
                 <input type="hidden" name="categoryName" th:value="${categoryName}"/>
 
+
+                <input type="hidden" name="propertyArea" th:value="${propertyArea}"/>
+<input type="hidden" name="streetWidth" th:value="${streetWidth}"/>
+<input type="hidden" name="street" th:value="${street}"/>
+<input type="hidden" name="buildingNumber" th:value="${buildingNumber}"/>
+
                 <!-- Editable: title / descriptions - pre-filled from NHC, admin can change before saving -->
                 <div class="form-section editable-section">
                     <div class="form-section-title">
@@ -99,6 +105,9 @@
                         <label class="form-label fw-bold">الوصف الكامل</label>
                         <textarea name="longDescription" rows="5" class="form-control" th:text="${suggestedLongDescription}"></textarea>
                     </div>
+
+
+                    
                 </div>
 
                 <!-- Zone -->

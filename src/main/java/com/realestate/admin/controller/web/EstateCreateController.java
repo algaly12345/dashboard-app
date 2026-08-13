@@ -232,7 +232,16 @@ public class EstateCreateController {
         Estate estate = new Estate();
         estate.setId(estateRepository.findMaxId() + 1);
     
-        estate.setId(estateRepository.findMaxId() + 1);
+      estate.setPlanned("[]");
+estate.setSpace(form.get("propertyArea"));
+estate.setStreetSpace(form.get("streetWidth"));
+
+String addressParts = java.util.stream.Stream.of(
+                form.get("street"), form.get("buildingNumber"), form.get("districts"), form.get("city"))
+        .filter(s -> s != null && !s.isBlank())
+        .collect(java.util.stream.Collectors.joining("، "));
+estate.setAddress(addressParts.isBlank() ? null : addressParts);
+
         estate.setIdentityOrUnified(advertiserNumber);
         estate.setEstateType(isEntity ? "2" : "1");
        estate.setAdvertiserNo(parseIntOrNull(form.get("licenseNumber")));
