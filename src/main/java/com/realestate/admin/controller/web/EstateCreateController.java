@@ -231,6 +231,12 @@ public class EstateCreateController {
 
         Estate estate = new Estate();
         estate.setId(estateRepository.findMaxId() + 1);
+    
+        estate.setId(estateRepository.findMaxId() + 1);
+        estate.setIdentityOrUnified(advertiserNumber);
+        estate.setEstateType(isEntity ? "2" : "1");
+       estate.setAdvertiserNo(parseIntOrNull(form.get("licenseNumber")));
+        estate.setAdNumber(form.get("licenseNumber"));
         estate.setTitle(form.get("title"));
 estate.setShortDescription(form.get("shortDescription"));
 estate.setLongDescription(form.get("longDescription"));
