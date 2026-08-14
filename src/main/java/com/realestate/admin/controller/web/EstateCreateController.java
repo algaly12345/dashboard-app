@@ -21,6 +21,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -161,6 +164,22 @@ public class EstateCreateController {
         String categoryName = text(ad, "propertyType");
         model.addAttribute("categoryName", categoryName);
 
+
+
+        List<String> nhcUtilities = new ArrayList<>();
+if (ad.has("propertyUtilities") && ad.get("propertyUtilities").isArray()) {
+    for (JsonNode n : ad.get("propertyUtilities")) nhcUtilities.add(n.asText());
+}
+boolean hasElectricity = nhcUtilities.stream().anyMatch(u -> u.contains("كهرباء"));
+boolean hasWater = nhcUtilities.stream().anyMatch(u -> u.contains("مياه") || u.contains("ماء"));
+model.addAttribute("hasElectricity", hasElectricity);
+model.addAttribute("hasWater", hasWater);
+
+boolean isLandOrFarm = categoryName != null && (categoryName.contains("أرض") || categoryName.contains("مزرعة"));
+model.addAttribute("showRoomDetails", !isLandOrFarm);
+
+
+
         // Preview whether this advertiser already has an agent record - matched
         // by identity (individual) or unified_number (entity), NOT by phone.
         Optional<Agent> existing = "2".equals(idType)
@@ -287,6 +306,34 @@ estate.setPrice(priceValue);
         estate.setMainLandUseTypeName(form.get("mainLandUseTypeName"));
         estate.setPropertyUsages(form.get("propertyUsages"));
 
+
+
+
+        List<Map<String, String>> advantagesList = new ArrayList<>();
+if (form.containsKey("advElectricity")) advantagesList.add(Map.of("name", "توفر كهرباء"));
+if (form.containsKey("advWater")) advantagesList.add(Map.of("name", "توفر ماء"));
+if (form.containsKey("advParking")) advantagesList.add(Map.of("name", "مدخل سيارة"));
+if (form.containsKey("advAnnex")) advantagesList.add(Map.of("name", "ملحق"));
+if (form.containsKey("advStairs")) advantagesList.add(Map.of("name", "درج صالة"));
+if (form.containsKey("advYard")) advantagesList.add(Map.of("name", "حوش"));
+if (form.containsKey("advMaidRoom")) advantagesList.add(Map.of("name", "غرفة خادمة"));
+if (form.containsKey("advDriverRoom")) advantagesList.add(Map.of("name", "غرفة سائق"));
+try {
+    estate.setOtherAdvantages(objectMapper.writeValueAsString(advantagesList));
+} catch (Exception ignored) {
+}
+
+List<Map<String, String>> roomsList = new ArrayList<>();
+addRoom(roomsList, "حمام", form.get("roomsBathroom"));
+addRoom(roomsList, "غرف نوم", form.get("roomsBedroom"));
+addRoom(roomsList, "صالات", form.get("roomsLounge"));
+addRoom(roomsList, "مطبخ", form.get("roomsKitchen"));
+try {
+    estate.setProperty(objectMapper.writeValueAsString(roomsList));
+} catch (Exception ignored) {
+}
+
+
         String categoryName = form.get("categoryName");
         estate.setCategoryName(categoryName);
         if (categoryName != null) {
@@ -345,4 +392,14 @@ estate.setPrice(priceValue);
             return null;
         }
     }
+
+
+    private void addRoom(List<Map<String, String>> list, String name, String value) {
+    if (value != null && !value.isBlank()) {
+        Map<String, String> m = new java.util.LinkedHashMap<>();
+        m.put("name", name);
+        m.put("number", value);
+        list.add(m);
+    }
+}
 }

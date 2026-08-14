@@ -127,6 +127,68 @@
                     </select>
                 </div>
 
+
+                <!-- Additional advantages -->
+<div class="form-section">
+    <div class="form-section-title"><i class="bi bi-stars"></i> المميزات الإضافية</div>
+    <div class="advantages-grid">
+        <label class="advantage-check">
+            <input type="checkbox" name="advElectricity" th:checked="${hasElectricity}"/>
+            <span><i class="bi bi-lightning-charge"></i> توفر كهرباء</span>
+        </label>
+        <label class="advantage-check">
+            <input type="checkbox" name="advWater" th:checked="${hasWater}"/>
+            <span><i class="bi bi-droplet"></i> توفر ماء</span>
+        </label>
+        <label class="advantage-check">
+            <input type="checkbox" name="advParking"/>
+            <span><i class="bi bi-car-front"></i> مدخل سيارة</span>
+        </label>
+        <label class="advantage-check">
+            <input type="checkbox" name="advAnnex"/>
+            <span><i class="bi bi-house-add"></i> ملحق</span>
+        </label>
+        <label class="advantage-check">
+            <input type="checkbox" name="advStairs"/>
+            <span><i class="bi bi-stairs"></i> درج صالة</span>
+        </label>
+        <label class="advantage-check">
+            <input type="checkbox" name="advYard"/>
+            <span><i class="bi bi-tree"></i> حوش</span>
+        </label>
+        <label class="advantage-check">
+            <input type="checkbox" name="advMaidRoom"/>
+            <span><i class="bi bi-person-badge"></i> غرفة خادمة</span>
+        </label>
+        <label class="advantage-check">
+            <input type="checkbox" name="advDriverRoom"/>
+            <span><i class="bi bi-person-workspace"></i> غرفة سائق</span>
+        </label>
+    </div>
+</div>
+
+<!-- Room details - hidden entirely for land/farm listings -->
+<div class="form-section" th:if="${showRoomDetails}">
+    <div class="form-section-title"><i class="bi bi-door-open"></i> تفاصيل الغرف</div>
+    <div class="row g-3">
+        <div class="col-md-3">
+            <label class="form-label">عدد غرف النوم</label>
+            <input type="number" name="roomsBedroom" min="0" th:value="${numberOfRooms}" class="form-control form-control-lg"/>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">عدد الحمامات</label>
+            <input type="number" name="roomsBathroom" min="0" class="form-control form-control-lg"/>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">عدد الصالات</label>
+            <input type="number" name="roomsLounge" min="0" class="form-control form-control-lg"/>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">عدد المطابخ</label>
+            <input type="number" name="roomsKitchen" min="0" class="form-control form-control-lg"/>
+        </div>
+    </div>
+</div>
                 <!-- Core property facts (read-only reference) -->
                 <div class="form-section">
                     <div class="form-section-title"><i class="bi bi-house-door"></i> بيانات العقار الأساسية (من الهيئة)</div>

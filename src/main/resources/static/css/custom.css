@@ -904,3 +904,20 @@ a.report-estate-chip:hover{ border-color: var(--violet); background:#F5F9FF; }
 @media (max-width: 900px){
   .preview-hero-item{ border-inline-end:none; border-bottom:1px solid var(--border); flex:1 1 45%; }
 }
+
+
+
+
+
+/* ---------- Advantages checkbox grid ---------- */
+.advantages-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px; }
+.advantage-check{
+  display:flex; align-items:center; gap:8px; padding:12px 14px;
+  border:2px solid var(--border); border-radius:12px; cursor:pointer; transition: all .15s ease;
+}
+.advantage-check input{ width:18px; height:18px; }
+.advantage-check span{ font-size:.85rem; font-weight:700; color:var(--text-muted); display:flex; align-items:center; gap:6px; }
+.advantage-check:has(input:checked){
+  border-color:var(--violet); background:#F0EEFA;
+}
+.advantage-check:has(input:checked) span{ color:var(--violet); }
