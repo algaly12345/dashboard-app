@@ -231,6 +231,10 @@ public class Estate {
     @Column(name = "isValid", nullable = false)
     private Integer isValid = 1;
 
+
+    @Column(name = "network_type")
+private String networkType;
+
     /** DB column is literally `identityـorـunified` (Arabic tatweel chars). */
     @Column(name = "identityـorـunified")
     private String identityOrUnified;

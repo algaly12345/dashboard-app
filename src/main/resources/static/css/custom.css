@@ -921,3 +921,18 @@ a.report-estate-chip:hover{ border-color: var(--violet); background:#F5F9FF; }
   border-color:var(--violet); background:#F0EEFA;
 }
 .advantage-check:has(input:checked) span{ color:var(--violet); }
+
+
+
+
+/* ---------- Network type checkbox grid ---------- */
+.network-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:10px; }
+.network-check{
+  display:flex; align-items:center; gap:8px; padding:10px 14px;
+  border:2px solid var(--border); border-radius:12px; cursor:pointer; transition: all .15s ease;
+}
+.network-check input{ width:18px; height:18px; }
+.network-check img{ width:24px; height:24px; object-fit:contain; }
+.network-check span{ font-size:.82rem; font-weight:700; color:var(--text-muted); }
+.network-check:has(input:checked){ border-color:var(--violet); background:#F0EEFA; }
+.network-check:has(input:checked) span{ color:var(--violet); }

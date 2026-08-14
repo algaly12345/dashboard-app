@@ -323,6 +323,22 @@ try {
 } catch (Exception ignored) {
 }
 
+
+
+
+List<Map<String, String>> networkList = new ArrayList<>();
+addNetwork(networkList, form, "netZain5G", "Zain 5G", "f1.png");
+addNetwork(networkList, form, "netZain4G", "Zain 4G", "f1.png");
+addNetwork(networkList, form, "netStc5G", "STC 5G", "f2.png");
+addNetwork(networkList, form, "netStc4G", "STC 4G", "f2.png");
+addNetwork(networkList, form, "netMobily5G", "Mobily 5G", "f3.png");
+addNetwork(networkList, form, "netMobily4G", "Mobily 4G", "f3.png");
+try {
+    estate.setNetworkType(objectMapper.writeValueAsString(networkList));
+} catch (Exception ignored) {
+}
+
+
 List<Map<String, String>> roomsList = new ArrayList<>();
 addRoom(roomsList, "حمام", form.get("roomsBathroom"));
 addRoom(roomsList, "غرف نوم", form.get("roomsBedroom"));
@@ -399,6 +415,17 @@ try {
         Map<String, String> m = new java.util.LinkedHashMap<>();
         m.put("name", name);
         m.put("number", value);
+        list.add(m);
+    }
+}
+
+
+private void addNetwork(List<Map<String, String>> list, java.util.Map<String, String> form,
+                         String fieldName, String label, String image) {
+    if (form.containsKey(fieldName)) {
+        Map<String, String> m = new java.util.LinkedHashMap<>();
+        m.put("name", label);
+        m.put("image", image);
         list.add(m);
     }
 }
