@@ -239,6 +239,7 @@ model.addAttribute("showRoomDetails", !isLandOrFarm);
             } else {
                 agent.setIdentity(advertiserNumber);
             }
+            
             agent.setAdvertiserNo(advertiserNumber);
             agent.setAgentType(isEntity ? "company" : "individual");
             agent.setMembershipType(Agent.MembershipType.agent);
