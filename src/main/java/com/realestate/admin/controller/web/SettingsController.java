@@ -95,7 +95,8 @@ model.addAttribute("firebaseHasCredentials", !settingsService.get("firebase_serv
                 com.fasterxml.jackson.databind.JsonNode node = objectMapper.readTree(fbJson);
                 model.addAttribute("firebaseProjectId", node.path("project_id").asText(""));
                 model.addAttribute("firebaseClientEmail", node.path("client_email").asText(""));
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                System.out.println("FIREBASE JSON PARSE ERROR: " + e.getMessage());
             }
         }
 model.addAttribute("firebaseEnabled", "1".equals(settingsService.get("firebase_enabled", "0")));

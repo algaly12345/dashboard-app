@@ -3,6 +3,9 @@ package com.realestate.admin.service;
 import com.google.firebase.messaging.FirebaseMessagingException;
 import com.google.firebase.messaging.Message;
 import com.google.firebase.messaging.Notification;
+import com.google.firebase.messaging.ApnsConfig;
+import com.google.firebase.messaging.Aps;
+import com.google.firebase.messaging.ApsAlert;
 import com.realestate.admin.config.FirebaseMessagingHolder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +49,18 @@ public class NotificationSendService {
         String condition = buildCondition(zoneId, categoryId, audience);
 
         Message.Builder builder = Message.builder()
-                .setNotification(Notification.builder().setTitle(title).setBody(body).build());
+                .setNotification(Notification.builder().setTitle(title).setBody(body).build())
+                .setApnsConfig(ApnsConfig.builder()
+                        .setAps(Aps.builder()
+                                .setAlert(ApsAlert.builder()
+                                        .setTitle(title)
+                                        .setBody(body)
+                                        .build())
+                                .setSound("default")
+                                .setContentAvailable(true)
+                                .setMutableContent(true)
+                                .build())
+                        .build());
 
         if (condition != null) {
             builder.setCondition(condition);
