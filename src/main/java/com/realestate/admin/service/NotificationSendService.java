@@ -51,6 +51,8 @@ public class NotificationSendService {
         Message.Builder builder = Message.builder()
                 .setNotification(Notification.builder().setTitle(title).setBody(body).build())
                 .setApnsConfig(ApnsConfig.builder()
+                        .putHeader("apns-priority", "10")
+                        .putHeader("apns-push-type", "alert")
                         .setAps(Aps.builder()
                                 .setAlert(ApsAlert.builder()
                                         .setTitle(title)
