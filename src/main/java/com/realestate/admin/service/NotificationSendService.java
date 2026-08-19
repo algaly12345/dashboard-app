@@ -57,8 +57,6 @@ public class NotificationSendService {
                                         .setBody(body)
                                         .build())
                                 .setSound("default")
-                                .setContentAvailable(true)
-                                .setMutableContent(true)
                                 .build())
                         .build());
 
