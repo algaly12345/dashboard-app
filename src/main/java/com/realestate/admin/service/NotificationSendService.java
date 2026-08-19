@@ -53,6 +53,7 @@ public class NotificationSendService {
                 .setApnsConfig(ApnsConfig.builder()
                         .putHeader("apns-priority", "10")
                         .putHeader("apns-push-type", "alert")
+                        .putHeader("apns-topic", "sa.pdm.abaad.abaad")
                         .setAps(Aps.builder()
                                 .setAlert(ApsAlert.builder()
                                         .setTitle(title)
