@@ -63,8 +63,10 @@ public class NotificationSendService {
                         .build());
 
         if (condition != null) {
+            log.info("Sending FCM with CONDITION: {}", condition);
             builder.setCondition(condition);
         } else {
+            log.info("Sending FCM with TOPIC: all_users");
             builder.setTopic("all_users");
         }
 
