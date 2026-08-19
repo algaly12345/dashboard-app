@@ -85,6 +85,20 @@ public class SettingsController {
         model.addAttribute("nhcHasSecret", !settingsService.get("nhc_client_secret", "").isBlank());
 
         model.addAttribute("activePage", "settings");
+
+        model.addAttribute("firebaseServiceAccountJson", settingsService.get("firebase_service_account_json", ""));
+model.addAttribute("firebaseHasCredentials", !settingsService.get("firebase_service_account_json", "").isBlank());
+
+        String fbJson = settingsService.get("firebase_service_account_json", "");
+        if (!fbJson.isBlank()) {
+            try {
+                com.fasterxml.jackson.databind.JsonNode node = objectMapper.readTree(fbJson);
+                model.addAttribute("firebaseProjectId", node.path("project_id").asText(""));
+                model.addAttribute("firebaseClientEmail", node.path("client_email").asText(""));
+            } catch (Exception ignored) {
+            }
+        }
+model.addAttribute("firebaseEnabled", "1".equals(settingsService.get("firebase_enabled", "0")));
         return "settings";
     }
 
@@ -151,6 +165,12 @@ public class SettingsController {
 
         settingsService.set("app_min_version_android", form.get("appMinVersionAndroid"));
         settingsService.set("app_min_version_ios", form.get("appMinVersionIos"));
+
+
+        if (form.get("firebaseServiceAccountJson") != null && !form.get("firebaseServiceAccountJson").isBlank()) {
+    settingsService.set("firebase_service_account_json", form.get("firebaseServiceAccountJson"));
+}
+settingsService.set("firebase_enabled", form.containsKey("firebaseEnabled") ? "1" : "0");
 
         settingsService.set("nhc_client_id", form.get("nhcClientId"));
         if (form.get("nhcClientSecret") != null && !form.get("nhcClientSecret").isBlank()) {

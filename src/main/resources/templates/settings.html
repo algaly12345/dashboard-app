@@ -347,6 +347,42 @@
                             </div>
                         </div>
 
+
+                        <div class="form-section" style="border:2px solid var(--violet); background: linear-gradient(135deg, #F8F7FF, #fff);">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <div class="form-section-title mb-0" style="color: var(--violet);">
+            <i class="bi bi-bell-fill"></i> Firebase Admin SDK (الطريقة الحديثة)
+        </div>
+<span th:if="${firebaseHasCredentials and firebaseEnabled}" class="badge-pill badge-active"><i class="bi bi-check-circle"></i> مفعّل وشغّال</span>
+<span th:if="${firebaseHasCredentials and not firebaseEnabled}" class="badge-pill" style="background:#FFF4E5; color:#B5690A;"><i class="bi bi-pause-circle"></i> بيانات محفوظة، لكن السويتش مطفي</span>
+<span th:unless="${firebaseHasCredentials}" class="badge-pill badge-disactive"><i class="bi bi-exclamation-triangle"></i> غير مفعّل</span>
+    </div>
+    <p class="text-muted small">
+        الصق هنا محتوى ملف JSON كامل اللي نزّلته من Firebase Console (Project Settings → Service accounts → Generate new private key).
+    </p>
+
+    <div class="form-check form-switch mb-3">
+        <input type="checkbox" name="firebaseEnabled" th:checked="${firebaseEnabled}" class="form-check-input" id="fbEnabled"/>
+        <label class="form-check-label" for="fbEnabled">تفعيل إرسال الإشعارات عبر Firebase</label>
+    </div>
+
+    <label class="form-label fw-bold">محتوى ملف Service Account (JSON)</label>
+    <textarea name="firebaseServiceAccountJson" rows="8" class="form-control" dir="ltr"
+              style="font-family:monospace; font-size:.72rem;"
+              placeholder='{"type": "service_account", "project_id": "...", ...}'></textarea>
+    <div class="form-text">
+        <div th:if="${firebaseHasCredentials}">
+            <i class="bi bi-check-circle text-success"></i> فيه بيانات محفوظة حاليًا لهذا الحساب:
+            <div class="mt-1">
+                <div><strong>Project ID:</strong> <span dir="ltr" th:text="${firebaseProjectId}">-</span></div>
+                <div><strong>Client Email:</strong> <span dir="ltr" th:text="${firebaseClientEmail}">-</span></div>
+            </div>
+            اتركه فاضي إذا ما تبي تغيّرها.
+        </div>
+        <span th:unless="${firebaseHasCredentials}">لسا ما فيه بيانات محفوظة.</span>
+    </div>
+</div>
+
                     </div>
                 </div>
 
