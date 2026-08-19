@@ -72,9 +72,11 @@ public class NotificationSendService {
 
         try {
             String messageId = firebaseMessagingHolder.messaging().send(builder.build());
+            log.info("FCM send full response - messageId: {}", messageId);
             return new SendResult(true, messageId, null);
         } catch (FirebaseMessagingException e) {
-            log.error("FCM send failed", e);
+            log.error("FCM send failed - ErrorCode: {}, MessagingErrorCode: {}, Details: {}",
+                    e.getErrorCode(), e.getMessagingErrorCode(), e.getMessage(), e);
             return new SendResult(false, null, e.getMessage());
         }
     }
