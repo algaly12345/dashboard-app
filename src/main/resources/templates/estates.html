@@ -32,6 +32,14 @@
                         <input type="text" name="q" th:value="${q}" class="form-control" th:placeholder="#{estate.search.placeholder}"/>
                     </div>
                     <div class="col-md-2">
+                        <label class="form-label">المنطقة</label>
+                        <select name="zoneId" class="form-select" onchange="this.form.submit()">
+                            <option value="">كل المناطق</option>
+                            <option th:each="z : ${zones}" th:value="${z.id}" th:text="${z.nameAr}"
+                                    th:selected="${zoneId != null and zoneId == z.id.toString()}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
                         <label class="form-label" th:text="#{estate.city}">City</label>
                         <select name="city" class="form-select">
                             <option value="" th:text="#{estate.filter.city}">All cities</option>
@@ -90,7 +98,17 @@
                         <label class="form-label" th:text="#{estate.maxPrice}">Max price</label>
                         <input type="number" name="maxPrice" th:value="${maxPrice}" class="form-control" placeholder="—"/>
                     </div>
-                    <div class="col-md-4 text-end">
+                    <div class="col-md-3">
+                        <label class="form-label d-block">&nbsp;</label>
+                        <div class="form-check form-switch">
+                            <input type="checkbox" name="licenseExpired" value="true" class="form-check-input" id="expiredCheck"
+                                   th:checked="${licenseExpired == 'true'}" onchange="this.form.submit()"/>
+                            <label class="form-check-label small" for="expiredCheck" style="color: var(--danger);">
+                                <i class="bi bi-exclamation-triangle"></i> عقارات منتهية الرخصة فقط
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-1 text-end">
                         <a th:href="@{/estates/map}" class="btn btn-outline-gold btn-sm">
                             <i class="bi bi-geo-alt"></i> <span th:text="#{estate.mapView}">Map view</span>
                         </a>

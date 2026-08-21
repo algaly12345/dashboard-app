@@ -27,6 +27,7 @@ public class EstateController {
     private final R2StorageService r2StorageService;
     private final AppUserRepository appUserRepository;
     private final com.realestate.admin.service.ImageUrlService imageUrlService;
+    private final com.realestate.admin.repository.ZoneRepository zoneRepository;
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
 
@@ -62,11 +63,11 @@ public String list(@RequestParam(required = false) String q,
     } else {
         result = estateRepository.search(
                 blankToNull(q), statusEnum, blankToNull(city), blankToNull(category), blankToNull(adType),
-                blankToNull(estateType), virtualTourBool, minPriceVal, maxPriceVal,
+                blankToNull(estateType), virtualTourBool, minPriceVal, maxPriceVal, zoneIdLong,
                 PageRequest.of(page, 12, Sort.by(Sort.Direction.DESC, "createdAt")));
     }
 
-    List<String> cities = estateRepository.findDistinctCities();
+    List<String> cities = estateRepository.findDistinctCitiesByZone(zoneIdLong);
     List<String> categories = estateRepository.findDistinctCategoryNames();
     List<String> estateTypes = estateRepository.findDistinctEstateTypes();
 
@@ -93,6 +94,7 @@ public String list(@RequestParam(required = false) String q,
     model.addAttribute("estates", result);
     model.addAttribute("estateUsers", estateUsers);
     model.addAttribute("cities", cities);
+    model.addAttribute("zones", zoneRepository.findAll());
     model.addAttribute("categories", categories);
     model.addAttribute("estateTypes", estateTypes);
     model.addAttribute("q", q);

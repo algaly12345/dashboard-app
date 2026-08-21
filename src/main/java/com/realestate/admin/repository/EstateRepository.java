@@ -126,6 +126,7 @@ Long findMaxId();
                   or (:virtualTour = false and (e.arPath is null or e.arPath = '')))
              and (:minPrice is null or cast(e.price as big_decimal) >= :minPrice)
              and (:maxPrice is null or cast(e.price as big_decimal) <= :maxPrice)
+             and (:zoneId is null or e.zoneId = :zoneId)
            order by e.createdAt desc
            """)
     Page<Estate> search(@Param("q") String q,
@@ -137,6 +138,7 @@ Long findMaxId();
                          @Param("virtualTour") Boolean virtualTour,
                          @Param("minPrice") Double minPrice,
                          @Param("maxPrice") Double maxPrice,
+                         @Param("zoneId") Long zoneId,
                          Pageable pageable);
 
     List<Estate> findTop6ByOrderByCreatedAtDesc();

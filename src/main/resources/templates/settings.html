@@ -386,7 +386,29 @@
                     </div>
                 </div>
 
-                <div class="sticky-save-bar">
+                <div class="form-section">
+    <div class="form-section-title"><i class="bi bi-link-45deg"></i> ربط API اللارافيل</div>
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <strong class="small">توكن الأدمن</strong>
+        <span th:if="${laravelAdminTokenSet}" class="badge-pill badge-active"><i class="bi bi-check-circle"></i> مضبوط</span>
+        <span th:unless="${laravelAdminTokenSet}" class="badge-pill badge-disactive"><i class="bi bi-exclamation-triangle"></i> غير مضبوط</span>
+    </div>
+    <p class="text-muted small">التوكن اللي ولّدته من php artisan tinker — يُستخدم لتحديث حالة العروض بالتزامن مع اللارافيل عند الاعتماد/الرفض.</p>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">رابط API اللارافيل</label>
+            <input type="text" name="laravelApiUrl" th:value="${laravelApiUrl}" class="form-control" dir="ltr"/>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">توكن الأدمن</label>
+            <input type="password" name="laravelAdminToken" class="form-control" dir="ltr" autocomplete="new-password"
+                   th:placeholder="${laravelAdminTokenSet} ? '••••••••••••••••' : ''"/>
+            <div class="form-text">اتركه فاضي إذا ما تبي تغيّره</div>
+        </div>
+    </div>
+</div>
+
+<div class="sticky-save-bar">
                     <button type="submit" class="btn btn-gold"><i class="bi bi-check2"></i> <span th:text="#{settings.save}">Save</span></button>
                 </div>
             </form>

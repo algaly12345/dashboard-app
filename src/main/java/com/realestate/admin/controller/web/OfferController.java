@@ -39,6 +39,8 @@ public class OfferController {
     private final CategoryOfferRepository categoryOfferRepository;
     private final AppUserRepository appUserRepository;
     private final R2StorageService r2StorageService;
+    private final com.realestate.admin.service.SettingsService settingsService;
+    private final org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
 
     @GetMapping("/offers")
     public String list(@RequestParam(required = false) String q,
@@ -176,6 +178,7 @@ public String uploadImage(@PathVariable Long id, @RequestParam("file") Multipart
     /** Quick-action approval ("اعتماد الخدمة") straight from the list. */
     @PostMapping("/offers/{id}/approve")
     public String approve(@PathVariable Long id, @RequestParam(required = false) String redirectTo) {
+        updateStatusViaLaravel(id, "accept");
         offerRepository.findById(id).ifPresent(offer -> {
             offer.setStatus("accept");
             offer.setUpdatedAt(LocalDateTime.now());
@@ -186,12 +189,46 @@ public String uploadImage(@PathVariable Long id, @RequestParam("file") Multipart
 
     @PostMapping("/offers/{id}/reject")
     public String reject(@PathVariable Long id, @RequestParam(required = false) String redirectTo) {
+        updateStatusViaLaravel(id, "rejected");
         offerRepository.findById(id).ifPresent(offer -> {
             offer.setStatus("reject");
             offer.setUpdatedAt(LocalDateTime.now());
             offerRepository.save(offer);
         });
         return "redirect:" + (redirectTo != null && !redirectTo.isBlank() ? redirectTo : "/offers");
+    }
+
+    private void updateStatusViaLaravel(Long id, String status) {
+        String baseUrl = settingsService.get("laravel_api_url", "");
+        String token = settingsService.get("laravel_admin_token", "");
+        if (baseUrl.isBlank() || token.isBlank()) {
+            org.slf4j.LoggerFactory.getLogger(getClass()).warn(
+                    "Laravel offer status sync SKIPPED - missing config. baseUrl blank: {}, token blank: {}",
+                    baseUrl.isBlank(), token.isBlank());
+            return;
+        }
+
+        try {
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.setBearerAuth(token);
+            headers.setContentType(org.springframework.http.MediaType.APPLICATION_JSON);
+
+            Map<String, String> body = Map.of("status", status);
+            org.springframework.http.HttpEntity<Map<String, String>> request =
+                    new org.springframework.http.HttpEntity<>(body, headers);
+
+            org.springframework.http.ResponseEntity<String> response = restTemplate.exchange(
+                    baseUrl + "/api/admin/offers/" + id + "/status",
+                    org.springframework.http.HttpMethod.PUT,
+                    request, String.class);
+            org.slf4j.LoggerFactory.getLogger(getClass()).info(
+                    "Laravel offer status sync SUCCESS - offerId: {}, status: {}, httpStatus: {}, response: {}",
+                    id, status, response.getStatusCode(), response.getBody());
+        } catch (Exception e) {
+            org.slf4j.LoggerFactory.getLogger(getClass()).warn(
+                    "Laravel offer status sync FAILED - offerId: {}, status: {}, error: {}",
+                    id, status, e.getMessage());
+        }
     }
 
     private Integer parseIntOrNull(String s) {

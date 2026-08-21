@@ -84,6 +84,9 @@ public class SettingsController {
         model.addAttribute("nhcClientId", settingsService.get("nhc_client_id", ""));
         model.addAttribute("nhcHasSecret", !settingsService.get("nhc_client_secret", "").isBlank());
 
+        model.addAttribute("laravelApiUrl", settingsService.get("laravel_api_url", "https://app.abaadapp.sa"));
+        model.addAttribute("laravelAdminTokenSet", !settingsService.get("laravel_admin_token", "").isBlank());
+
         model.addAttribute("activePage", "settings");
 
         model.addAttribute("firebaseServiceAccountJson", settingsService.get("firebase_service_account_json", ""));
@@ -176,6 +179,11 @@ settingsService.set("firebase_enabled", form.containsKey("firebaseEnabled") ? "1
         settingsService.set("nhc_client_id", form.get("nhcClientId"));
         if (form.get("nhcClientSecret") != null && !form.get("nhcClientSecret").isBlank()) {
             settingsService.set("nhc_client_secret", form.get("nhcClientSecret"));
+        }
+
+        settingsService.set("laravel_api_url", form.get("laravelApiUrl"));
+        if (form.get("laravelAdminToken") != null && !form.get("laravelAdminToken").isBlank()) {
+            settingsService.set("laravel_admin_token", form.get("laravelAdminToken"));
         }
 
         redirectAttributes.addFlashAttribute("saved", true);
