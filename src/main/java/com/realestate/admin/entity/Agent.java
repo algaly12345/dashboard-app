@@ -47,5 +47,13 @@ private String advertiserNo;
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
+    @Column(name = "identity_type")
+    private String identityType;
+
+    private String image;
+
+    @Column(name = "commercial_registerion_no")
+    private String commercialRegisterionNo;
+
     public enum MembershipType { agent, provider, customer }
 }

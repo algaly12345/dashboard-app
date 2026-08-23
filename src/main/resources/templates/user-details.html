@@ -28,7 +28,8 @@
                             <div class="d-flex flex-wrap gap-2">
                                 <span th:if="${user.isActive.name() == 'active'}" class="badge-pill badge-active" th:text="#{estate.active}">Active</span>
                                 <span th:if="${user.isActive.name() == 'disactive'}" class="badge-pill badge-disactive" th:text="#{estate.disactive}">Inactive</span>
-                                <span class="badge-pill badge-tour" th:text="${user.userType}">Type</span>
+                                <span th:if="${user.userType == 'customer'}" class="badge-pill badge-tour">باحث عن عقار / مسوّق</span>
+                                <span th:if="${user.userType == 'provider'}" class="badge-pill badge-rent">مزود خدمة</span>
                                 <span th:if="${agent != null}" class="badge-pill badge-sale" th:text="#{user.section.agentProfile}">Agent</span>
                                 <span th:if="${provider != null}" class="badge-pill badge-rent" th:text="#{user.section.providerProfile}">Provider</span>
                             </div>
@@ -64,20 +65,110 @@
                             <label class="form-label" th:text="#{user.email}">Email</label>
                             <input type="text" name="email" th:value="${user.email}" class="form-control" dir="ltr"/>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label" th:text="#{user.status}">Status</label>
                             <select name="isActive" class="form-select">
                                 <option value="active" th:selected="${user.isActive.name() == 'active'}" th:text="#{estate.active}">Active</option>
                                 <option value="disactive" th:selected="${user.isActive.name() == 'disactive'}" th:text="#{estate.disactive}">Inactive</option>
                             </select>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label" th:text="#{user.type}">User type</label>
-                            <input type="text" th:value="${user.userType}" class="form-control" disabled/>
+                        <div class="col-md-3">
+                            <label class="form-label">نوع الحساب</label>
+                            <input type="text" th:value="${user.userType == 'customer'} ? 'باحث عن عقار / مسوّق' : (${user.userType == 'provider'} ? 'مزود خدمة' : ${user.userType})" class="form-control" disabled/>
                         </div>
-                        <div class="col-md-4">
+                        <div class="col-md-3">
                             <label class="form-label" th:text="#{user.joined}">Joined</label>
                             <input type="text" th:value="${user.createdAt != null ? #temporals.format(user.createdAt, 'yyyy-MM-dd') : '-'}" class="form-control" disabled/>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">رقم الهوية</label>
+                            <input type="text" th:value="${user.id}" class="form-control" disabled dir="ltr"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-card-list"></i> بيانات إضافية</div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">الرقم الموحد</label>
+                            <input type="text" name="unifiedNumber" th:value="${user.unifiedNumber}" class="form-control" dir="ltr"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">رقم المعلن</label>
+                            <input type="number" name="advertiserNo" th:value="${user.advertiserNo}" class="form-control" dir="ltr"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">رخصة فال</label>
+                            <input type="text" name="userFalLicenseNumber" th:value="${user.falLicenseNumber}" class="form-control" dir="ltr"/>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">رصيد المحفظة</label>
+                            <input type="number" step="0.01" name="walletBalance" th:value="${user.walletBalance}" class="form-control" dir="ltr"/>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">نقاط الولاء</label>
+                            <input type="number" step="0.01" name="loyaltyPoint" th:value="${user.loyaltyPoint}" class="form-control" dir="ltr"/>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">المنطقة (zone_id)</label>
+                            <input type="text" name="zoneId" th:value="${user.zoneId}" class="form-control" dir="ltr"/>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">المدينة (city_id)</label>
+                            <input type="text" name="cityId" th:value="${user.cityId}" class="form-control" dir="ltr"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-shield-check"></i> حالات التحقق</div>
+                    <div class="toggle-grid">
+                        <label class="toggle-row">
+                            <span><i class="bi bi-telephone-fill"></i> جوال موثّق</span>
+                            <input type="checkbox" name="isPhoneVerified" value="true" th:checked="${user.isPhoneVerified != null and user.isPhoneVerified == 1}" class="form-check-input"/>
+                        </label>
+                        <label class="toggle-row">
+                            <span><i class="bi bi-envelope-check-fill"></i> بريد موثّق</span>
+                            <input type="checkbox" name="isEmailVerified" value="true" th:checked="${user.isEmailVerified}" class="form-check-input"/>
+                        </label>
+                        <label class="toggle-row">
+                            <span><i class="bi bi-patch-check-fill"></i> حساب موثّق</span>
+                            <input type="checkbox" name="accountVerification" value="true" th:checked="${user.accountVerification}" class="form-check-input"/>
+                        </label>
+                        <label class="toggle-row">
+                            <span><i class="bi bi-slash-circle"></i> محظور مؤقتًا</span>
+                            <input type="checkbox" name="isTempBlocked" value="true" th:checked="${user.isTempBlocked != null and user.isTempBlocked == 1}" class="form-check-input"/>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-share"></i> روابط التواصل الاجتماعي</div>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label"><i class="bi bi-youtube"></i> يوتيوب</label>
+                            <input type="text" name="youtube" th:value="${user.youtube}" class="form-control" dir="ltr"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label"><i class="bi bi-snapchat"></i> سناب شات</label>
+                            <input type="text" name="snapchat" th:value="${user.snapchat}" class="form-control" dir="ltr"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label"><i class="bi bi-instagram"></i> انستقرام</label>
+                            <input type="text" name="instagram" th:value="${user.instagram}" class="form-control" dir="ltr"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label"><i class="bi bi-globe"></i> الموقع الإلكتروني</label>
+                            <input type="text" name="website" th:value="${user.website}" class="form-control" dir="ltr"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label"><i class="bi bi-tiktok"></i> تيك توك</label>
+                            <input type="text" name="tiktok" th:value="${user.tiktok}" class="form-control" dir="ltr"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label"><i class="bi bi-twitter-x"></i> إكس (تويتر)</label>
+                            <input type="text" name="twitter" th:value="${user.twitter}" class="form-control" dir="ltr"/>
                         </div>
                     </div>
                 </div>
@@ -100,6 +191,14 @@
                         <div class="col-md-4">
                             <label class="form-label" th:text="#{user.falLicense}">FAL license</label>
                             <input type="text" name="falLicenseNumber" th:value="${agent.falLicenseNumber}" class="form-control" dir="ltr"/>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">نوع الهوية</label>
+                            <input type="text" name="identityType" th:value="${agent.identityType}" class="form-control"/>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">رقم السجل التجاري</label>
+                            <input type="text" name="commercialRegisterionNo" th:value="${agent.commercialRegisterionNo}" class="form-control" dir="ltr"/>
                         </div>
                     </div>
                 </div>

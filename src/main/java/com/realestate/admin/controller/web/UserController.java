@@ -99,10 +99,29 @@ public class UserController {
                           @RequestParam(required = false) String phone,
                           @RequestParam(required = false) String email,
                           @RequestParam(required = false) String isActive,
+                          @RequestParam(required = false) String unifiedNumber,
+                          @RequestParam(required = false) Integer advertiserNo,
+                          @RequestParam(required = false) java.math.BigDecimal walletBalance,
+                          @RequestParam(required = false) java.math.BigDecimal loyaltyPoint,
+                          @RequestParam(required = false) String zoneId,
+                          @RequestParam(required = false) String cityId,
+                          @RequestParam(required = false) String userFalLicenseNumber,
+                          @RequestParam(required = false) String youtube,
+                          @RequestParam(required = false) String snapchat,
+                          @RequestParam(required = false) String instagram,
+                          @RequestParam(required = false) String website,
+                          @RequestParam(required = false) String tiktok,
+                          @RequestParam(required = false) String twitter,
+                          @RequestParam(required = false) String isPhoneVerified,
+                          @RequestParam(required = false) String isEmailVerified,
+                          @RequestParam(required = false) String isTempBlocked,
+                          @RequestParam(required = false) String accountVerification,
                           // agent profile fields (present only if the user has an agent row)
                           @RequestParam(required = false) String agentType,
                           @RequestParam(required = false) String agentMembershipType,
                           @RequestParam(required = false) String falLicenseNumber,
+                          @RequestParam(required = false) String identityType,
+                          @RequestParam(required = false) String commercialRegisterionNo,
                           // service-provider profile fields (present only if the user has one)
                           @RequestParam(required = false) String job,
                           @RequestParam(required = false) String providerAddress,
@@ -117,6 +136,23 @@ public class UserController {
         if (isActive != null && !isActive.isBlank()) {
             user.setIsActive(AppUser.Status.valueOf(isActive));
         }
+        user.setUnifiedNumber(unifiedNumber);
+        user.setAdvertiserNo(advertiserNo);
+        user.setWalletBalance(walletBalance);
+        user.setLoyaltyPoint(loyaltyPoint);
+        user.setZoneId(parseLongOrNull(zoneId));
+        user.setCityId(parseLongOrNull(cityId));
+        user.setFalLicenseNumber(userFalLicenseNumber);
+        user.setYoutube(youtube);
+        user.setSnapchat(snapchat);
+        user.setInstagram(instagram);
+        user.setWebsite(website);
+        user.setTiktok(tiktok);
+        user.setTwitter(twitter);
+        user.setIsPhoneVerified("true".equals(isPhoneVerified) ? 1 : 0);
+        user.setIsEmailVerified("true".equals(isEmailVerified) ? 1 : 0);
+        user.setIsTempBlocked("true".equals(isTempBlocked) ? 1 : 0);
+        user.setAccountVerification("true".equals(accountVerification));
         appUserRepository.save(user);
 
         agentRepository.findByUserId(id).ifPresent(agent -> {
@@ -125,6 +161,8 @@ public class UserController {
                 agent.setMembershipType(Agent.MembershipType.valueOf(agentMembershipType));
             }
             agent.setFalLicenseNumber(falLicenseNumber);
+            agent.setIdentityType(identityType);
+            agent.setCommercialRegisterionNo(commercialRegisterionNo);
             agentRepository.save(agent);
         });
 
@@ -137,6 +175,52 @@ public class UserController {
 
         redirectAttributes.addFlashAttribute("saved", true);
         return "redirect:/users/" + id;
+    }
+
+    @GetMapping("/users/new")
+    public String newForm(Model model) {
+        model.addAttribute("activePage", "users");
+        return "user-new";
+    }
+
+    @PostMapping("/users")
+    public String create(@RequestParam String name,
+                          @RequestParam String phone,
+                          @RequestParam(required = false) String email,
+                          @RequestParam String userType,
+                          @RequestParam(required = false) String zoneId,
+                          RedirectAttributes redirectAttributes) {
+
+        AppUser user = new AppUser();
+        user.setId(appUserRepository.findMaxId() + 1);
+        user.setName(name);
+        user.setPhone(phone);
+        user.setEmail(email);
+        user.setUserType(userType);
+        user.setPassword(java.util.UUID.randomUUID().toString());
+        user.setIsActive(AppUser.Status.active);
+        user.setAccountVerification(false);
+        user.setIsPhoneVerified(0);
+        user.setIsEmailVerified(0);
+        user.setIsTempBlocked(0);
+        user.setLoyaltyPoint(java.math.BigDecimal.ZERO);
+        user.setZoneId(parseLongOrNull(zoneId));
+        user.setWalletBalance(java.math.BigDecimal.ZERO);
+        user.setCreatedAt(java.time.LocalDateTime.now());
+        user.setUpdatedAt(java.time.LocalDateTime.now());
+        appUserRepository.save(user);
+
+        redirectAttributes.addFlashAttribute("saved", true);
+        return "redirect:/users/" + user.getId();
+    }
+
+    private Long parseLongOrNull(String s) {
+        if (s == null || s.isBlank()) return null;
+        try {
+            return Long.parseLong(s.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private String blankToNull(String s) {

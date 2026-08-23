@@ -12,6 +12,12 @@
 
         <div class="content">
 
+            <div class="d-flex justify-content-end mb-2">
+                <a th:href="@{/users/new}" class="btn btn-gold btn-sm">
+                    <i class="bi bi-person-plus"></i> إضافة مستخدم
+                </a>
+            </div>
+
             <form th:action="@{/users}" method="get" class="card section-card mb-3">
                 <div class="row g-2 align-items-end">
                     <div class="col-md-6">
@@ -57,7 +63,10 @@
                         </td>
                         <td th:text="${u.phone}" dir="ltr">Phone</td>
                         <td th:text="${u.email}">Email</td>
-                        <td th:text="${u.userType}">Type</td>
+                        <td>
+                            <span th:if="${u.userType == 'customer'}" class="badge-pill badge-tour">باحث/مسوّق</span>
+                            <span th:if="${u.userType == 'provider'}" class="badge-pill badge-rent">مزود خدمة</span>
+                        </td>
                         <td>
                             <span th:if="${u.isActive.name() == 'active'}" class="badge-pill badge-active" th:text="#{estate.active}">Active</span>
                             <span th:if="${u.isActive.name() == 'disactive'}" class="badge-pill badge-disactive" th:text="#{estate.disactive}">Inactive</span>

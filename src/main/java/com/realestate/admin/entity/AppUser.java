@@ -32,6 +32,8 @@ public class AppUser {
 
     private String email;
 
+    private String password;
+
     private String image;
 
     @Enumerated(EnumType.STRING)
@@ -75,6 +77,21 @@ public class AppUser {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @Column(name = "loyalty_point")
+    private java.math.BigDecimal loyaltyPoint;
+
+    @Column(name = "is_phone_verified")
+    private Integer isPhoneVerified;
+
+    @Column(name = "is_email_verified")
+    private Integer isEmailVerified;
+
+    @Column(name = "is_temp_blocked")
+    private Integer isTempBlocked;
+
+    @Column(name = "account_verification")
+    private Boolean accountVerification;
 
     public enum Status { active, disactive }
 }

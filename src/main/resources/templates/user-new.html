@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head('إضافة مستخدم جديد')}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('users')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, 'إضافة مستخدم جديد')}"></div>
+
+        <div class="content">
+
+            <a th:href="@{/users}" class="btn btn-outline-gold mb-3">
+                <i class="bi bi-arrow-right"></i> <span th:text="#{user.backToList}">Back</span>
+            </a>
+
+            <form th:action="@{/users}" method="post">
+                <div class="form-section" style="max-width:640px; margin:0 auto;">
+                    <div class="form-section-title"><i class="bi bi-person-plus"></i> بيانات المستخدم الجديد</div>
+                    <div class="mb-3">
+                        <label class="form-label">الاسم *</label>
+                        <input type="text" name="name" class="form-control form-control-lg" required/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">رقم الجوال *</label>
+                        <input type="text" name="phone" class="form-control form-control-lg" dir="ltr" required/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">البريد الإلكتروني</label>
+                        <input type="text" name="email" class="form-control" dir="ltr"/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">نوع الحساب *</label>
+                        <div class="id-type-toggle">
+                            <label class="id-type-option">
+                                <input type="radio" name="userType" value="customer" checked/>
+                                <span><i class="bi bi-search"></i> باحث عن عقار / مسوّق</span>
+                            </label>
+                            <label class="id-type-option">
+                                <input type="radio" name="userType" value="provider"/>
+                                <span><i class="bi bi-tools"></i> مزود خدمة</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">المنطقة (zone_id) — اختياري</label>
+                        <input type="text" name="zoneId" class="form-control" dir="ltr"/>
+                    </div>
+                </div>
+
+                <div class="sticky-save-bar" style="max-width:640px; margin:16px auto 0;">
+                    <button type="submit" class="btn btn-gold w-100"><i class="bi bi-check2"></i> إضافة المستخدم</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>
