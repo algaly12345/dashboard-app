@@ -936,3 +936,53 @@ a.report-estate-chip:hover{ border-color: var(--violet); background:#F5F9FF; }
 .network-check span{ font-size:.82rem; font-weight:700; color:var(--text-muted); }
 .network-check:has(input:checked){ border-color:var(--violet); background:#F0EEFA; }
 .network-check:has(input:checked) span{ color:var(--violet); }
+/* ---------- Redesigned filter panel (estates list) ---------- */
+.filter-panel{
+  background:#fff; border-radius:18px; padding:22px 24px;
+  box-shadow: var(--shadow);
+}
+.filter-panel-header{
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid var(--border);
+}
+.filter-panel-title{ display:flex; align-items:center; gap:12px; }
+.filter-panel-icon{
+  width:40px; height:40px; border-radius:12px; flex-shrink:0;
+  background: linear-gradient(135deg, var(--violet-light), var(--violet));
+  color:#fff; display:flex; align-items:center; justify-content:center;
+  font-size:1.1rem; box-shadow: var(--glow);
+}
+.filter-group-label{
+  font-size:.72rem; font-weight:800; color:var(--violet); text-transform:uppercase;
+  letter-spacing:.04em; margin-bottom:8px; display:flex; align-items:center; gap:6px;
+}
+.expired-toggle{
+  display:flex; align-items:center; gap:8px; height:38px; padding:0 14px;
+  border:2px solid var(--border); border-radius:10px; transition: all .15s ease;
+}
+.expired-toggle.active{ border-color: var(--danger); background: var(--danger-bg); }
+.expired-toggle label{ color: var(--text-muted); font-weight:600; margin:0; cursor:pointer; }
+.expired-toggle.active label{ color: var(--danger); }
+
+/* ---------- Advertiser searchable filter dropdown ---------- */
+.advertiser-search-dropdown{ position:relative; }
+.advertiser-search-results{
+  display:none; position:absolute; top:100%; right:0; left:0; z-index:50;
+  background:#fff; border:1px solid var(--border); border-radius:12px;
+  box-shadow:0 16px 40px -20px rgba(10,30,61,.35);
+  max-height:260px; overflow-y:auto; margin-top:6px;
+}
+.advertiser-search-results.open{ display:block; }
+.advertiser-search-item{ padding:10px 14px; cursor:pointer; border-bottom:1px solid var(--border); }
+.advertiser-search-item:last-child{ border-bottom:none; }
+.advertiser-search-item:hover{ background:var(--canvas); }
+.advertiser-search-empty{ padding:14px; text-align:center; color:var(--text-muted); font-size:.85rem; }
+
+/* ---------- Tighter, consistent filter grid ---------- */
+.filter-panel select.form-select,
+.filter-panel input.form-control{ height:40px; font-size:.86rem; }
+.filter-panel .form-label{ font-size:.78rem; font-weight:700; margin-bottom:5px; color:var(--text-muted); }
+.filter-panel .row.g-2 > [class*="col-"]{ padding-bottom:2px; }
+
+/* ---------- Offer map ---------- */
+#offerMap{ background: var(--canvas); }

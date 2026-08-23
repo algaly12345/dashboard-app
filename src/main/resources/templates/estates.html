@@ -17,35 +17,62 @@
                 <a th:href="@{/estates}" class="fw-semibold" style="color: var(--danger);" th:text="#{estate.clearFilter}">Clear</a>
             </div>
 
-            <!-- Filters + Add button, same row -->
-            <form th:action="@{/estates}" method="get" class="card section-card mb-3">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <div class="fw-bold"><i class="bi bi-funnel"></i> <span th:text="#{estate.filter.apply}">Filter</span></div>
+            <form th:action="@{/estates}" method="get" class="filter-panel mb-3">
+
+                <div class="filter-panel-header">
+                    <div class="filter-panel-title">
+                        <div class="filter-panel-icon"><i class="bi bi-funnel"></i></div>
+                        <div>
+                            <div class="fw-bold" th:text="#{estate.filter.apply}">Filter</div>
+                            <div class="text-muted small">ضيّق نتائج العقارات حسب المعايير اللي تحتاجها</div>
+                        </div>
+                    </div>
                     <a th:href="@{/estates/new}" class="btn btn-gold btn-sm">
                         <i class="bi bi-plus-lg"></i> إضافة عقار (NHC)
                     </a>
                 </div>
 
-                <div class="row g-2 align-items-end">
+                <div class="filter-group-label"><i class="bi bi-search"></i> بحث ومكان</div>
+                <div class="row g-2 mb-3">
                     <div class="col-md-3">
                         <label class="form-label" th:text="#{estate.title}">Search</label>
                         <input type="text" name="q" th:value="${q}" class="form-control" th:placeholder="#{estate.search.placeholder}"/>
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">المنطقة</label>
-                        <select name="zoneId" class="form-select" onchange="this.form.submit()">
-                            <option value="">كل المناطق</option>
-                            <option th:each="z : ${zones}" th:value="${z.id}" th:text="${z.nameAr}"
-                                    th:selected="${zoneId != null and zoneId == z.id.toString()}"></option>
+                        <label class="form-label"><i class="bi bi-map"></i> المنطقة الإدارية</label>
+                        <select id="regionSelect" class="form-select">
+                            <option value="">اختر المنطقة</option>
+                            <option th:each="r : ${regionsLite}" th:value="${r.regionId}" th:text="${r.nameAr}"></option>
                         </select>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label" th:text="#{estate.city}">City</label>
-                        <select name="city" class="form-select">
+                        <select name="city" id="citySelect" class="form-select">
                             <option value="" th:text="#{estate.filter.city}">All cities</option>
                             <option th:each="c : ${cities}" th:value="${c}" th:text="${c}" th:selected="${c == city}"></option>
                         </select>
                     </div>
+                    <div class="col-md-2">
+                        <label class="form-label" th:text="#{estate.district}">District</label>
+                        <select name="district" id="districtSelect" class="form-select">
+                            <option value="" th:text="${district} ?: 'كل الأحياء'">All districts</option>
+                            <option th:if="${district}" th:value="${district}" th:text="${district}" selected></option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label"><i class="bi bi-person-badge"></i> المعلن</label>
+                        <div class="advertiser-search-dropdown">
+                            <input type="text" id="advertiserSearchInput" class="form-control" autocomplete="off"
+                                   placeholder="ابحث بالاسم أو الجوال..."
+                                   th:value="${selectedAdvertiserLabel}"/>
+                            <input type="hidden" name="userId" id="advertiserIdHidden" th:value="${userId}"/>
+                            <div id="advertiserSearchResults" class="advertiser-search-results"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="filter-group-label"><i class="bi bi-tags"></i> نوع وحالة</div>
+                <div class="row g-2 mb-3">
                     <div class="col-md-2">
                         <label class="form-label" th:text="#{estate.type}">Category</label>
                         <select name="category" class="form-select">
@@ -69,12 +96,6 @@
                             <option value="إيجار" th:text="#{estate.rent}" th:selected="${adType == 'إيجار'}"></option>
                         </select>
                     </div>
-                    <div class="col-md-1">
-                        <button type="submit" class="btn btn-outline-gold w-100" th:text="#{estate.filter.apply}">Filter</button>
-                    </div>
-                </div>
-
-                <div class="row g-2 align-items-end mt-1">
                     <div class="col-md-2">
                         <label class="form-label" th:text="#{estate.type}">Estate type</label>
                         <select name="estateType" class="form-select">
@@ -90,6 +111,10 @@
                             <option value="no" th:text="#{estate.virtualTour.no}" th:selected="${virtualTour == 'no'}"></option>
                         </select>
                     </div>
+                </div>
+
+                <div class="filter-group-label"><i class="bi bi-cash-coin"></i> السعر وخيارات إضافية</div>
+                <div class="row g-2 align-items-end">
                     <div class="col-md-2">
                         <label class="form-label" th:text="#{estate.minPrice}">Min price</label>
                         <input type="number" name="minPrice" th:value="${minPrice}" class="form-control" placeholder="0"/>
@@ -99,19 +124,19 @@
                         <input type="number" name="maxPrice" th:value="${maxPrice}" class="form-control" placeholder="—"/>
                     </div>
                     <div class="col-md-3">
-                        <label class="form-label d-block">&nbsp;</label>
-                        <div class="form-check form-switch">
+                        <div class="expired-toggle" th:classappend="${licenseExpired == 'true'} ? 'active' : ''">
                             <input type="checkbox" name="licenseExpired" value="true" class="form-check-input" id="expiredCheck"
                                    th:checked="${licenseExpired == 'true'}" onchange="this.form.submit()"/>
-                            <label class="form-check-label small" for="expiredCheck" style="color: var(--danger);">
+                            <label class="form-check-label small" for="expiredCheck">
                                 <i class="bi bi-exclamation-triangle"></i> عقارات منتهية الرخصة فقط
                             </label>
                         </div>
                     </div>
-                    <div class="col-md-1 text-end">
-                        <a th:href="@{/estates/map}" class="btn btn-outline-gold btn-sm">
+                    <div class="col-md-3 ms-auto d-flex gap-2 justify-content-end">
+                        <a th:href="@{/estates/map}" class="btn btn-outline-gold">
                             <i class="bi bi-geo-alt"></i> <span th:text="#{estate.mapView}">Map view</span>
                         </a>
+                        <button type="submit" class="btn btn-gold" th:text="#{estate.filter.apply}">Filter</button>
                     </div>
                 </div>
             </form>
@@ -192,7 +217,6 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
             <nav th:if="${estates.totalPages > 1}" class="d-flex justify-content-between align-items-center mt-3">
                 <span class="text-muted small">
                     <span th:text="#{common.page}">Page</span>
@@ -203,16 +227,15 @@
                 <div class="btn-group">
                     <a class="btn btn-outline-secondary btn-sm"
                        th:classappend="${estates.first} ? 'disabled' : ''"
-                       th:href="@{/estates(q=${q}, city=${city}, category=${category}, status=${status}, adType=${adType}, estateType=${estateType}, virtualTour=${virtualTour}, minPrice=${minPrice}, maxPrice=${maxPrice}, licenseExpired=${licenseExpired}, zoneId=${zoneId}, page=${estates.number - 1})}"
+                       th:href="@{/estates(q=${q}, city=${city}, category=${category}, status=${status}, adType=${adType}, estateType=${estateType}, virtualTour=${virtualTour}, minPrice=${minPrice}, maxPrice=${maxPrice}, licenseExpired=${licenseExpired}, userId=${userId}, page=${estates.number - 1})}"
                        th:text="#{common.prev}">Prev</a>
                     <a class="btn btn-outline-secondary btn-sm"
                        th:classappend="${estates.last} ? 'disabled' : ''"
-                       th:href="@{/estates(q=${q}, city=${city}, category=${category}, status=${status}, adType=${adType}, estateType=${estateType}, virtualTour=${virtualTour}, minPrice=${minPrice}, maxPrice=${maxPrice}, licenseExpired=${licenseExpired}, zoneId=${zoneId}, page=${estates.number + 1})}"
+                       th:href="@{/estates(q=${q}, city=${city}, category=${category}, status=${status}, adType=${adType}, estateType=${estateType}, virtualTour=${virtualTour}, minPrice=${minPrice}, maxPrice=${maxPrice}, licenseExpired=${licenseExpired}, userId=${userId}, page=${estates.number + 1})}"
                        th:text="#{common.next}">Next</a>
                 </div>
             </nav>
 
-            <!-- Advertiser details modal -->
             <div id="advertiserModalBackdrop" class="advertiser-modal-backdrop" onclick="hideAdvertiser(event)">
                 <div class="advertiser-modal" onclick="event.stopPropagation()">
                     <button type="button" class="advertiser-modal-close" onclick="hideAdvertiser()"><i class="bi bi-x-lg"></i></button>
@@ -227,6 +250,7 @@
 <script th:inline="javascript">
     /*<![CDATA[*/
     var ESTATE_USERS = /*[[${estateUsers}]]*/ {};
+    var FILTER_USERS = /*[[${usersWithEstates}]]*/ [];
     /*]]>*/
 
     function escapeHtml(s) {
@@ -293,6 +317,109 @@
     function hideAdvertiser(e) {
         document.getElementById('advertiserModalBackdrop').classList.remove('open');
     }
+
+    var regionSelectEl = document.getElementById('regionSelect');
+    var citySelectEl = document.getElementById('citySelect');
+    var districtSelectEl = document.getElementById('districtSelect');
+
+    if (regionSelectEl) {
+        regionSelectEl.addEventListener('change', function () {
+            var regionId = this.value;
+            if (!regionId) return;
+            fetch('/estates/cities-by-region?regionId=' + regionId)
+                .then(r => r.json())
+                .then(cities => {
+                    citySelectEl.innerHTML = '<option value="">كل المدن</option>';
+                    cities.forEach(function (c) {
+                        var opt = document.createElement('option');
+                        opt.value = c;
+                        opt.textContent = c;
+                        citySelectEl.appendChild(opt);
+                    });
+                    districtSelectEl.innerHTML = '<option value="">كل الأحياء</option>';
+                });
+        });
+    }
+
+    if (citySelectEl) {
+        citySelectEl.addEventListener('change', function () {
+            var cityName = this.value;
+            if (!cityName) {
+                districtSelectEl.innerHTML = '<option value="">كل الأحياء</option>';
+                return;
+            }
+            fetch('/estates/districts-by-city?cityName=' + encodeURIComponent(cityName))
+                .then(r => r.json())
+                .then(districts => {
+                    districtSelectEl.innerHTML = '<option value="">كل الأحياء</option>';
+                    districts.forEach(function (d) {
+                        var opt = document.createElement('option');
+                        opt.value = d;
+                        opt.textContent = d;
+                        districtSelectEl.appendChild(opt);
+                    });
+                });
+        });
+    }
+
+
+    (function () {
+        var input = document.getElementById('advertiserSearchInput');
+        var hidden = document.getElementById('advertiserIdHidden');
+        var results = document.getElementById('advertiserSearchResults');
+        if (!input) return;
+
+        var debounceTimer = null;
+
+        function esc(s) {
+            var d = document.createElement('div');
+            d.textContent = s || '';
+            return d.innerHTML;
+        }
+
+        function render(list) {
+            results.innerHTML = '';
+            if (list.length === 0) {
+                results.innerHTML = '<div class="advertiser-search-empty">لا توجد نتائج</div>';
+                results.classList.add('open');
+                return;
+            }
+            list.forEach(function (u) {
+                var item = document.createElement('div');
+                item.className = 'advertiser-search-item';
+                item.innerHTML = '<div class="fw-bold">' + esc(u.name) + '</div><div class="text-muted small" dir="ltr">' + esc(u.phone) + '</div>';
+                item.addEventListener('click', function () {
+                    hidden.value = u.id;
+                    input.value = u.name + ' — ' + u.phone;
+                    results.classList.remove('open');
+                    input.closest('form').submit();
+                });
+                results.appendChild(item);
+            });
+            results.classList.add('open');
+        }
+
+        function search(term) {
+            fetch('/estates/advertisers-search?q=' + encodeURIComponent(term))
+                .then(function (r) { return r.json(); })
+                .then(render);
+        }
+
+        input.addEventListener('input', function () {
+            hidden.value = '';
+            clearTimeout(debounceTimer);
+            var term = input.value.trim();
+            debounceTimer = setTimeout(function () { search(term); }, 250);
+        });
+
+        input.addEventListener('focus', function () {
+            search(input.value.trim());
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.advertiser-search-dropdown')) results.classList.remove('open');
+        });
+    })();
 </script>
 </body>
 </html>

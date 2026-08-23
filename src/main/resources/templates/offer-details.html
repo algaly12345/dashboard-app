@@ -30,7 +30,8 @@
                             <i th:unless="${offer.image}" class="bi bi-bag-heart placeholder-icon"></i>
 
                             <span th:if="${offer.offerType.name() == 'discount' and offer.discount != null}" class="offer-ribbon">
-                                <i class="bi bi-percent"></i> <span th:text="${offer.discount} + '%'">10%</span>
+                                <i class="bi bi-percent"></i>
+                                <span th:text="${offer.discount} + (${offer.discountType.name() == 'fixed'} ? ' ' + #{offer.currency} : '%')">10%</span>
                             </span>
                             <span th:if="${offer.offerType.name() == 'price' and offer.servicePrice != null}" class="offer-ribbon price-tag">
                                 <span th:text="${offer.servicePrice} + ' ' + #{offer.currency}">100</span>
@@ -62,6 +63,11 @@
                                 <span th:text="${offer.expiryDate}">-</span>
                             </div>
                         </div>
+
+                        <!-- Rejection reason - only shown when actually rejected -->
+                        <div class="alert alert-danger py-2 px-3 mt-3 small mb-0" th:if="${offer.status == 'reject' and offer.rejectionReason != null and offer.rejectionReason != ''}">
+                            <i class="bi bi-exclamation-triangle"></i> <strong>سبب الرفض:</strong> <span th:text="${offer.rejectionReason}">-</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -87,12 +93,44 @@
                 </div>
             </div>
 
+            <!-- Contact details -->
+            <div class="form-section" th:if="${offer.address} or ${offer.contactPhone} or ${offer.contactType}">
+                <div class="form-section-title"><i class="bi bi-person-lines-fill"></i> بيانات التواصل والعنوان</div>
+                <div class="row g-3">
+                    <div class="col-md-4" th:if="${offer.contactPhone}">
+                        <div class="text-muted small">هاتف التواصل</div>
+                        <div class="fw-bold" dir="ltr"><i class="bi bi-telephone"></i> <span th:text="${offer.contactPhone}">-</span></div>
+                    </div>
+                    <div class="col-md-4" th:if="${offer.contactType}">
+                        <div class="text-muted small">نوع التواصل</div>
+                        <div class="fw-bold"><i class="bi bi-chat-dots"></i> <span th:text="${offer.contactType}">-</span></div>
+                    </div>
+                    <div class="col-md-4" th:if="${offer.address}">
+                        <div class="text-muted small">العنوان</div>
+                        <div class="fw-bold"><i class="bi bi-geo-alt"></i> <span th:text="${offer.address}">-</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location map -->
+            <div class="form-section" th:if="${offer.latitude != null and offer.longitude != null}">
+                <div class="form-section-title"><i class="bi bi-geo-alt-fill"></i> موقع الخدمة</div>
+                <div id="offerMap" style="width:100%; height:340px; border-radius:14px; overflow:hidden;"></div>
+                <div class="text-muted small mt-2" dir="ltr">
+                    <i class="bi bi-pin-map"></i> <span th:text="${offer.latitude} + ', ' + ${offer.longitude}">0, 0</span>
+                </div>
+            </div>
+
             <div class="form-section">
                 <div class="form-section-title"><i class="bi bi-info-circle"></i> Meta</div>
                 <div class="row g-3 small">
                     <div class="col-6 col-md-3">
                         <div class="text-muted" th:text="#{offer.createdDate}">Created</div>
                         <div class="fw-semibold" th:text="${offer.createdAt != null ? #temporals.format(offer.createdAt, 'yyyy-MM-dd') : '-'}">-</div>
+                    </div>
+                    <div class="col-6 col-md-3" th:if="${offer.sendedAt != null}">
+                        <div class="text-muted">تاريخ الإرسال</div>
+                        <div class="fw-semibold" th:text="${#temporals.format(offer.sendedAt, 'yyyy-MM-dd HH:mm')}">-</div>
                     </div>
                     <div class="col-6 col-md-3">
                         <div class="text-muted">ID</div>
@@ -104,5 +142,19 @@
         </div>
     </div>
 </div>
+
+<script th:if="${offer.latitude != null and offer.longitude != null and mapApiKey != null and not mapApiKey.isEmpty()}"
+        th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${mapApiKey} + '&callback=initOfferMap'}" async defer></script>
+<script th:inline="javascript">
+    function initOfferMap() {
+        var lat = /*[[${offer.latitude}]]*/ 0;
+        var lng = /*[[${offer.longitude}]]*/ 0;
+        var pos = { lat: parseFloat(lat), lng: parseFloat(lng) };
+        var map = new google.maps.Map(document.getElementById('offerMap'), {
+            center: pos, zoom: 15
+        });
+        new google.maps.Marker({ position: pos, map: map });
+    }
+</script>
 </body>
 </html>

@@ -110,6 +110,7 @@ public class OfferController {
         model.addAttribute("zones", zones);
         model.addAttribute("categories", categories);
         model.addAttribute("providerName", providerName);
+        model.addAttribute("mapApiKey", settingsService.get("map_api_key", ""));
         model.addAttribute("activePage", "offers");
         return "offer-details";
     }

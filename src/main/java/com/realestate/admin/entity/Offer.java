@@ -67,6 +67,22 @@ public class Offer {
     private java.math.BigDecimal latitude;
     private java.math.BigDecimal longitude;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "discount_type")
+    private DiscountType discountType;
+
+    @Column(name = "rejection_reason")
+    private String rejectionReason;
+
+    private String address;
+
+    @Column(name = "contact_phone")
+    private String contactPhone;
+
+    @Column(name = "contact_type")
+    private String contactType;
+
     public enum OfferType { price, discount }
+    public enum DiscountType { percentage, fixed }
     public enum OfferOwner { all, me }
 }

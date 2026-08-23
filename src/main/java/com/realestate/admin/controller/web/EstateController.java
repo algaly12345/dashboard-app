@@ -28,6 +28,9 @@ public class EstateController {
     private final AppUserRepository appUserRepository;
     private final com.realestate.admin.service.ImageUrlService imageUrlService;
     private final com.realestate.admin.repository.ZoneRepository zoneRepository;
+    private final com.realestate.admin.repository.RegionLiteRepository regionLiteRepository;
+    private final com.realestate.admin.repository.CityLiteRepository cityLiteRepository;
+    private final com.realestate.admin.repository.DistrictLiteRepository districtLiteRepository;
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
 
@@ -45,6 +48,7 @@ public String list(@RequestParam(required = false) String q,
                     @RequestParam(required = false) String maxPrice,
                     @RequestParam(required = false) String licenseExpired,
                     @RequestParam(required = false) String zoneId,
+                    @RequestParam(required = false) String userId,
                     @RequestParam(defaultValue = "0") int page,
                     Model model) {
 
@@ -53,6 +57,7 @@ public String list(@RequestParam(required = false) String q,
     Double minPriceVal = parseDoubleOrNull(minPrice);
     Double maxPriceVal = parseDoubleOrNull(maxPrice);
     Long zoneIdLong = parseLongOrNull(zoneId);
+    Long userIdLong = parseLongOrNull(userId);
     boolean expiredOnly = "true".equals(licenseExpired);
 
     Page<Estate> result;
@@ -63,7 +68,7 @@ public String list(@RequestParam(required = false) String q,
     } else {
         result = estateRepository.search(
                 blankToNull(q), statusEnum, blankToNull(city), blankToNull(category), blankToNull(adType),
-                blankToNull(estateType), virtualTourBool, minPriceVal, maxPriceVal, zoneIdLong,
+                blankToNull(estateType), virtualTourBool, minPriceVal, maxPriceVal, zoneIdLong, userIdLong,
                 PageRequest.of(page, 12, Sort.by(Sort.Direction.DESC, "createdAt")));
     }
 
@@ -94,6 +99,7 @@ public String list(@RequestParam(required = false) String q,
     model.addAttribute("estates", result);
     model.addAttribute("estateUsers", estateUsers);
     model.addAttribute("cities", cities);
+    model.addAttribute("regionsLite", regionLiteRepository.findAllOrderByName());
     model.addAttribute("zones", zoneRepository.findAll());
     model.addAttribute("categories", categories);
     model.addAttribute("estateTypes", estateTypes);
@@ -111,7 +117,57 @@ public String list(@RequestParam(required = false) String q,
     model.addAttribute("expiredOnly", expiredOnly);
     model.addAttribute("activePage", "estates");
 
+    List<Long> userIdsWithEstates = estateRepository.findDistinctUserIds();
+    List<com.realestate.admin.entity.AppUser> usersWithEstates = appUserRepository.findAllById(userIdsWithEstates);
+    model.addAttribute("usersWithEstates", usersWithEstates);
+    if (userIdLong != null) {
+        usersWithEstates.stream()
+                .filter(u -> u.getId().equals(userIdLong))
+                .findFirst()
+                .ifPresent(u -> model.addAttribute("selectedAdvertiserLabel", u.getName() + " — " + u.getPhone()));
+    }
+
     return "estates";
+}
+
+@GetMapping("/estates/cities-by-region")
+@ResponseBody
+public List<String> citiesByRegion(@RequestParam Integer regionId) {
+    return cityLiteRepository.findByRegionIdOrderByNameAr(regionId).stream()
+            .map(com.realestate.admin.entity.CityLite::getNameAr)
+            .toList();
+}
+
+@GetMapping("/estates/districts-by-city")
+@ResponseBody
+public List<String> districtsByCity(@RequestParam String cityName) {
+    java.util.Optional<com.realestate.admin.entity.CityLite> match = cityLiteRepository.findAll().stream()
+            .filter(c -> cityName.equals(c.getNameAr()))
+            .findFirst();
+    if (match.isEmpty()) return List.of();
+    return districtLiteRepository.findByCityIdOrderByNameAr(match.get().getCityId()).stream()
+            .map(com.realestate.admin.entity.DistrictLite::getNameAr)
+            .toList();
+}
+
+@GetMapping("/estates/advertisers-search")
+@ResponseBody
+public List<java.util.Map<String, Object>> advertisersSearch(@RequestParam(required = false) String q) {
+    String term = (q == null) ? "" : q.trim().toLowerCase();
+    List<Long> userIdsWithEstates = estateRepository.findDistinctUserIds();
+    return appUserRepository.findAllById(userIdsWithEstates).stream()
+            .filter(u -> term.isEmpty()
+                    || (u.getName() != null && u.getName().toLowerCase().contains(term))
+                    || (u.getPhone() != null && u.getPhone().contains(term)))
+            .limit(20)
+            .map(u -> {
+                java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+                m.put("id", u.getId());
+                m.put("name", u.getName());
+                m.put("phone", u.getPhone());
+                return m;
+            })
+            .toList();
 }
 
 @GetMapping("/estates/{id}")

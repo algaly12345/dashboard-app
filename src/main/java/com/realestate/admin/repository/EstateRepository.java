@@ -127,6 +127,7 @@ Long findMaxId();
              and (:minPrice is null or cast(e.price as big_decimal) >= :minPrice)
              and (:maxPrice is null or cast(e.price as big_decimal) <= :maxPrice)
              and (:zoneId is null or e.zoneId = :zoneId)
+             and (:userId is null or e.userId = :userId)
            order by e.createdAt desc
            """)
     Page<Estate> search(@Param("q") String q,
@@ -139,6 +140,7 @@ Long findMaxId();
                          @Param("minPrice") Double minPrice,
                          @Param("maxPrice") Double maxPrice,
                          @Param("zoneId") Long zoneId,
+                         @Param("userId") Long userId,
                          Pageable pageable);
 
     List<Estate> findTop6ByOrderByCreatedAtDesc();

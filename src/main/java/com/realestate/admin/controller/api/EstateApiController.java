@@ -40,7 +40,7 @@ public class EstateApiController {
         Estate.Status statusEnum = (status != null && !status.isBlank()) ? Estate.Status.valueOf(status) : null;
         Page<Estate> result = estateRepository.search(
                 blankToNull(q), statusEnum, blankToNull(city), blankToNull(category),
-                null, null, null, null, null, null,
+                null, null, null, null, null, null, null,
                 PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
         return result.map(EstateSummaryDto::from);
     }
