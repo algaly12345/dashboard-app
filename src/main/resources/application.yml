@@ -68,6 +68,8 @@ app:
     credentials-path: classpath:firebase-service-account.json
     project-id: abaad-8b6a0
 
+    
+
   # Cloudflare R2 credentials are NOT configured here anymore - they live in
   # the `business_settings` table (type = r2_account_id / r2_bucket /
   # r2_access_key_id / r2_secret_access_key), editable live from

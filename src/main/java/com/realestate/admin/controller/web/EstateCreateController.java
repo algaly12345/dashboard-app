@@ -68,6 +68,15 @@ public class EstateCreateController {
                           Model model,
                           RedirectAttributes redirectAttributes) {
 
+        java.util.Optional<Estate> existingEstate = estateRepository.findByLicenseNumber(licenseNumber);
+        if (existingEstate.isPresent()) {
+            redirectAttributes.addFlashAttribute("lookupError", "duplicate_license");
+            redirectAttributes.addFlashAttribute("duplicateEstateId", existingEstate.get().getId());
+            redirectAttributes.addFlashAttribute("licenseNumber", licenseNumber);
+            redirectAttributes.addFlashAttribute("advertiserNumber", advertiserNumber);
+            return "redirect:/estates/new";
+        }
+
         NhcService.LookupResult result = nhcService.lookup(licenseNumber, advertiserNumber, idType);
 
         if (!result.success()) {
