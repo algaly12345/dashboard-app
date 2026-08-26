@@ -20,8 +20,13 @@
                 <i class="bi bi-exclamation-triangle"></i> لازم تضبط مفاتيح NHC أول من <a th:href="@{/settings}">الإعدادات</a> قبل ما تقدر تستخدم هذي الميزة.
             </div>
 
-            <div th:if="${lookupError != null}" class="alert alert-danger small mb-3">
+            <div th:if="${lookupError == 'duplicate_license'}" class="alert alert-warning small mb-3">
+                <i class="bi bi-exclamation-triangle"></i> هذا العقار مضاف مسبقًا بنفس رقم رخصة الإعلان.
+                <a th:href="@{'/estates/' + ${duplicateEstateId} + '/edit'}" class="fw-bold">افتح العقار الموجود</a>
+            </div>
+            <div th:if="${lookupError != null and lookupError != 'duplicate_license'}" class="alert alert-danger small mb-3">
                 <i class="bi bi-x-circle"></i> تعذّر جلب بيانات العقار (<span th:text="${lookupError}">error</span>) — تأكد من صحة رقم الرخصة والرقم الموحد.
+            </div>
             </div>
 
             <div class="nhc-wizard">
