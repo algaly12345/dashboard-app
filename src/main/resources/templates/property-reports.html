@@ -32,10 +32,24 @@
             <form th:action="@{/property-reports}" method="get" class="card section-card mb-4">
                 <div class="row g-2 align-items-end">
                     <div class="col-md-3">
-                        <label class="form-label" th:text="#{propReport.filter.zone}">Zone</label>
-                        <select name="zoneId" class="form-select">
-                            <option value="" th:text="#{propReport.filter.allZones}">All zones</option>
-                            <option th:each="z : ${zones}" th:value="${z.id}" th:text="${z.nameAr}" th:selected="${z.id == zoneId}"></option>
+                        <label class="form-label">المنطقة</label>
+                        <select name="regionId" id="regionSelect" class="form-select">
+                            <option value="">كل المناطق</option>
+                            <option th:each="r : ${regionsLite}" th:value="${r.regionId}" th:text="${r.nameAr}" th:selected="${regionId != null and regionId == r.regionId}"></option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">المدينة</label>
+                        <select name="city" id="citySelect" class="form-select">
+                            <option value="">كل المدن</option>
+                            <option th:if="${city}" th:value="${city}" th:text="${city}" selected></option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">الحي</label>
+                        <select name="district" id="districtSelect" class="form-select">
+                            <option value="">كل الأحياء</option>
+                            <option th:if="${district}" th:value="${district}" th:text="${district}" selected></option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -107,6 +121,13 @@
                 </div>
                 <div class="col-6 col-xl-3">
                     <div class="card kpi-card">
+                        <div class="kpi-icon" style="background:#E7F6EC; color:#1E8E4B;"><i class="bi bi-graph-up-arrow"></i></div>
+                        <div class="kpi-label">متوسط الإيجار</div>
+                        <div class="kpi-value" style="font-size:1.25rem;" th:text="|${#numbers.formatDecimal(avgRentPrice, 0, 'COMMA', 0, 'POINT')} #{estate.currency}|">0</div>
+                    </div>
+                </div>
+                <div class="col-6 col-xl-3">
+                    <div class="card kpi-card">
                         <div class="kpi-icon ink"><i class="bi bi-people"></i></div>
                         <div class="kpi-label" th:text="#{propReport.kpi.users}">Users</div>
                         <div class="kpi-value" th:text="${totalUsers}">0</div>
@@ -123,7 +144,7 @@
 
             <div class="row g-3 mb-4">
                 <div class="col-12">
-                    <a th:href="@{/estates(licenseExpired='true', zoneId=${zoneId})}" class="card kpi-card d-flex flex-row align-items-center gap-3 text-decoration-none" style="border-color: var(--danger);">
+                    <a th:href="@{/estates(licenseExpired='true')}" class="card kpi-card d-flex flex-row align-items-center gap-3 text-decoration-none" style="border-color: var(--danger);">
                         <div class="kpi-icon" style="position:static; background: linear-gradient(135deg, var(--coral-light), var(--danger)); flex-shrink:0;"><i class="bi bi-exclamation-triangle"></i></div>
                         <div>
                             <div class="kpi-label" th:text="#{kpi.expiredLicenses}">Expired licenses</div>
@@ -247,5 +268,65 @@
         </div>
     </div>
 </div>
+<script>
+    var citySelectEl = document.getElementById('citySelect');
+    var districtSelectEl = document.getElementById('districtSelect');
+
+    function loadCities(regionId, preselectCity) {
+        if (!regionId) return;
+        fetch('/estates/cities-by-region?regionId=' + regionId)
+            .then(r => r.json())
+            .then(cities => {
+                citySelectEl.innerHTML = '<option value="">كل المدن</option>';
+                cities.forEach(function (c) {
+                    var opt = document.createElement('option');
+                    opt.value = c;
+                    opt.textContent = c;
+                    if (preselectCity && c === preselectCity) opt.selected = true;
+                    citySelectEl.appendChild(opt);
+                });
+            });
+    }
+
+    var initialRegionId = document.getElementById('regionSelect').value;
+    var initialCity = citySelectEl.value;
+    if (initialRegionId) loadCities(initialRegionId, initialCity);
+
+    document.getElementById('regionSelect').addEventListener('change', function () {
+        var regionId = this.value;
+        if (!regionId) return;
+        fetch('/estates/cities-by-region?regionId=' + regionId)
+            .then(r => r.json())
+            .then(cities => {
+                citySelectEl.innerHTML = '<option value="">كل المدن</option>';
+                cities.forEach(function (c) {
+                    var opt = document.createElement('option');
+                    opt.value = c;
+                    opt.textContent = c;
+                    citySelectEl.appendChild(opt);
+                });
+                districtSelectEl.innerHTML = '<option value="">كل الأحياء</option>';
+            });
+    });
+
+    citySelectEl.addEventListener('change', function () {
+        var cityName = this.value;
+        if (!cityName) {
+            districtSelectEl.innerHTML = '<option value="">كل الأحياء</option>';
+            return;
+        }
+        fetch('/estates/districts-by-city?cityName=' + encodeURIComponent(cityName))
+            .then(r => r.json())
+            .then(districts => {
+                districtSelectEl.innerHTML = '<option value="">كل الأحياء</option>';
+                districts.forEach(function (d) {
+                    var opt = document.createElement('option');
+                    opt.value = d;
+                    opt.textContent = d;
+                    districtSelectEl.appendChild(opt);
+                });
+            });
+    });
+</script>
 </body>
 </html>

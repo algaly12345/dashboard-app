@@ -207,6 +207,12 @@
                                 <a th:href="@{'/estates/' + ${e.id} + '/edit'}" class="btn-icon" title="Edit">
                                     <i class="bi bi-pencil"></i>
                                 </a>
+                                <form th:action="@{'/estates/' + ${e.id} + '/delete'}" method="post" class="d-inline"
+                                      onsubmit="return confirm('متأكد تبي تحذف هذا العقار نهائيًا؟ هذا الإجراء لا يمكن التراجع عنه.');">
+                                    <button type="submit" class="btn-icon btn-icon-danger" title="Delete">
+                                        <i class="bi bi-trash3"></i>
+                                    </button>
+                                </form>
                             </div>
                         </td>
                     </tr>

@@ -43,14 +43,17 @@ public class PropertyReportController {
     private final CategoryRepository categoryRepository;
     private final ZoneRepository zoneRepository;
     private final OfferRepository offerRepository;
+    private final com.realestate.admin.repository.RegionLiteRepository regionLiteRepository;
+    private final com.realestate.admin.repository.CityLiteRepository cityLiteRepository;
 
     @GetMapping("/property-reports")
-    public String report(@RequestParam(required = false) String zoneId,
+    public String report(@RequestParam(required = false) Integer regionId,
                           @RequestParam(required = false) String categoryId,
                           @RequestParam(required = false) String userId,
+                          @RequestParam(required = false) String city,
+                          @RequestParam(required = false) String district,
                           Model model) {
 
-        Long zoneIdLong = parseLongOrNull(zoneId);
         Long categoryIdLong = parseLongOrNull(categoryId);
         Integer categoryIdInt = categoryIdLong != null ? categoryIdLong.intValue() : null;
         Long userIdLong = parseLongOrNull(userId);
@@ -58,7 +61,29 @@ public class PropertyReportController {
         // Fetch the filtered slice once, compute every stat below from it in
         // memory - simpler and always consistent with the filters than
         // maintaining a dozen separately-filtered SQL aggregate queries.
-        List<Estate> estates = estateRepository.findForReport(zoneIdLong, categoryIdInt, userIdLong);
+        List<Estate> estates = estateRepository.findForReport(null, categoryIdInt, userIdLong);
+
+        if (regionId != null) {
+            java.util.Set<String> regionCities = cityLiteRepository.findByRegionIdOrderByNameAr(regionId).stream()
+                    .map(c -> c.getNameAr().trim())
+                    .collect(java.util.stream.Collectors.toSet());
+            estates = estates.stream()
+                    .filter(e -> e.getCity() != null && regionCities.contains(e.getCity().trim()))
+                    .toList();
+        }
+        if (city != null && !city.isBlank()) {
+            String cityTrimmed = city.trim();
+            estates = estates.stream()
+                    .filter(e -> e.getCity() != null && cityTrimmed.equals(e.getCity().trim()))
+                    .toList();
+        }
+        if (district != null && !district.isBlank()) {
+            String districtNormalized = normalizeDistrictName(district);
+            estates = estates.stream()
+                    .filter(e -> e.getDistricts() != null
+                            && districtNormalized.equals(normalizeDistrictName(e.getDistricts())))
+                    .toList();
+        }
 
         long totalEstates = estates.size();
         long activeEstates = estates.stream().filter(e -> e.getStatus() == Estate.Status.active).count();
@@ -79,6 +104,15 @@ public class PropertyReportController {
                 .setScale(0, RoundingMode.HALF_UP);
         BigDecimal avgSalePrice = salePrices.isEmpty() ? BigDecimal.ZERO
                 : portfolioValue.divide(BigDecimal.valueOf(salePrices.size()), 0, RoundingMode.HALF_UP);
+
+        List<BigDecimal> rentPrices = estates.stream()
+                .filter(e -> "إيجار".equals(e.getAdvertisementType()))
+                .map(e -> parsePrice(e.getPrice()))
+                .filter(java.util.Objects::nonNull)
+                .toList();
+        BigDecimal avgRentPrice = rentPrices.isEmpty() ? BigDecimal.ZERO
+                : rentPrices.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
+                        .divide(BigDecimal.valueOf(rentPrices.size()), 0, RoundingMode.HALF_UP);
 
         long finalTotalEstates = totalEstates;
 
@@ -169,6 +203,7 @@ public class PropertyReportController {
         model.addAttribute("totalOffers", totalOffers);
         model.addAttribute("portfolioValue", portfolioValue);
         model.addAttribute("avgSalePrice", avgSalePrice);
+        model.addAttribute("avgRentPrice", avgRentPrice);
         model.addAttribute("cityStats", cityStats);
         model.addAttribute("zoneStats", zoneStats);
         model.addAttribute("byCategory", byCategory);
@@ -178,10 +213,13 @@ public class PropertyReportController {
         model.addAttribute("generatedAt", LocalDateTime.now());
         model.addAttribute("activePage", "property-reports");
 
-        model.addAttribute("zones", zones);
+        model.addAttribute("regionsLite", regionLiteRepository.findAllOrderByName());
+        model.addAttribute("regionId", regionId);
+        model.addAttribute("city", city);
+        model.addAttribute("district", district);
         model.addAttribute("categories", categories);
         model.addAttribute("marketerOptions", marketerOptions);
-        model.addAttribute("zoneId", zoneIdLong);
+        model.addAttribute("regionId", regionId);
         model.addAttribute("categoryId", categoryIdLong);
         model.addAttribute("userId", userIdLong);
         model.addAttribute("userIdParam", userId);
@@ -216,6 +254,11 @@ public class PropertyReportController {
         } catch (Exception e) {
             return ym;
         }
+    }
+
+    private String normalizeDistrictName(String name) {
+        if (name == null) return "";
+        return name.trim().replaceFirst("^\u062d\u064a\\s+", "").trim();
     }
 
     private Long parseLongOrNull(String s) {

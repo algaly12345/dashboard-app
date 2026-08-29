@@ -141,9 +141,7 @@ public List<String> citiesByRegion(@RequestParam Integer regionId) {
 @GetMapping("/estates/districts-by-city")
 @ResponseBody
 public List<String> districtsByCity(@RequestParam String cityName) {
-    java.util.Optional<com.realestate.admin.entity.CityLite> match = cityLiteRepository.findAll().stream()
-            .filter(c -> cityName.equals(c.getNameAr()))
-            .findFirst();
+    java.util.Optional<com.realestate.admin.entity.CityLite> match = cityLiteRepository.findAllByNameAr(cityName).stream().findFirst();
     if (match.isEmpty()) return List.of();
     return districtLiteRepository.findByCityIdOrderByNameAr(match.get().getCityId()).stream()
             .map(com.realestate.admin.entity.DistrictLite::getNameAr)
@@ -402,6 +400,13 @@ public String uploadImage(@PathVariable Long id, @RequestParam("files") Multipar
             redirectAttributes.addFlashAttribute("uploadError", result.error());
         }
         return "redirect:" + (redirectTo != null && !redirectTo.isBlank() ? redirectTo : "/estates/" + id + "/photos");
+    }
+
+    @PostMapping("/estates/{id}/delete")
+    public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        estateRepository.deleteById(id);
+        redirectAttributes.addFlashAttribute("deleted", true);
+        return "redirect:/estates";
     }
 
     private Integer parseIntOrNull(String s) {

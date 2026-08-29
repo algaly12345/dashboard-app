@@ -986,3 +986,7 @@ a.report-estate-chip:hover{ border-color: var(--violet); background:#F5F9FF; }
 
 /* ---------- Offer map ---------- */
 #offerMap{ background: var(--canvas); }
+
+/* ---------- Danger action icon ---------- */
+.btn-icon-danger{ color: var(--danger); }
+.btn-icon-danger:hover{ background: var(--danger-bg); }
