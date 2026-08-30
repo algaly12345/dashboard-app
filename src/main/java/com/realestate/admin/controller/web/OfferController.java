@@ -40,6 +40,7 @@ public class OfferController {
     private final AppUserRepository appUserRepository;
     private final R2StorageService r2StorageService;
     private final com.realestate.admin.service.SettingsService settingsService;
+    private final com.realestate.admin.service.NotificationSendService notificationSendService;
     private final org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
 
     @GetMapping("/offers")
@@ -184,6 +185,7 @@ public String uploadImage(@PathVariable Long id, @RequestParam("file") Multipart
             offer.setStatus("accept");
             offer.setUpdatedAt(LocalDateTime.now());
             offerRepository.save(offer);
+            notifyOfferOwner(offer, "تم اعتماد خدمتك", "تم اعتماد خدمة \"" + offer.getTitle() + "\" ونشرها بنجاح.");
         });
         return "redirect:" + (redirectTo != null && !redirectTo.isBlank() ? redirectTo : "/offers");
     }
@@ -195,8 +197,28 @@ public String uploadImage(@PathVariable Long id, @RequestParam("file") Multipart
             offer.setStatus("reject");
             offer.setUpdatedAt(LocalDateTime.now());
             offerRepository.save(offer);
+            notifyOfferOwner(offer, "تم رفض خدمتك", "تم رفض خدمة \"" + offer.getTitle() + "\" — راجع لوحة التحكم لمزيد من التفاصيل.");
         });
         return "redirect:" + (redirectTo != null && !redirectTo.isBlank() ? redirectTo : "/offers");
+    }
+
+    private void notifyOfferOwner(Offer offer, String title, String body) {
+        if (offer.getPhoneProvider() == null || offer.getPhoneProvider().isBlank()) {
+            return;
+        }
+        appUserRepository.findFirstByPhoneOrderByIdAsc(offer.getPhoneProvider()).ifPresent(user -> {
+            String token = user.getCmFirebaseToken();
+            if (token == null || token.length() <= 50) {
+                org.slf4j.LoggerFactory.getLogger(getClass()).warn(
+                        "Offer status notification SKIPPED - no valid FCM token for user phone: {}", offer.getPhoneProvider());
+                return;
+            }
+            com.realestate.admin.service.NotificationSendService.SendResult result =
+                    notificationSendService.sendToToken(token, title, body);
+            org.slf4j.LoggerFactory.getLogger(getClass()).info(
+                    "Offer status notification - offerId: {}, sent: {}, result: {}",
+                    offer.getId(), result.sent(), result.sent() ? result.messageId() : result.error());
+        });
     }
 
     private void updateStatusViaLaravel(Long id, String status) {
