@@ -28,6 +28,35 @@ public class NotificationApiController {
     public record SendToTokenRequest(String fcmToken, String title, String body) {
     }
 
+    public record SendToAllRequest(String title, String body) {
+    }
+
+    @PostMapping("/send-to-all")
+    public ResponseEntity<Map<String, Object>> sendToAll(
+            @RequestHeader(value = "X-Api-Key", required = false) String apiKey,
+            @RequestBody SendToAllRequest request) {
+
+        String expectedKey = settingsService.get("notification_api_key", "");
+        if (expectedKey.isBlank() || apiKey == null || !apiKey.equals(expectedKey)) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "error", "unauthorized"));
+        }
+
+        NotificationSendService.SendResult result = notificationSendService.send(
+                request.title(), request.body(), null, null, "all");
+
+        if (result.sent()) {
+            return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "summary", result.messageId()
+            ));
+        } else {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", result.error() != null ? result.error() : "unknown_error"
+            ));
+        }
+    }
+
     @PostMapping("/send-to-token")
     public ResponseEntity<Map<String, Object>> sendToToken(
             @RequestHeader(value = "X-Api-Key", required = false) String apiKey,
