@@ -152,6 +152,7 @@
         <button type="button" class="advertiser-modal-close" onclick="closeRejectModal()"><i class="bi bi-x-lg"></i></button>
         <div class="fw-bold fs-5 mb-3"><i class="bi bi-x-circle text-danger"></i> رفض الخدمة</div>
         <form id="rejectForm" method="post">
+            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
             <input type="hidden" name="redirectTo" th:value="${currentUri}"/>
             <label class="form-label">سبب الرفض *</label>
             <textarea name="rejectionReason" class="form-control" rows="4" required
