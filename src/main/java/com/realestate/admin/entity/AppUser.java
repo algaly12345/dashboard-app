@@ -93,5 +93,8 @@ public class AppUser {
     @Column(name = "account_verification")
     private Boolean accountVerification;
 
+    @Column(name = "cm_firebase_token")
+    private String cmFirebaseToken;
+
     public enum Status { active, disactive }
 }
