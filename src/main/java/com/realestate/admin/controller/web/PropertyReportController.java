@@ -214,6 +214,9 @@ public class PropertyReportController {
         model.addAttribute("activePage", "property-reports");
 
         model.addAttribute("regionsLite", regionLiteRepository.findAllOrderByName());
+        model.addAttribute("allCities", cityLiteRepository.findAll().stream()
+                .map(c -> c.getNameAr().trim()).distinct().sorted().toList());
+        model.addAttribute("allDistricts", estateRepository.findDistinctDistricts(null, null));
         model.addAttribute("regionId", regionId);
         model.addAttribute("city", city);
         model.addAttribute("district", district);

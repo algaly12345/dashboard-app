@@ -40,17 +40,19 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">المدينة</label>
-                        <select name="city" id="citySelect" class="form-select">
-                            <option value="">كل المدن</option>
-                            <option th:if="${city}" th:value="${city}" th:text="${city}" selected></option>
-                        </select>
+                        <input type="text" name="city" id="citySelect" class="form-control" list="cityList"
+                               th:value="${city}" placeholder="كل المدن (اكتب للبحث)" autocomplete="off"/>
+                        <datalist id="cityList">
+                            <option th:each="c : ${allCities}" th:value="${c}"></option>
+                        </datalist>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">الحي</label>
-                        <select name="district" id="districtSelect" class="form-select">
-                            <option value="">كل الأحياء</option>
-                            <option th:if="${district}" th:value="${district}" th:text="${district}" selected></option>
-                        </select>
+                        <input type="text" name="district" id="districtSelect" class="form-control" list="districtList"
+                               th:value="${district}" placeholder="كل الأحياء (اكتب للبحث)" autocomplete="off"/>
+                        <datalist id="districtList">
+                            <option th:each="d : ${allDistricts}" th:value="${d}"></option>
+                        </datalist>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label" th:text="#{propReport.filter.category}">Category</label>
@@ -61,10 +63,13 @@
                     </div>
                     <div class="col-md-4">
                         <label class="form-label" th:text="#{propReport.filter.marketer}">Marketer</label>
-                        <select name="userId" class="form-select">
-                            <option value="" th:text="#{propReport.filter.allMarketers}">All marketers</option>
-                            <option th:each="m : ${marketerOptions}" th:value="${m.value}" th:text="${m.label}" th:selected="${m.value == userIdParam}"></option>
-                        </select>
+                        <input type="text" id="marketerSearchInput" class="form-control" list="marketerList"
+                               autocomplete="off" placeholder="كل المسوّقين (اكتب للبحث)"
+                               th:value="${selectedMarketerLabel}"/>
+                        <input type="hidden" name="userId" id="marketerIdHidden" th:value="${userIdParam}"/>
+                        <datalist id="marketerList">
+                            <option th:each="m : ${marketerOptions}" th:value="${m.label}" th:attr="data-id=${m.value}"></option>
+                        </datalist>
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-gold w-100" th:text="#{offer.filter.apply}">Filter</button>
@@ -277,15 +282,43 @@
         fetch('/estates/cities-by-region?regionId=' + regionId)
             .then(r => r.json())
             .then(cities => {
-                citySelectEl.innerHTML = '<option value="">كل المدن</option>';
+                var list = document.getElementById('cityList');
+                list.innerHTML = '';
                 cities.forEach(function (c) {
                     var opt = document.createElement('option');
                     opt.value = c;
-                    opt.textContent = c;
-                    if (preselectCity && c === preselectCity) opt.selected = true;
-                    citySelectEl.appendChild(opt);
+                    list.appendChild(opt);
                 });
             });
+    }
+
+    citySelectEl.addEventListener('input', function () {
+        var cityName = this.value.trim();
+        var districtList = document.getElementById('districtList');
+        if (!cityName) { districtList.innerHTML = ''; return; }
+        fetch('/estates/districts-by-city?cityName=' + encodeURIComponent(cityName))
+            .then(r => r.json())
+            .then(districts => {
+                districtList.innerHTML = '';
+                districts.forEach(function (d) {
+                    var opt = document.createElement('option');
+                    opt.value = d;
+                    districtList.appendChild(opt);
+                });
+            });
+    });
+
+    var marketerInput = document.getElementById('marketerSearchInput');
+    var marketerHidden = document.getElementById('marketerIdHidden');
+    if (marketerInput) {
+        marketerInput.addEventListener('input', function () {
+            var options = document.querySelectorAll('#marketerList option');
+            var match = null;
+            options.forEach(function (opt) {
+                if (opt.value === marketerInput.value) match = opt;
+            });
+            marketerHidden.value = match ? match.getAttribute('data-id') : '';
+        });
     }
 
     var initialRegionId = document.getElementById('regionSelect').value;
@@ -294,18 +327,23 @@
 
     document.getElementById('regionSelect').addEventListener('change', function () {
         var regionId = this.value;
+        var cityList = document.getElementById('cityList');
+        var districtList = document.getElementById('districtList');
+
+        citySelectEl.value = '';
+        districtSelectEl.value = '';
+        districtList.innerHTML = '';
+
         if (!regionId) return;
         fetch('/estates/cities-by-region?regionId=' + regionId)
             .then(r => r.json())
             .then(cities => {
-                citySelectEl.innerHTML = '<option value="">كل المدن</option>';
+                cityList.innerHTML = '';
                 cities.forEach(function (c) {
                     var opt = document.createElement('option');
                     opt.value = c;
-                    opt.textContent = c;
-                    citySelectEl.appendChild(opt);
+                    cityList.appendChild(opt);
                 });
-                districtSelectEl.innerHTML = '<option value="">كل الأحياء</option>';
             });
     });
 
