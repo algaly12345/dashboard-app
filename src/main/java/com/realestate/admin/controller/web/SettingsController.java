@@ -103,6 +103,9 @@ model.addAttribute("firebaseHasCredentials", !settingsService.get("firebase_serv
             }
         }
 model.addAttribute("firebaseEnabled", "1".equals(settingsService.get("firebase_enabled", "0")));
+
+        model.addAttribute("notificationApiKeySet", !settingsService.get("notification_api_key", "").isBlank());
+
         return "settings";
     }
 
@@ -184,6 +187,10 @@ settingsService.set("firebase_enabled", form.containsKey("firebaseEnabled") ? "1
         settingsService.set("laravel_api_url", form.get("laravelApiUrl"));
         if (form.get("laravelAdminToken") != null && !form.get("laravelAdminToken").isBlank()) {
             settingsService.set("laravel_admin_token", form.get("laravelAdminToken"));
+        }
+
+        if (form.get("notificationApiKey") != null && !form.get("notificationApiKey").isBlank()) {
+            settingsService.set("notification_api_key", form.get("notificationApiKey"));
         }
 
         redirectAttributes.addFlashAttribute("saved", true);

@@ -1,10 +1,12 @@
 package com.realestate.admin.controller.api;
 
 import com.realestate.admin.service.NotificationSendService;
+import com.realestate.admin.service.SettingsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -21,12 +23,21 @@ import java.util.Map;
 public class NotificationApiController {
 
     private final NotificationSendService notificationSendService;
+    private final SettingsService settingsService;
 
     public record SendToTokenRequest(String fcmToken, String title, String body) {
     }
 
     @PostMapping("/send-to-token")
-    public ResponseEntity<Map<String, Object>> sendToToken(@RequestBody SendToTokenRequest request) {
+    public ResponseEntity<Map<String, Object>> sendToToken(
+            @RequestHeader(value = "X-Api-Key", required = false) String apiKey,
+            @RequestBody SendToTokenRequest request) {
+
+        String expectedKey = settingsService.get("notification_api_key", "");
+        if (expectedKey.isBlank() || apiKey == null || !apiKey.equals(expectedKey)) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "error", "unauthorized"));
+        }
+
         NotificationSendService.SendResult result = notificationSendService.sendToToken(
                 request.fcmToken(), request.title(), request.body());
 

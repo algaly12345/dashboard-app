@@ -408,6 +408,19 @@
     </div>
 </div>
 
+<div class="form-section">
+    <div class="form-section-title"><i class="bi bi-key"></i> مفتاح API الإشعارات</div>
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <strong class="small">الحالة</strong>
+        <span th:if="${notificationApiKeySet}" class="badge-pill badge-active"><i class="bi bi-check-circle"></i> مضبوط</span>
+        <span th:unless="${notificationApiKeySet}" class="badge-pill badge-disactive"><i class="bi bi-exclamation-triangle"></i> غير مضبوط</span>
+    </div>
+    <p class="text-muted small">هذا المفتاح يحمي رابط إرسال الإشعارات الخارجي (/api/v1/notifications/send-to-token) من أي استخدام غير مصرّح به.</p>
+    <input type="password" name="notificationApiKey" class="form-control" dir="ltr" autocomplete="new-password"
+           th:placeholder="${notificationApiKeySet} ? '••••••••••••••••' : 'اكتب مفتاح قوي عشوائي'"/>
+    <div class="form-text">اتركه فاضي إذا ما تبي تغيّره</div>
+</div>
+
 <div class="sticky-save-bar">
                     <button type="submit" class="btn btn-gold"><i class="bi bi-check2"></i> <span th:text="#{settings.save}">Save</span></button>
                 </div>
