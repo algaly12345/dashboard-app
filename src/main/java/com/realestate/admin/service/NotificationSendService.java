@@ -33,6 +33,38 @@ public class NotificationSendService {
     public record SendResult(boolean sent, String messageId, String error) {
     }
 
+    public SendResult sendToToken(String token, String title, String body) {
+        if (!firebaseMessagingHolder.isReady()) {
+            return new SendResult(false, null,
+                    "not_configured:" + firebaseMessagingHolder.unavailableReason());
+        }
+        if (token == null || token.isBlank()) {
+            return new SendResult(false, null, "missing_token");
+        }
+
+        Message message = Message.builder()
+                .setToken(token)
+                .setNotification(Notification.builder().setTitle(title).setBody(body).build())
+                .setApnsConfig(ApnsConfig.builder()
+                        .putHeader("apns-priority", "10")
+                        .putHeader("apns-push-type", "alert")
+                        .setAps(Aps.builder()
+                                .setAlert(ApsAlert.builder().setTitle(title).setBody(body).build())
+                                .setSound("default")
+                                .build())
+                        .build())
+                .build();
+
+        try {
+            String messageId = firebaseMessagingHolder.messaging().send(message);
+            log.info("Single-token notification sent - messageId: {}", messageId);
+            return new SendResult(true, messageId, null);
+        } catch (FirebaseMessagingException e) {
+            log.error("Single-token notification failed", e);
+            return new SendResult(false, null, e.getMessage());
+        }
+    }
+
     public SendResult send(String title, String body, Long zoneId, Long categoryId, String audience) {
         if (!firebaseMessagingHolder.isReady()) {
             return new SendResult(false, null,
