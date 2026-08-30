@@ -81,7 +81,6 @@ app:
 logging:
   level:
     org.springframework.security: DEBUG
-  level:
     com.zaxxer.hikari: WARN
     org.hibernate: WARN
     org.springframework.web: INFO
