@@ -191,13 +191,20 @@ public String uploadImage(@PathVariable Long id, @RequestParam("file") Multipart
     }
 
     @PostMapping("/offers/{id}/reject")
-    public String reject(@PathVariable Long id, @RequestParam(required = false) String redirectTo) {
+    public String reject(@PathVariable Long id,
+                          @RequestParam(required = false) String rejectionReason,
+                          @RequestParam(required = false) String redirectTo) {
         updateStatusViaLaravel(id, "rejected");
         offerRepository.findById(id).ifPresent(offer -> {
             offer.setStatus("reject");
+            offer.setRejectionReason(rejectionReason);
             offer.setUpdatedAt(LocalDateTime.now());
             offerRepository.save(offer);
-            notifyOfferOwner(offer, "تم رفض خدمتك", "تم رفض خدمة \"" + offer.getTitle() + "\" — راجع لوحة التحكم لمزيد من التفاصيل.");
+
+            String reasonText = (rejectionReason != null && !rejectionReason.isBlank())
+                    ? "\nالسبب: " + rejectionReason : "";
+            notifyOfferOwner(offer, "تم رفض خدمتك",
+                    "تم رفض خدمة \"" + offer.getTitle() + "\"." + reasonText);
         });
         return "redirect:" + (redirectTo != null && !redirectTo.isBlank() ? redirectTo : "/offers");
     }

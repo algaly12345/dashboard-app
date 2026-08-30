@@ -108,10 +108,10 @@
                                 <input type="hidden" name="redirectTo" th:value="${currentUri}"/>
                                 <button type="submit" class="btn-icon" title="Approve"><i class="bi bi-check-lg"></i></button>
                             </form>
-                            <form th:if="${o.status != 'reject'}" th:action="@{'/offers/' + ${o.id} + '/reject'}" method="post">
-                                <input type="hidden" name="redirectTo" th:value="${currentUri}"/>
-                                <button type="submit" class="btn-icon" title="Reject"><i class="bi bi-x-lg"></i></button>
-                            </form>
+                            <button type="button" th:if="${o.status != 'reject'}" class="btn-icon" title="Reject"
+                                    th:onclick="'openRejectModal(' + ${o.id} + ')'">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
                             <a th:href="@{'/offers/' + ${o.id} + '/edit'}" class="btn-icon" title="Edit"><i class="bi bi-pencil"></i></a>
                         </div>
                     </div>
@@ -146,5 +146,29 @@
         </div>
     </div>
 </div>
+<!-- Reject reason modal -->
+<div id="rejectModalBackdrop" class="advertiser-modal-backdrop" onclick="closeRejectModal(event)">
+    <div class="advertiser-modal" onclick="event.stopPropagation()" style="max-width:420px;">
+        <button type="button" class="advertiser-modal-close" onclick="closeRejectModal()"><i class="bi bi-x-lg"></i></button>
+        <div class="fw-bold fs-5 mb-3"><i class="bi bi-x-circle text-danger"></i> رفض الخدمة</div>
+        <form id="rejectForm" method="post">
+            <input type="hidden" name="redirectTo" th:value="${currentUri}"/>
+            <label class="form-label">سبب الرفض *</label>
+            <textarea name="rejectionReason" class="form-control" rows="4" required
+                      placeholder="اكتب سبب الرفض ليصل لصاحب الخدمة..."></textarea>
+            <button type="submit" class="btn btn-gold w-100 mt-3"><i class="bi bi-check2"></i> تأكيد الرفض</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openRejectModal(offerId) {
+        document.getElementById('rejectForm').action = '/offers/' + offerId + '/reject';
+        document.getElementById('rejectModalBackdrop').classList.add('open');
+    }
+    function closeRejectModal(e) {
+        document.getElementById('rejectModalBackdrop').classList.remove('open');
+    }
+</script>
 </body>
 </html>
