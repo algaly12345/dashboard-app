@@ -75,6 +75,9 @@ Long findMaxId();
     @Query("select distinct e.userId from Estate e where e.userId is not null")
     List<Long> findDistinctUserIds();
 
+    @Query("select distinct e.userId from Estate e where e.userId is not null and e.zoneId = :zoneId")
+    List<Long> findDistinctUserIdsByZone(@Param("zoneId") Long zoneId);
+
     @Query("select e.city, count(e), avg(cast(e.price as big_decimal)) from Estate e where e.city is not null group by e.city order by count(e) desc")
     List<Object[]> countAndAvgPriceGroupedByCity();
 

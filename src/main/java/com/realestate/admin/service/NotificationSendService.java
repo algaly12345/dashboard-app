@@ -25,6 +25,7 @@ public class NotificationSendService {
 
     private final FirebaseMessagingHolder firebaseMessagingHolder;
     private final AppUserRepository appUserRepository;
+    private final com.realestate.admin.repository.EstateRepository estateRepository;
 
     public boolean isFirebaseReady() {
         return firebaseMessagingHolder.isReady();
@@ -71,9 +72,13 @@ public class NotificationSendService {
                     "not_configured:" + firebaseMessagingHolder.unavailableReason());
         }
 
+        java.util.Set<Long> zoneUserIds = zoneId != null
+                ? new java.util.HashSet<>(estateRepository.findDistinctUserIdsByZone(zoneId))
+                : null;
+
         List<String> tokens = appUserRepository.findAll().stream()
                 .filter(u -> u.getCmFirebaseToken() != null && u.getCmFirebaseToken().length() > 50)
-                .filter(u -> zoneId == null || zoneId.equals(u.getZoneId()))
+                .filter(u -> zoneUserIds == null || zoneUserIds.contains(u.getId()))
                 .filter(u -> audience == null || audience.isBlank() || "all".equals(audience)
                         || audience.equals(u.getUserType()))
                 .map(AppUser::getCmFirebaseToken)
