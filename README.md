@@ -202,3 +202,6 @@ follow the active locale automatically — every page, not just login.
   want a "role profile" tab on the user detail page next.
 - To add a new language, add `i18n/messages_xx.properties` and add a link in
   `fragments/topbar.html`.
+
+
+<!-- Security scan triggered at 2026-08-31 16:24:51 -->
