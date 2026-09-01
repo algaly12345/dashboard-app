@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head('طلبات السحب')}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('commissions')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, 'طلبات السحب')}"></div>
+
+        <div class="content">
+
+            <a th:href="@{/commissions}" class="btn btn-outline-gold mb-3">
+                <i class="bi bi-arrow-right"></i> رجوع للعمولات
+            </a>
+
+            <div th:if="${saved}" class="alert alert-success py-2 px-3 mb-3 small">تم الحفظ بنجاح</div>
+
+            <form th:action="@{/commissions/withdrawals}" method="get" class="card section-card mb-3">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label">الحالة</label>
+                        <select name="status" class="form-select">
+                            <option value="">الكل</option>
+                            <option value="pending" th:selected="${status == 'pending'}">قيد الانتظار</option>
+                            <option value="approved" th:selected="${status == 'approved'}">معتمد</option>
+                            <option value="rejected" th:selected="${status == 'rejected'}">مرفوض</option>
+                            <option value="paid" th:selected="${status == 'paid'}">مدفوع</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-outline-gold w-100">فلتر</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="card table-card">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th>المستخدم</th>
+                        <th>المبلغ</th>
+                        <th>الحالة</th>
+                        <th>تاريخ الطلب</th>
+                        <th>إجراءات</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="w : ${withdrawals.content}">
+                        <td>
+                            <div th:if="${users.get(w.userId)} != null">
+                                <div class="fw-bold" th:text="${users.get(w.userId).name}">-</div>
+                                <div class="text-muted small" dir="ltr" th:text="${users.get(w.userId).phone}">-</div>
+                            </div>
+                            <span th:unless="${users.get(w.userId)} != null" class="text-muted">#<span th:text="${w.userId}">-</span></span>
+                        </td>
+                        <td class="fw-bold" th:text="${w.amount} + ' ر.س'">-</td>
+                        <td>
+                            <span th:if="${w.status.name() == 'pending'}" class="badge-pill badge-tour">قيد الانتظار</span>
+                            <span th:if="${w.status.name() == 'approved'}" class="badge-pill" style="background:#F0EEFA; color:var(--violet);">معتمد</span>
+                            <span th:if="${w.status.name() == 'rejected'}" class="badge-pill badge-disactive">مرفوض</span>
+                            <span th:if="${w.status.name() == 'paid'}" class="badge-pill badge-active">مدفوع</span>
+                        </td>
+                        <td th:text="${w.requestedAt != null ? #temporals.format(w.requestedAt, 'yyyy-MM-dd') : '-'}">-</td>
+                        <td>
+                            <div class="d-flex gap-1" th:if="${w.status.name() == 'pending'}">
+                                <form th:action="@{'/commissions/withdrawals/' + ${w.id} + '/approve'}" method="post" class="d-inline">
+                                    <button type="submit" class="btn-icon" title="موافقة"><i class="bi bi-check-lg"></i></button>
+                                </form>
+                                <button type="button" class="btn-icon btn-icon-danger" title="رفض" th:onclick="'openRejectModal(' + ${w.id} + ')'">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                            <form th:if="${w.status.name() == 'approved'}" th:action="@{'/commissions/withdrawals/' + ${w.id} + '/mark-paid'}" method="post" class="d-inline"
+                                  onsubmit="return confirm('تأكيد إن التحويل تم فعليًا خارج النظام؟');">
+                                <button type="submit" class="btn-icon" title="تعليم كمدفوع"><i class="bi bi-cash-coin"></i></button>
+                            </form>
+                            <span th:if="${w.status.name() == 'rejected' or w.status.name() == 'paid'}" class="text-muted small">
+                                <span th:if="${w.note}" th:text="${w.note}">-</span>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr th:if="${withdrawals.content.isEmpty()}">
+                        <td colspan="6" class="text-center text-muted py-4">لا توجد طلبات سحب</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <nav th:if="${withdrawals.totalPages > 1}" class="d-flex justify-content-between align-items-center mt-3">
+                <span class="text-muted small">صفحة <span th:text="${withdrawals.number + 1}">1</span> من <span th:text="${withdrawals.totalPages}">1</span></span>
+                <div class="btn-group">
+                    <a class="btn btn-outline-secondary btn-sm" th:classappend="${withdrawals.first} ? 'disabled' : ''"
+                       th:href="@{/commissions/withdrawals(status=${status}, page=${withdrawals.number - 1})}">السابق</a>
+                    <a class="btn btn-outline-secondary btn-sm" th:classappend="${withdrawals.last} ? 'disabled' : ''"
+                       th:href="@{/commissions/withdrawals(status=${status}, page=${withdrawals.number + 1})}">التالي</a>
+                </div>
+            </nav>
+
+            <!-- Reject reason modal -->
+            <div id="rejectModalBackdrop" class="advertiser-modal-backdrop" onclick="closeRejectModal(event)">
+                <div class="advertiser-modal" onclick="event.stopPropagation()" style="max-width:420px;">
+                    <button type="button" class="advertiser-modal-close" onclick="closeRejectModal()"><i class="bi bi-x-lg"></i></button>
+                    <div class="fw-bold fs-5 mb-3"><i class="bi bi-x-circle text-danger"></i> رفض طلب السحب</div>
+                    <form id="rejectWithdrawalForm" method="post">
+                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <label class="form-label">سبب الرفض *</label>
+                        <textarea name="note" class="form-control" rows="4" required placeholder="اكتب سبب الرفض..."></textarea>
+                        <button type="submit" class="btn btn-gold w-100 mt-3"><i class="bi bi-check2"></i> تأكيد الرفض</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function openRejectModal(id) {
+        document.getElementById('rejectWithdrawalForm').action = '/commissions/withdrawals/' + id + '/reject';
+        document.getElementById('rejectModalBackdrop').classList.add('open');
+    }
+    function closeRejectModal(e) {
+        document.getElementById('rejectModalBackdrop').classList.remove('open');
+    }
+</script>
+</body>
+</html>

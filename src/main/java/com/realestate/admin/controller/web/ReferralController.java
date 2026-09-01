@@ -27,6 +27,7 @@ public class ReferralController {
     private final ReferralRepository referralRepository;
     private final ReferralSettingsRepository referralSettingsRepository;
     private final AppUserRepository appUserRepository;
+    private final com.realestate.admin.service.NotificationSendService notificationSendService;
 
     @GetMapping("/referrals")
     public String list(@RequestParam(required = false) String status,
@@ -68,9 +69,52 @@ public class ReferralController {
             referral.setStatus(Referral.Status.valueOf(status));
             referral.setUpdatedAt(LocalDateTime.now());
             referralRepository.save(referral);
+            notifyReferrer(referral);
         });
         redirectAttributes.addFlashAttribute("saved", true);
         return "redirect:/referrals";
+    }
+
+    private void notifyReferrer(Referral referral) {
+        if (referral.getReferrerId() == null) return;
+
+        String title;
+        String body;
+        switch (referral.getStatus()) {
+            case COMPLETED -> {
+                title = "تم اعتماد إحالتك";
+                body = "تم اعتماد مكافأة الإحالة الخاصة بك بنجاح.";
+            }
+            case REJECTED -> {
+                title = "تم رفض إحالتك";
+                body = "تم رفض مكافأة هذه الإحالة.";
+            }
+            case EXPIRED -> {
+                title = "انتهت صلاحية إحالتك";
+                body = "انتهت صلاحية مكافأة هذه الإحالة قبل استكمال الشروط.";
+            }
+            case PENDING_PAYMENT -> {
+                title = "إحالتك قيد المعالجة";
+                body = "إحالتك الآن قيد مراجعة الدفع، سيتم إشعارك عند الاعتماد.";
+            }
+            default -> {
+                return;
+            }
+        }
+
+        appUserRepository.findById(referral.getReferrerId()).ifPresent(user -> {
+            String token = user.getCmFirebaseToken();
+            if (token == null || token.length() <= 50) {
+                org.slf4j.LoggerFactory.getLogger(getClass()).warn(
+                        "Referral status notification SKIPPED - no valid FCM token for user id: {}", referral.getReferrerId());
+                return;
+            }
+            com.realestate.admin.service.NotificationSendService.SendResult result =
+                    notificationSendService.sendToToken(token, title, body);
+            org.slf4j.LoggerFactory.getLogger(getClass()).info(
+                    "Referral status notification - referralId: {}, sent: {}, result: {}",
+                    referral.getId(), result.sent(), result.sent() ? result.messageId() : result.error());
+        });
     }
 
     @GetMapping("/referrals/settings")

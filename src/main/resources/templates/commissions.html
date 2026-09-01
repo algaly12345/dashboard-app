@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head('العمولات')}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('commissions')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, 'العمولات')}"></div>
+
+        <div class="content">
+
+            <div th:if="${saved}" class="alert alert-success py-2 px-3 mb-3 small">تم الحفظ بنجاح</div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <div class="d-flex gap-2 flex-wrap">
+                    <span class="badge-pill badge-tour">قيد الانتظار: <span th:text="${statusCounts.get('PENDING')} ?: 0">0</span></span>
+                    <span class="badge-pill" style="background:#F0EEFA; color:var(--violet);">معتمدة: <span th:text="${statusCounts.get('APPROVED')} ?: 0">0</span></span>
+                    <span class="badge-pill badge-active">متاحة: <span th:text="${statusCounts.get('AVAILABLE')} ?: 0">0</span></span>
+                    <span class="badge-pill badge-disactive">مسحوبة: <span th:text="${statusCounts.get('WITHDRAWN')} ?: 0">0</span></span>
+                </div>
+                <a th:href="@{/commissions/withdrawals}" class="btn btn-gold btn-sm position-relative">
+                    <i class="bi bi-cash-stack"></i> طلبات السحب
+                    <span th:if="${pendingWithdrawalCount > 0}" class="badge-pill" style="position:absolute; top:-8px; left:-8px; background:var(--danger); color:#fff; padding:2px 8px;" th:text="${pendingWithdrawalCount}">0</span>
+                </a>
+            </div>
+
+            <form th:action="@{/commissions}" method="get" class="card section-card mb-3">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label">الحالة</label>
+                        <select name="status" class="form-select">
+                            <option value="">الكل</option>
+                            <option value="PENDING" th:selected="${status == 'PENDING'}">قيد الانتظار</option>
+                            <option value="APPROVED" th:selected="${status == 'APPROVED'}">معتمدة</option>
+                            <option value="AVAILABLE" th:selected="${status == 'AVAILABLE'}">متاحة للسحب</option>
+                            <option value="WITHDRAWN" th:selected="${status == 'WITHDRAWN'}">مسحوبة</option>
+                            <option value="CANCELLED" th:selected="${status == 'CANCELLED'}">ملغاة</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-outline-gold w-100">فلتر</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="card table-card">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th>المستخدم</th>
+                        <th>المبلغ</th>
+                        <th>الحالة</th>
+                        <th>تاريخ الإنشاء</th>
+                        <th>إجراءات</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="c : ${commissions.content}">
+                        <td>
+                            <div th:if="${users.get(c.userId)} != null">
+                                <div class="fw-bold" th:text="${users.get(c.userId).name}">-</div>
+                                <div class="text-muted small" dir="ltr" th:text="${users.get(c.userId).phone}">-</div>
+                            </div>
+                            <span th:unless="${users.get(c.userId)} != null" class="text-muted">#<span th:text="${c.userId}">-</span></span>
+                        </td>
+                        <td class="fw-bold" th:text="${c.amount} + ' ر.س'">-</td>
+                        <td>
+                            <span th:if="${c.status.name() == 'PENDING'}" class="badge-pill badge-tour">قيد الانتظار</span>
+                            <span th:if="${c.status.name() == 'APPROVED'}" class="badge-pill" style="background:#F0EEFA; color:var(--violet);">معتمدة</span>
+                            <span th:if="${c.status.name() == 'AVAILABLE'}" class="badge-pill badge-active">متاحة</span>
+                            <span th:if="${c.status.name() == 'WITHDRAWN'}" class="badge-pill badge-disactive">مسحوبة</span>
+                            <span th:if="${c.status.name() == 'CANCELLED'}" class="badge-pill" style="background:#FDE4E1; color:#B3261E;">ملغاة</span>
+                        </td>
+                        <td th:text="${c.createdAt != null ? #temporals.format(c.createdAt, 'yyyy-MM-dd') : '-'}">-</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <form th:if="${c.status.name() == 'PENDING'}" th:action="@{'/commissions/' + ${c.id} + '/approve'}" method="post" class="d-inline">
+                                    <button type="submit" class="btn-icon" title="اعتماد"><i class="bi bi-check-lg"></i></button>
+                                </form>
+                                <form th:if="${c.status.name() == 'APPROVED'}" th:action="@{'/commissions/' + ${c.id} + '/make-available'}" method="post" class="d-inline">
+                                    <button type="submit" class="btn-icon" title="إتاحة للسحب"><i class="bi bi-unlock"></i></button>
+                                </form>
+                                <form th:if="${c.status.name() != 'CANCELLED' and c.status.name() != 'WITHDRAWN'}" th:action="@{'/commissions/' + ${c.id} + '/cancel'}" method="post" class="d-inline"
+                                      onsubmit="return confirm('متأكد تبي تلغي هذي العمولة؟');">
+                                    <button type="submit" class="btn-icon btn-icon-danger" title="إلغاء"><i class="bi bi-x-lg"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${commissions.content.isEmpty()}">
+                        <td colspan="5" class="text-center text-muted py-4">لا توجد عمولات</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <nav th:if="${commissions.totalPages > 1}" class="d-flex justify-content-between align-items-center mt-3">
+                <span class="text-muted small">صفحة <span th:text="${commissions.number + 1}">1</span> من <span th:text="${commissions.totalPages}">1</span></span>
+                <div class="btn-group">
+                    <a class="btn btn-outline-secondary btn-sm" th:classappend="${commissions.first} ? 'disabled' : ''"
+                       th:href="@{/commissions(status=${status}, page=${commissions.number - 1})}">السابق</a>
+                    <a class="btn btn-outline-secondary btn-sm" th:classappend="${commissions.last} ? 'disabled' : ''"
+                       th:href="@{/commissions(status=${status}, page=${commissions.number + 1})}">التالي</a>
+                </div>
+            </nav>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>
