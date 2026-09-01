@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head('الإحالات')}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('referrals')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, 'الإحالات')}"></div>
+
+        <div class="content">
+
+            <div th:if="${saved}" class="alert alert-success py-2 px-3 mb-3 small">تم الحفظ بنجاح</div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex gap-2 flex-wrap">
+                    <span class="badge-pill badge-tour">قيد الدفع: <span th:text="${statusCounts.get('PENDING_PAYMENT')} ?: 0">0</span></span>
+                    <span class="badge-pill badge-active">مكتملة: <span th:text="${statusCounts.get('COMPLETED')} ?: 0">0</span></span>
+                    <span class="badge-pill badge-disactive">مرفوضة: <span th:text="${statusCounts.get('REJECTED')} ?: 0">0</span></span>
+                    <span class="badge-pill" style="background:#F0EEFA; color:var(--violet);">منتهية: <span th:text="${statusCounts.get('EXPIRED')} ?: 0">0</span></span>
+                </div>
+                <a th:href="@{/referrals/settings}" class="btn btn-gold btn-sm">
+                    <i class="bi bi-gear"></i> إعدادات برنامج الإحالة
+                </a>
+            </div>
+
+            <form th:action="@{/referrals}" method="get" class="card section-card mb-3">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label">الحالة</label>
+                        <select name="status" class="form-select">
+                            <option value="">الكل</option>
+                            <option value="PENDING_PAYMENT" th:selected="${status == 'PENDING_PAYMENT'}">قيد الدفع</option>
+                            <option value="COMPLETED" th:selected="${status == 'COMPLETED'}">مكتملة</option>
+                            <option value="REJECTED" th:selected="${status == 'REJECTED'}">مرفوضة</option>
+                            <option value="EXPIRED" th:selected="${status == 'EXPIRED'}">منتهية</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-outline-gold w-100">فلتر</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="card table-card">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th>المُحيل</th>
+                        <th>المُحال</th>
+                        <th>الحالة</th>
+                        <th>تاريخ الإحالة</th>
+                        <th>إجراءات</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="r : ${referrals.content}">
+                        <td>
+                            <div th:if="${users.get(r.referrerId)} != null">
+                                <div class="fw-bold" th:text="${users.get(r.referrerId).name}">-</div>
+                                <div class="text-muted small" dir="ltr" th:text="${users.get(r.referrerId).phone}">-</div>
+                            </div>
+                            <span th:unless="${users.get(r.referrerId)} != null" class="text-muted">#<span th:text="${r.referrerId}">-</span></span>
+                        </td>
+                        <td>
+                            <div th:if="${users.get(r.referredId)} != null">
+                                <div class="fw-bold" th:text="${users.get(r.referredId).name}">-</div>
+                                <div class="text-muted small" dir="ltr" th:text="${users.get(r.referredId).phone}">-</div>
+                            </div>
+                            <span th:unless="${users.get(r.referredId)} != null" class="text-muted">#<span th:text="${r.referredId}">-</span></span>
+                        </td>
+                        <td>
+                            <span th:if="${r.status.name() == 'PENDING_PAYMENT'}" class="badge-pill badge-tour">قيد الدفع</span>
+                            <span th:if="${r.status.name() == 'COMPLETED'}" class="badge-pill badge-active">مكتملة</span>
+                            <span th:if="${r.status.name() == 'REJECTED'}" class="badge-pill badge-disactive">مرفوضة</span>
+                            <span th:if="${r.status.name() == 'EXPIRED'}" class="badge-pill" style="background:#F0EEFA; color:var(--violet);">منتهية</span>
+                        </td>
+                        <td th:text="${r.createdAt != null ? #temporals.format(r.createdAt, 'yyyy-MM-dd') : '-'}">-</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <form th:if="${r.status.name() != 'COMPLETED'}" th:action="@{'/referrals/' + ${r.id} + '/status'}" method="post" class="d-inline">
+                                    <input type="hidden" name="status" value="COMPLETED"/>
+                                    <button type="submit" class="btn-icon" title="اعتماد كمكتملة"><i class="bi bi-check-lg"></i></button>
+                                </form>
+                                <form th:if="${r.status.name() != 'REJECTED'}" th:action="@{'/referrals/' + ${r.id} + '/status'}" method="post" class="d-inline">
+                                    <input type="hidden" name="status" value="REJECTED"/>
+                                    <button type="submit" class="btn-icon" title="رفض"><i class="bi bi-x-lg"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${referrals.content.isEmpty()}">
+                        <td colspan="5" class="text-center text-muted py-4">لا توجد إحالات</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <nav th:if="${referrals.totalPages > 1}" class="d-flex justify-content-between align-items-center mt-3">
+                <span class="text-muted small">
+                    صفحة <span th:text="${referrals.number + 1}">1</span> من <span th:text="${referrals.totalPages}">1</span>
+                </span>
+                <div class="btn-group">
+                    <a class="btn btn-outline-secondary btn-sm"
+                       th:classappend="${referrals.first} ? 'disabled' : ''"
+                       th:href="@{/referrals(status=${status}, page=${referrals.number - 1})}">السابق</a>
+                    <a class="btn btn-outline-secondary btn-sm"
+                       th:classappend="${referrals.last} ? 'disabled' : ''"
+                       th:href="@{/referrals(status=${status}, page=${referrals.number + 1})}">التالي</a>
+                </div>
+            </nav>
+
+        </div>
+    </div>
+</div>
+</body>
+</html>

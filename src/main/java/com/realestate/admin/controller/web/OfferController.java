@@ -114,6 +114,7 @@ public class OfferController {
         com.realestate.admin.entity.ServiceProviderSubscription subscription =
                 serviceProviderSubscriptionRepository.findFirstByOfferIdOrderByIdDesc(id.intValue()).orElse(null);
         model.addAttribute("subscription", subscription);
+        model.addAttribute("mapApiKey", settingsService.get("map_api_key", ""));
         model.addAttribute("subscription", subscription);
 
         model.addAttribute("activePage", "offers");

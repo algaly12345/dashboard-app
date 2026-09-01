@@ -33,9 +33,7 @@
                                 <i class="bi bi-percent"></i>
                                 <span th:text="${offer.discount} + (${offer.discountType.name() == 'fixed'} ? ' ' + #{offer.currency} : '%')">10%</span>
                             </span>
-                            <span th:if="${offer.offerType.name() == 'price' and offer.servicePrice != null}" class="offer-ribbon price-tag">
-                                <span th:text="${offer.servicePrice} + ' ' + #{offer.currency}">100</span>
-                            </span>
+
                         </div>
                     </div>
                     <div class="col-lg-7">
@@ -83,19 +81,15 @@
                     <span th:unless="${subscription.paymentStatus == 'paid'}" class="badge-pill badge-disactive ms-2"><i class="bi bi-exclamation-triangle"></i> غير مدفوع</span>
                 </div>
                 <div class="row g-3">
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="text-muted small">حالة الاشتراك</div>
                         <div class="fw-bold" th:text="${subscription.subscriptionStatus}">-</div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-4">
                         <div class="text-muted small">رقم الاشتراك</div>
                         <div class="fw-bold" dir="ltr" th:text="${subscription.subscriptionNumber}">-</div>
                     </div>
-                    <div class="col-md-3">
-                        <div class="text-muted small">المبلغ الإجمالي</div>
-                        <div class="fw-bold text-success" th:text="${subscription.monthlyTotal} + ' ' + #{estate.currency}">-</div>
-                    </div>
-                    <div class="col-md-3" th:if="${subscription.expiryDate}">
+                    <div class="col-md-4" th:if="${subscription.expiryDate}">
                         <div class="text-muted small">تاريخ انتهاء الاشتراك</div>
                         <div class="fw-bold" th:text="${subscription.expiryDate}">-</div>
                     </div>
@@ -158,9 +152,9 @@
             </div>
 
             <!-- ============================= Location map ============================= -->
-            <div class="form-section" th:if="${offer.latitude != null and offer.longitude != null}">
+            <div class="form-section" style="clear:both; position:relative; z-index:1;" th:if="${offer.latitude != null and offer.longitude != null}">
                 <div class="form-section-title"><i class="bi bi-geo-alt-fill"></i> موقع الخدمة</div>
-                <div id="offerMap" style="width:100%; height:340px; border-radius:14px; overflow:hidden;"></div>
+                <div id="offerMap" style="width:100%; height:340px; min-height:340px; border-radius:14px; overflow:hidden; background:var(--canvas); position:relative; z-index:1;"></div>
                 <div class="text-muted small mt-2" dir="ltr">
                     <i class="bi bi-pin-map"></i> <span th:text="${offer.latitude} + ', ' + ${offer.longitude}">0, 0</span>
                 </div>

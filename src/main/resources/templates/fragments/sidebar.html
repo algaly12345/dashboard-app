@@ -29,6 +29,9 @@
         <a th:href="@{/notifications}" class="nav-link" th:classappend="${active == 'notifications'} ? 'active' : ''">
             <i class="bi bi-bell"></i><span th:text="#{nav.notifications}">Notifications</span>
         </a>
+        <a th:href="@{/referrals}" class="nav-link" th:classappend="${active == 'referrals'} ? 'active' : ''">
+            <i class="bi bi-people"></i><span>الإحالات</span>
+        </a>
         <a th:href="@{/settings}" class="nav-link" th:classappend="${active == 'settings'} ? 'active' : ''">
             <i class="bi bi-gear"></i><span th:text="#{nav.settings}">Settings</span>
         </a>
