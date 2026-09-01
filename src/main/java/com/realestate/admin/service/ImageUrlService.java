@@ -21,7 +21,7 @@ public class ImageUrlService {
     private final SettingsService settingsService;
 
     public String estateImage(String filename) { return build("estate", filename); }
-public String offerImage(String filename) { return build("service-providers", filename); }
+public String offerImage(String filename) { return buildRaw(filename, "service-providers"); }
     public String categoryImage(String filename) { return build("categories", filename); }
     public String zoneImage(String filename) { return build("zone", filename); }
     public String bannerImage(String filename) { return build("banners", filename); }
@@ -44,6 +44,19 @@ public String offerImage(String filename) { return build("service-providers", fi
         String base = publicBaseUrl();
         if (base == null) return "/uploads/" + filename;
         return base + "/" + folder + "/" + filename;
+    }
+
+    /** Like build(), but tolerant of a filename that already includes its own
+     *  folder prefix (e.g. "service-providers/xyz.jpg") - avoids a doubled
+     *  folder in the URL when older/newer rows store the path differently. */
+    private String buildRaw(String filename, String defaultFolder) {
+        if (filename == null || filename.isBlank()) return null;
+        String base = publicBaseUrl();
+        String cleanFilename = filename.startsWith(defaultFolder + "/")
+                ? filename
+                : defaultFolder + "/" + filename;
+        if (base == null) return "/uploads/" + cleanFilename;
+        return base + "/" + cleanFilename;
     }
 
     private String publicBaseUrl() {

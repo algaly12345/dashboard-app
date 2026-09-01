@@ -21,7 +21,7 @@
                 </a>
             </div>
 
-            <!-- Hero -->
+            <!-- ============================= Hero ============================= -->
             <div class="card section-card mb-3">
                 <div class="row g-4">
                     <div class="col-lg-5">
@@ -39,12 +39,16 @@
                         </div>
                     </div>
                     <div class="col-lg-7">
-                        <div class="d-flex flex-wrap gap-2 mb-2">
+                        <div class="d-flex flex-wrap gap-2 mb-3">
                             <span th:if="${offer.status == 'accept'}" class="badge-pill badge-active" th:text="#{offer.status.accept}">Approved</span>
                             <span th:if="${offer.status == 'pending'}" class="badge-pill badge-tour" th:text="#{offer.status.pending}">Pending</span>
                             <span th:if="${offer.status == 'reject'}" class="badge-pill badge-disactive" th:text="#{offer.status.reject}">Rejected</span>
                             <span th:if="${serviceTypeName}" class="badge-pill badge-rent"><i class="bi bi-tools"></i> <span th:text="${serviceTypeName}">Type</span></span>
                             <span class="badge-pill badge-sale" th:text="${offer.offerOwner.name() == 'all'} ? #{offer.owner.all} : #{offer.owner.me}">Audience</span>
+                            <span th:if="${subscription != null}"
+                                  th:class="'badge-pill ' + (${subscription.paymentStatus == 'paid'} ? 'badge-active' : 'badge-disactive')">
+                                <i class="bi bi-credit-card"></i> <span th:text="${subscription.paymentStatus}">payment</span>
+                            </span>
                         </div>
                         <h2 class="mb-2" th:text="${offer.title}">Title</h2>
                         <p class="text-muted" style="white-space:pre-line;" th:text="${offer.description}">Description</p>
@@ -64,7 +68,6 @@
                             </div>
                         </div>
 
-                        <!-- Rejection reason - only shown when actually rejected -->
                         <div class="alert alert-danger py-2 px-3 mt-3 small mb-0" th:if="${offer.status == 'reject' and offer.rejectionReason != null and offer.rejectionReason != ''}">
                             <i class="bi bi-exclamation-triangle"></i> <strong>سبب الرفض:</strong> <span th:text="${offer.rejectionReason}">-</span>
                         </div>
@@ -72,9 +75,56 @@
                 </div>
             </div>
 
+            <!-- ============================= Payment / subscription ============================= -->
+            <div class="form-section payment-section" th:if="${subscription != null}">
+                <div class="form-section-title">
+                    <i class="bi bi-credit-card"></i> حالة الدفع والاشتراك
+                    <span th:if="${subscription.paymentStatus == 'paid'}" class="badge-pill badge-active ms-2"><i class="bi bi-check-circle"></i> مدفوع</span>
+                    <span th:unless="${subscription.paymentStatus == 'paid'}" class="badge-pill badge-disactive ms-2"><i class="bi bi-exclamation-triangle"></i> غير مدفوع</span>
+                </div>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <div class="text-muted small">حالة الاشتراك</div>
+                        <div class="fw-bold" th:text="${subscription.subscriptionStatus}">-</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-muted small">رقم الاشتراك</div>
+                        <div class="fw-bold" dir="ltr" th:text="${subscription.subscriptionNumber}">-</div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-muted small">المبلغ الإجمالي</div>
+                        <div class="fw-bold text-success" th:text="${subscription.monthlyTotal} + ' ' + #{estate.currency}">-</div>
+                    </div>
+                    <div class="col-md-3" th:if="${subscription.expiryDate}">
+                        <div class="text-muted small">تاريخ انتهاء الاشتراك</div>
+                        <div class="fw-bold" th:text="${subscription.expiryDate}">-</div>
+                    </div>
+                </div>
+                <hr th:if="${subscription.basePrice != null or subscription.discountAmount != null}"/>
+                <div class="row g-3" th:if="${subscription.basePrice != null or subscription.discountAmount != null}">
+                    <div class="col-md-3" th:if="${subscription.basePrice != null}">
+                        <div class="text-muted small">السعر الأساسي</div>
+                        <div class="fw-semibold" th:text="${subscription.basePrice} + ' ' + #{estate.currency}">-</div>
+                    </div>
+                    <div class="col-md-3" th:if="${subscription.discountPercent != null and subscription.discountPercent > 0}">
+                        <div class="text-muted small">نسبة الخصم</div>
+                        <div class="fw-semibold" th:text="${subscription.discountPercent} + '%'">-</div>
+                    </div>
+                    <div class="col-md-3" th:if="${subscription.discountAmount != null}">
+                        <div class="text-muted small">قيمة الخصم</div>
+                        <div class="fw-semibold" th:text="${subscription.discountAmount} + ' ' + #{estate.currency}">-</div>
+                    </div>
+                    <div class="col-md-3" th:if="${subscription.numberOfAds != null}">
+                        <div class="text-muted small">عدد الإعلانات المتاحة</div>
+                        <div class="fw-semibold" th:text="${subscription.numberOfAds}">-</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================= Targeting + contact ============================= -->
             <div class="row g-3">
-                <div class="col-lg-6">
-                    <div class="form-section">
+                <div class="col-lg-4">
+                    <div class="form-section h-100">
                         <div class="form-section-title"><i class="bi bi-map"></i> <span th:text="#{offer.filter.zone}">Zones</span></div>
                         <div class="d-flex flex-wrap gap-2" th:if="${not zones.isEmpty()}">
                             <span th:each="z : ${zones}" class="badge-pill badge-tour" th:text="${z.nameAr}">Zone</span>
@@ -82,8 +132,8 @@
                         <div th:if="${zones.isEmpty()}" class="text-muted small" th:text="#{offer.owner.all}">All zones</div>
                     </div>
                 </div>
-                <div class="col-lg-6">
-                    <div class="form-section">
+                <div class="col-lg-4">
+                    <div class="form-section h-100">
                         <div class="form-section-title"><i class="bi bi-tags"></i> <span th:text="#{offer.filter.category}">Categories</span></div>
                         <div class="d-flex flex-wrap gap-2" th:if="${not categories.isEmpty()}">
                             <span th:each="c : ${categories}" class="badge-pill badge-rent" th:text="${c.nameAr}">Category</span>
@@ -91,28 +141,23 @@
                         <div th:if="${categories.isEmpty()}" class="text-muted small" th:text="#{offer.noCategoryLink}">No categories linked</div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Contact details -->
-            <div class="form-section" th:if="${offer.address} or ${offer.contactPhone} or ${offer.contactType}">
-                <div class="form-section-title"><i class="bi bi-person-lines-fill"></i> بيانات التواصل والعنوان</div>
-                <div class="row g-3">
-                    <div class="col-md-4" th:if="${offer.contactPhone}">
-                        <div class="text-muted small">هاتف التواصل</div>
-                        <div class="fw-bold" dir="ltr"><i class="bi bi-telephone"></i> <span th:text="${offer.contactPhone}">-</span></div>
+                <div class="col-lg-4">
+                    <div class="form-section h-100" th:if="${offer.address} or ${offer.contactPhone} or ${offer.contactType}">
+                        <div class="form-section-title"><i class="bi bi-person-lines-fill"></i> بيانات التواصل</div>
+                        <div class="d-flex flex-column gap-2 small">
+                            <div th:if="${offer.contactPhone}"><i class="bi bi-telephone"></i> <span dir="ltr" th:text="${offer.contactPhone}">-</span></div>
+                            <div th:if="${offer.contactType}"><i class="bi bi-chat-dots"></i> <span th:text="${offer.contactType}">-</span></div>
+                            <div th:if="${offer.address}"><i class="bi bi-geo-alt"></i> <span th:text="${offer.address}">-</span></div>
+                        </div>
                     </div>
-                    <div class="col-md-4" th:if="${offer.contactType}">
-                        <div class="text-muted small">نوع التواصل</div>
-                        <div class="fw-bold"><i class="bi bi-chat-dots"></i> <span th:text="${offer.contactType}">-</span></div>
-                    </div>
-                    <div class="col-md-4" th:if="${offer.address}">
-                        <div class="text-muted small">العنوان</div>
-                        <div class="fw-bold"><i class="bi bi-geo-alt"></i> <span th:text="${offer.address}">-</span></div>
+                    <div class="form-section h-100 text-center text-muted small d-flex align-items-center justify-content-center"
+                         th:unless="${offer.address} or ${offer.contactPhone} or ${offer.contactType}">
+                        لا توجد بيانات تواصل إضافية
                     </div>
                 </div>
             </div>
 
-            <!-- Location map -->
+            <!-- ============================= Location map ============================= -->
             <div class="form-section" th:if="${offer.latitude != null and offer.longitude != null}">
                 <div class="form-section-title"><i class="bi bi-geo-alt-fill"></i> موقع الخدمة</div>
                 <div id="offerMap" style="width:100%; height:340px; border-radius:14px; overflow:hidden;"></div>
@@ -121,8 +166,9 @@
                 </div>
             </div>
 
+            <!-- ============================= Meta ============================= -->
             <div class="form-section">
-                <div class="form-section-title"><i class="bi bi-info-circle"></i> Meta</div>
+                <div class="form-section-title"><i class="bi bi-info-circle"></i> معلومات إضافية</div>
                 <div class="row g-3 small">
                     <div class="col-6 col-md-3">
                         <div class="text-muted" th:text="#{offer.createdDate}">Created</div>
@@ -133,8 +179,8 @@
                         <div class="fw-semibold" th:text="${#temporals.format(offer.sendedAt, 'yyyy-MM-dd HH:mm')}">-</div>
                     </div>
                     <div class="col-6 col-md-3">
-                        <div class="text-muted">ID</div>
-                        <div class="fw-semibold" th:text="${offer.id}">-</div>
+                        <div class="text-muted">رقم العرض</div>
+                        <div class="fw-semibold" dir="ltr" th:text="${offer.id}">-</div>
                     </div>
                 </div>
             </div>

@@ -990,3 +990,6 @@ a.report-estate-chip:hover{ border-color: var(--violet); background:#F5F9FF; }
 /* ---------- Danger action icon ---------- */
 .btn-icon-danger{ color: var(--danger); }
 .btn-icon-danger:hover{ background: var(--danger-bg); }
+
+/* ---------- Offer payment section accent ---------- */
+.payment-section{ border:2px solid #E1D9F7; background: linear-gradient(180deg, #F8F7FF, #fff); }

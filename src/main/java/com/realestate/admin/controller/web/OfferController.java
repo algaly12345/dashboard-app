@@ -41,6 +41,7 @@ public class OfferController {
     private final R2StorageService r2StorageService;
     private final com.realestate.admin.service.SettingsService settingsService;
     private final com.realestate.admin.service.NotificationSendService notificationSendService;
+    private final com.realestate.admin.repository.ServiceProviderSubscriptionRepository serviceProviderSubscriptionRepository;
     private final org.springframework.web.client.RestTemplate restTemplate = new org.springframework.web.client.RestTemplate();
 
     @GetMapping("/offers")
@@ -110,8 +111,11 @@ public class OfferController {
         model.addAttribute("serviceTypeName", serviceTypeName);
         model.addAttribute("zones", zones);
         model.addAttribute("categories", categories);
-        model.addAttribute("providerName", providerName);
-        model.addAttribute("mapApiKey", settingsService.get("map_api_key", ""));
+        com.realestate.admin.entity.ServiceProviderSubscription subscription =
+                serviceProviderSubscriptionRepository.findFirstByOfferIdOrderByIdDesc(id.intValue()).orElse(null);
+        model.addAttribute("subscription", subscription);
+        model.addAttribute("subscription", subscription);
+
         model.addAttribute("activePage", "offers");
         return "offer-details";
     }
