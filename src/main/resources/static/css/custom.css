@@ -993,3 +993,11 @@ a.report-estate-chip:hover{ border-color: var(--violet); background:#F5F9FF; }
 
 /* ---------- Offer payment section accent ---------- */
 .payment-section{ border:2px solid #E1D9F7; background: linear-gradient(180deg, #F8F7FF, #fff); }
+
+/* ---------- Bank transfer info rows ---------- */
+.bank-info-row{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:12px 14px; border:1px solid var(--border); border-radius:12px; margin-bottom:8px;
+  background: var(--canvas);
+}
+.bank-info-row:hover{ border-color: var(--violet-light); }

@@ -42,6 +42,7 @@
                     <tr>
                         <th>المستخدم</th>
                         <th>المبلغ</th>
+                        <th>بيانات التحويل</th>
                         <th>الحالة</th>
                         <th>تاريخ الطلب</th>
                         <th>إجراءات</th>
@@ -57,6 +58,13 @@
                             <span th:unless="${users.get(w.userId)} != null" class="text-muted">#<span th:text="${w.userId}">-</span></span>
                         </td>
                         <td class="fw-bold" th:text="${w.amount} + ' ر.س'">-</td>
+                        <td>
+                            <button type="button" th:if="${w.iban != null or w.accountHolderName != null}" class="btn-icon" title="عرض بيانات التحويل"
+                                    th:onclick="'openBankModal(' + ${w.id} + ')'">
+                                <i class="bi bi-bank"></i>
+                            </button>
+                            <span th:unless="${w.iban != null or w.accountHolderName != null}" class="text-muted small">لا توجد</span>
+                        </td>
                         <td>
                             <span th:if="${w.status.name() == 'pending'}" class="badge-pill badge-tour">قيد الانتظار</span>
                             <span th:if="${w.status.name() == 'approved'}" class="badge-pill" style="background:#F0EEFA; color:var(--violet);">معتمد</span>
@@ -124,6 +132,64 @@
     }
     function closeRejectModal(e) {
         document.getElementById('rejectModalBackdrop').classList.remove('open');
+    }
+</script>
+<!-- Bank details modal -->
+<div id="bankModalBackdrop" class="advertiser-modal-backdrop" onclick="closeBankModal(event)">
+    <div class="advertiser-modal" onclick="event.stopPropagation()" style="max-width:440px;">
+        <button type="button" class="advertiser-modal-close" onclick="closeBankModal()"><i class="bi bi-x-lg"></i></button>
+        <div id="bankModalBody"></div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    var WITHDRAWAL_BANK_INFO = {};
+    /*]]>*/
+    /*[# th:each="w : ${withdrawals.content}"]*/
+    WITHDRAWAL_BANK_INFO[/*[[${w.id}]]*/ 0] = {
+        holder: /*[[${w.accountHolderName}]]*/ null,
+        iban: /*[[${w.iban}]]*/ null,
+        bank: /*[[${w.bankName}]]*/ null,
+        nationalId: /*[[${w.nationalId}]]*/ null,
+        amount: /*[[${w.amount}]]*/ 0
+    };
+    /*[/]*/
+
+    function esc(s) {
+        var d = document.createElement('div');
+        d.textContent = s || '';
+        return d.innerHTML;
+    }
+
+    function bankRow(icon, label, value, copyable) {
+        if (!value) return '';
+        var copyBtn = copyable
+            ? '<button type="button" class="btn-icon" style="width:28px; height:28px;" onclick="navigator.clipboard.writeText(\'' + esc(value).replace(/'/g, "\\'") + '\')" title="نسخ"><i class="bi bi-copy"></i></button>'
+            : '';
+        return '<div class="bank-info-row">' +
+                    '<div><i class="bi ' + icon + '"></i> <span class="text-muted small">' + label + '</span><div class="fw-bold" dir="ltr">' + esc(value) + '</div></div>' +
+                    copyBtn +
+               '</div>';
+    }
+
+    function openBankModal(id) {
+        var info = WITHDRAWAL_BANK_INFO[id];
+        if (!info) return;
+
+        var html = '<div class="fw-bold fs-5 mb-1"><i class="bi bi-bank text-success"></i> بيانات التحويل البنكي</div>' +
+                    '<div class="text-muted small mb-3">تحويل مبلغ <strong>' + esc(String(info.amount)) + ' ر.س</strong></div>' +
+                    bankRow('bi-person', 'اسم صاحب الحساب', info.holder, false) +
+                    bankRow('bi-credit-card-2-front', 'رقم الآيبان (IBAN)', info.iban, true) +
+                    bankRow('bi-bank2', 'اسم البنك', info.bank, false) +
+                    bankRow('bi-person-vcard', 'رقم الهوية الوطنية', info.nationalId, false);
+
+        document.getElementById('bankModalBody').innerHTML = html;
+        document.getElementById('bankModalBackdrop').classList.add('open');
+    }
+
+    function closeBankModal(e) {
+        document.getElementById('bankModalBackdrop').classList.remove('open');
     }
 </script>
 </body>
