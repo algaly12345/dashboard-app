@@ -59,6 +59,19 @@
                         </td>
                         <td class="fw-bold" th:text="${w.amount} + ' ر.س'">-</td>
                         <td>
+                            <button type="button" th:if="${w.iban != null or w.accountHolderName != null or w.bankName != null}"
+                                    class="btn-icon bank-trigger" title="عرض بيانات التحويل"
+                                    th:data-holder="${w.accountHolderName}"
+                                    th:data-iban="${w.iban}"
+                                    th:data-bank="${w.bankName}"
+                                    th:data-national="${w.nationalId}"
+                                    th:data-amount="${w.amount}"
+                                    onclick="openBankModal(this)">
+                                <i class="bi bi-bank"></i>
+                            </button>
+                            <span th:unless="${w.iban != null or w.accountHolderName != null or w.bankName != null}" class="text-muted small">لا توجد</span>
+                        </td>
+                        <td>
                             <button type="button" th:if="${w.iban != null or w.accountHolderName != null}" class="btn-icon" title="عرض بيانات التحويل"
                                     th:onclick="'openBankModal(' + ${w.id} + ')'">
                                 <i class="bi bi-bank"></i>
@@ -134,57 +147,66 @@
         document.getElementById('rejectModalBackdrop').classList.remove('open');
     }
 </script>
+
+
 <!-- Bank details modal -->
 <div id="bankModalBackdrop" class="advertiser-modal-backdrop" onclick="closeBankModal(event)">
-    <div class="advertiser-modal" onclick="event.stopPropagation()" style="max-width:440px;">
+    <div class="advertiser-modal" onclick="event.stopPropagation()" style="max-width:420px;">
         <button type="button" class="advertiser-modal-close" onclick="closeBankModal()"><i class="bi bi-x-lg"></i></button>
-        <div id="bankModalBody"></div>
+
+        <div class="bank-card">
+            <div class="bank-card-top">
+                <i class="bi bi-bank2"></i>
+                <span id="bankCardBankName">اسم البنك</span>
+            </div>
+            <div class="bank-card-iban" id="bankCardIban" dir="ltr">---- ---- ---- ----</div>
+            <div class="bank-card-bottom">
+                <div>
+                    <div class="bank-card-label">صاحب الحساب</div>
+                    <div class="bank-card-value" id="bankCardHolder">-</div>
+                </div>
+                <div>
+                    <div class="bank-card-label">الهوية الوطنية</div>
+                    <div class="bank-card-value" id="bankCardNational">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between mt-3 px-1">
+            <span class="text-muted small">مبلغ التحويل المطلوب</span>
+            <span class="fw-bold fs-5 text-success" id="bankCardAmount">0 ر.س</span>
+        </div>
+
+        <button type="button" class="btn btn-gold w-100 mt-3" id="bankCardCopyBtn">
+            <i class="bi bi-copy"></i> نسخ رقم الآيبان
+        </button>
     </div>
 </div>
 
-<script th:inline="javascript">
-    /*<![CDATA[*/
-    var WITHDRAWAL_BANK_INFO = {};
-    /*]]>*/
-    /*[# th:each="w : ${withdrawals.content}"]*/
-    WITHDRAWAL_BANK_INFO[/*[[${w.id}]]*/ 0] = {
-        holder: /*[[${w.accountHolderName}]]*/ null,
-        iban: /*[[${w.iban}]]*/ null,
-        bank: /*[[${w.bankName}]]*/ null,
-        nationalId: /*[[${w.nationalId}]]*/ null,
-        amount: /*[[${w.amount}]]*/ 0
-    };
-    /*[/]*/
+<script>
+    function openBankModal(btn) {
+        var holder = btn.getAttribute('data-holder') || '-';
+        var iban = btn.getAttribute('data-iban') || '';
+        var bank = btn.getAttribute('data-bank') || 'غير محدد';
+        var national = btn.getAttribute('data-national') || '-';
+        var amount = btn.getAttribute('data-amount') || '0';
 
-    function esc(s) {
-        var d = document.createElement('div');
-        d.textContent = s || '';
-        return d.innerHTML;
-    }
+        document.getElementById('bankCardBankName').textContent = bank;
+        document.getElementById('bankCardIban').textContent = iban || '-- بدون آيبان --';
+        document.getElementById('bankCardHolder').textContent = holder;
+        document.getElementById('bankCardNational').textContent = national;
+        document.getElementById('bankCardAmount').textContent = amount + ' ر.س';
 
-    function bankRow(icon, label, value, copyable) {
-        if (!value) return '';
-        var copyBtn = copyable
-            ? '<button type="button" class="btn-icon" style="width:28px; height:28px;" onclick="navigator.clipboard.writeText(\'' + esc(value).replace(/'/g, "\\'") + '\')" title="نسخ"><i class="bi bi-copy"></i></button>'
-            : '';
-        return '<div class="bank-info-row">' +
-                    '<div><i class="bi ' + icon + '"></i> <span class="text-muted small">' + label + '</span><div class="fw-bold" dir="ltr">' + esc(value) + '</div></div>' +
-                    copyBtn +
-               '</div>';
-    }
+        var copyBtn = document.getElementById('bankCardCopyBtn');
+        copyBtn.style.display = iban ? 'block' : 'none';
+        copyBtn.onclick = function () {
+            navigator.clipboard.writeText(iban);
+            copyBtn.innerHTML = '<i class="bi bi-check2"></i> تم النسخ';
+            setTimeout(function () {
+                copyBtn.innerHTML = '<i class="bi bi-copy"></i> نسخ رقم الآيبان';
+            }, 1500);
+        };
 
-    function openBankModal(id) {
-        var info = WITHDRAWAL_BANK_INFO[id];
-        if (!info) return;
-
-        var html = '<div class="fw-bold fs-5 mb-1"><i class="bi bi-bank text-success"></i> بيانات التحويل البنكي</div>' +
-                    '<div class="text-muted small mb-3">تحويل مبلغ <strong>' + esc(String(info.amount)) + ' ر.س</strong></div>' +
-                    bankRow('bi-person', 'اسم صاحب الحساب', info.holder, false) +
-                    bankRow('bi-credit-card-2-front', 'رقم الآيبان (IBAN)', info.iban, true) +
-                    bankRow('bi-bank2', 'اسم البنك', info.bank, false) +
-                    bankRow('bi-person-vcard', 'رقم الهوية الوطنية', info.nationalId, false);
-
-        document.getElementById('bankModalBody').innerHTML = html;
         document.getElementById('bankModalBackdrop').classList.add('open');
     }
 

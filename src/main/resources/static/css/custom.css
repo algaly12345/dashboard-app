@@ -1001,3 +1001,29 @@ a.report-estate-chip:hover{ border-color: var(--violet); background:#F5F9FF; }
   background: var(--canvas);
 }
 .bank-info-row:hover{ border-color: var(--violet-light); }
+
+/* ---------- Bank transfer info rows ---------- */
+.bank-info-row{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:12px 14px; border:1px solid var(--border); border-radius:12px; margin-bottom:8px;
+  background: var(--canvas);
+}
+.bank-info-row:hover{ border-color: var(--violet-light); }
+
+/* ---------- Bank card visual ---------- */
+.bank-card{
+  background: linear-gradient(135deg, #1B4B7C, #0A1E3D);
+  border-radius:18px; padding:22px; color:#fff;
+  box-shadow: 0 16px 32px -12px rgba(27,75,124,.5);
+}
+.bank-card-top{
+  display:flex; align-items:center; gap:8px; font-weight:700; font-size:.95rem;
+  opacity:.9; margin-bottom:22px;
+}
+.bank-card-iban{
+  font-size:1.15rem; font-weight:700; letter-spacing:1px; margin-bottom:22px;
+  word-break: break-all;
+}
+.bank-card-bottom{ display:flex; justify-content:space-between; gap:12px; }
+.bank-card-label{ font-size:.7rem; opacity:.75; margin-bottom:2px; }
+.bank-card-value{ font-weight:700; }

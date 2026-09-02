@@ -22,6 +22,13 @@ public class CommissionWithdrawalRequest {
     private Long userId;
 
     private BigDecimal amount;
+    @Column(name = "account_holder_name")
+    private String accountHolderName;
+    private String iban;
+    @Column(name = "bank_name")
+    private String bankName;
+    @Column(name = "national_id")
+    private String nationalId;
 
 
 
