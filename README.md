@@ -213,3 +213,5 @@ follow the active locale automatically — every page, not just login.
 <!-- Security scan triggered at 2026-09-02 06:32:10 -->
 
 <!-- Security scan triggered at 2026-09-02 06:49:41 -->
+
+<!-- Security scan triggered at 2026-09-02 14:37:41 -->
