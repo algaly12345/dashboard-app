@@ -41,6 +41,9 @@ public class DashboardController {
     private final OfferRepository offerRepository;
     private final ServiceTypeRepository serviceTypeRepository;
     private final SettingsService settingsService;
+    private final com.realestate.admin.repository.ServiceProviderSubscriptionRepository subscriptionRepository;
+    private final com.realestate.admin.repository.CommissionRepository commissionRepository;
+    private final com.realestate.admin.repository.CommissionWithdrawalRequestRepository withdrawalRequestRepository;
 
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(defaultValue = "week") String period,
@@ -188,6 +191,48 @@ public class DashboardController {
         model.addAttribute("zones", zoneRepository.findAll());
         model.addAttribute("zoneId", zoneIdLong);
         model.addAttribute("activePage", "dashboard");
+
+        // ---- Provider subscriptions & commissions panel ----
+        java.util.List<com.realestate.admin.entity.ServiceProviderSubscription> subscriptions = subscriptionRepository.findAll();
+        long totalSubscriptions = subscriptions.size();
+        long paidSubscriptions = subscriptions.stream().filter(s -> "paid".equals(s.getPaymentStatus())).count();
+        long unpaidSubscriptions = subscriptions.stream().filter(s -> !"paid".equals(s.getPaymentStatus())).count();
+        long activeSubscriptions = subscriptions.stream().filter(s -> "active".equalsIgnoreCase(s.getSubscriptionStatus())).count();
+
+        java.math.BigDecimal totalMonthlyRevenue = subscriptions.stream()
+                .filter(s -> "paid".equals(s.getPaymentStatus()) && s.getMonthlyTotal() != null)
+                .map(com.realestate.admin.entity.ServiceProviderSubscription::getMonthlyTotal)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+
+        java.util.List<com.realestate.admin.entity.Commission> allCommissions = commissionRepository.findAll();
+        java.math.BigDecimal availableCommissions = allCommissions.stream()
+                .filter(c -> c.getStatus() == com.realestate.admin.entity.Commission.Status.AVAILABLE)
+                .map(com.realestate.admin.entity.Commission::getAmount)
+                .filter(java.util.Objects::nonNull)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        java.math.BigDecimal pendingCommissions = allCommissions.stream()
+                .filter(c -> c.getStatus() == com.realestate.admin.entity.Commission.Status.PENDING)
+                .map(com.realestate.admin.entity.Commission::getAmount)
+                .filter(java.util.Objects::nonNull)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+        java.math.BigDecimal withdrawnCommissions = allCommissions.stream()
+                .filter(c -> c.getStatus() == com.realestate.admin.entity.Commission.Status.WITHDRAWN)
+                .map(com.realestate.admin.entity.Commission::getAmount)
+                .filter(java.util.Objects::nonNull)
+                .reduce(java.math.BigDecimal.ZERO, java.math.BigDecimal::add);
+
+        long pendingWithdrawalRequests = withdrawalRequestRepository.countByStatus(
+                com.realestate.admin.entity.CommissionWithdrawalRequest.Status.pending);
+
+        model.addAttribute("totalSubscriptions", totalSubscriptions);
+        model.addAttribute("paidSubscriptions", paidSubscriptions);
+        model.addAttribute("unpaidSubscriptions", unpaidSubscriptions);
+        model.addAttribute("activeSubscriptions", activeSubscriptions);
+        model.addAttribute("totalMonthlyRevenue", totalMonthlyRevenue);
+        model.addAttribute("availableCommissions", availableCommissions);
+        model.addAttribute("pendingCommissions", pendingCommissions);
+        model.addAttribute("withdrawnCommissions", withdrawnCommissions);
+        model.addAttribute("pendingWithdrawalRequests", pendingWithdrawalRequests);
 
         return "dashboard";
     }

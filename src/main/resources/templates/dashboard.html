@@ -93,7 +93,78 @@
             </div>
 
             <!-- Expired licenses warning -->
-      
+
+
+            <!-- Provider subscriptions & commissions panel -->
+            <div class="card section-card mb-4">
+                <div class="section-title">
+                    <span><i class="bi bi-credit-card-2-front"></i> اشتراكات مزودي الخدمات والعمولات</span>
+                    <a th:href="@{/commissions}" class="small fw-semibold">إدارة العمولات</a>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-xl-3">
+                        <div class="card kpi-card">
+                            <div class="kpi-icon ink"><i class="bi bi-person-badge"></i></div>
+                            <div class="kpi-label">إجمالي الاشتراكات</div>
+                            <div class="kpi-value" th:text="${totalSubscriptions}">0</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="card kpi-card">
+                            <div class="kpi-icon success"><i class="bi bi-check-circle"></i></div>
+                            <div class="kpi-label">اشتراكات مدفوعة</div>
+                            <div class="kpi-value" th:text="${paidSubscriptions}">0</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="card kpi-card">
+                            <div class="kpi-icon coral"><i class="bi bi-exclamation-triangle"></i></div>
+                            <div class="kpi-label">اشتراكات غير مدفوعة</div>
+                            <div class="kpi-value" th:text="${unpaidSubscriptions}">0</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="card kpi-card">
+                            <div class="kpi-icon violet"><i class="bi bi-lightning-charge"></i></div>
+                            <div class="kpi-label">اشتراكات نشطة</div>
+                            <div class="kpi-value" th:text="${activeSubscriptions}">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-6 col-xl-3">
+                        <div class="card kpi-card">
+                            <div class="kpi-icon success"><i class="bi bi-cash-stack"></i></div>
+                            <div class="kpi-label">الإيراد الشهري (مدفوع)</div>
+                            <div class="kpi-value" style="font-size:1.15rem;" th:text="|${#numbers.formatDecimal(totalMonthlyRevenue, 0, 'COMMA', 0, 'POINT')} #{estate.currency}|">0</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="card kpi-card">
+                            <div class="kpi-icon rent"><i class="bi bi-unlock"></i></div>
+                            <div class="kpi-label">عمولات متاحة للسحب</div>
+                            <div class="kpi-value" style="font-size:1.15rem;" th:text="|${#numbers.formatDecimal(availableCommissions, 0, 'COMMA', 0, 'POINT')} #{estate.currency}|">0</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="card kpi-card">
+                            <div class="kpi-icon amber"><i class="bi bi-hourglass-split"></i></div>
+                            <div class="kpi-label">عمولات قيد الانتظار</div>
+                            <div class="kpi-value" style="font-size:1.15rem;" th:text="|${#numbers.formatDecimal(pendingCommissions, 0, 'COMMA', 0, 'POINT')} #{estate.currency}|">0</div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <a th:href="@{/commissions/withdrawals}" class="card kpi-card d-block text-decoration-none position-relative"
+                           th:classappend="${pendingWithdrawalRequests > 0} ? 'border-warning' : ''">
+                            <div class="kpi-icon ink"><i class="bi bi-bell"></i></div>
+                            <div class="kpi-label">طلبات سحب معلّقة</div>
+                            <div class="kpi-value" th:text="${pendingWithdrawalRequests}">0</div>
+                        </a>
+                    </div>
+                </div>
+            </div>
 
             <!-- Combined map: listings / services -->
             <div class="card section-card mb-4">
