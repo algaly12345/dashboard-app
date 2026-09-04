@@ -42,6 +42,7 @@ public class NhcService {
                     .toUriString();
             HttpHeaders headers = new HttpHeaders();
             headers.setBearerAuth(settingsService.get("laravel_admin_token", ""));
+            headers.set("Accept", "application/json");
             ResponseEntity<String> response = restTemplate.exchange(
                     url, HttpMethod.POST, new HttpEntity<>(headers), String.class);
             if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
