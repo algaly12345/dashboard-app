@@ -183,6 +183,9 @@
                                 <span th:text="${estateUsers.get(e.userId).name}">Name</span>
                             </button>
                             <span th:unless="${e.userId != null and estateUsers.get(e.userId) != null}" class="text-muted small">—</span>
+                            <div th:if="${e.responsibleEmployeeName != null and e.responsibleEmployeeName != ''}" class="text-muted small mt-1">
+                                <i class="bi bi-person-badge"></i> <span th:text="${e.responsibleEmployeeName}">Responsible</span>
+                            </div>
                         </td>
                         <td th:text="${e.city}">City</td>
                         <td th:text="${e.districts}">District</td>
