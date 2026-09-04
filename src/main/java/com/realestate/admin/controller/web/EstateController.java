@@ -419,7 +419,7 @@ public String uploadImage(@PathVariable Long id, @RequestParam("files") Multipar
         Estate estate = estateRepository.findById(id).orElse(null);
         if (estate == null) return "redirect:/estates";
 
-        String advertiserId = estate.getAdvertiserNo() != null ? String.valueOf(estate.getAdvertiserNo()) : null;
+        String advertiserId = estate.getIdentityOrUnified();
         NhcService.LookupResult result = nhcService.fetchResponsibleEmployee(
                 estate.getLicenseNumber(), advertiserId, idType);
 
