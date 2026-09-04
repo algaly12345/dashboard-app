@@ -175,16 +175,19 @@
                             </div>
                         </td>
                         <td>
-                            <button type="button" th:if="${e.userId != null and estateUsers.get(e.userId) != null}"
-                                    class="advertiser-chip" th:onclick="'showAdvertiser(' + ${e.userId} + ', ' + ${e.id} + ')'">
-                                <img th:if="${estateUsers.get(e.userId).imageUrl}" th:src="${estateUsers.get(e.userId).imageUrl}"
-                                     onerror="this.style.display='none'"/>
-                                <i th:unless="${estateUsers.get(e.userId).imageUrl}" class="bi bi-person-circle"></i>
-                                <span th:text="${estateUsers.get(e.userId).name}">Name</span>
-                            </button>
-                            <span th:unless="${e.userId != null and estateUsers.get(e.userId) != null}" class="text-muted small">—</span>
-                            <div th:if="${e.responsibleEmployeeName != null and e.responsibleEmployeeName != ''}" class="text-muted small mt-1">
-                                <i class="bi bi-person-badge"></i> <span th:text="${e.responsibleEmployeeName}">Responsible</span>
+                            <div class="d-flex flex-column gap-1 align-items-start">
+                                <button type="button" th:if="${e.userId != null and estateUsers.get(e.userId) != null}"
+                                        class="advertiser-chip" th:onclick="'showAdvertiser(' + ${e.userId} + ', ' + ${e.id} + ')'">
+                                    <img th:if="${estateUsers.get(e.userId).imageUrl}" th:src="${estateUsers.get(e.userId).imageUrl}"
+                                         onerror="this.style.display='none'"/>
+                                    <i th:unless="${estateUsers.get(e.userId).imageUrl}" class="bi bi-person-circle"></i>
+                                    <span th:text="${estateUsers.get(e.userId).name}">Name</span>
+                                </button>
+                                <span th:unless="${e.userId != null and estateUsers.get(e.userId) != null}" class="text-muted small">—</span>
+                                <span th:if="${e.responsibleEmployeeName != null and e.responsibleEmployeeName != ''}"
+                                      class="text-muted" style="font-size:.72rem; line-height:1.2;">
+                                    <i class="bi bi-person-badge"></i> <span th:text="${e.responsibleEmployeeName}">Responsible</span>
+                                </span>
                             </div>
                         </td>
                         <td th:text="${e.city}">City</td>
