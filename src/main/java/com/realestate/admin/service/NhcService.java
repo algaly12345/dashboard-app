@@ -28,6 +28,38 @@ public class NhcService {
     public record LookupResult(boolean success, JsonNode advertisement, String rawResponse, String error) {
     }
 
+    private static final String VALIDATE_URL = "https://app.abaadapp.sa/api/v1/banners/advertisement/validate";
+
+    /** Fetches just the responsible-employee name/phone for an existing estate,
+     *  via the Laravel wrapper's lighter validation endpoint - separate from
+     *  the full NHC lookup() above (different URL, different response shape). */
+    public LookupResult fetchResponsibleEmployee(String licenseNumber, String advertiserId, String idType) {
+        try {
+            String url = UriComponentsBuilder.fromHttpUrl(VALIDATE_URL)
+                    .queryParam("adLicenseNumber", licenseNumber)
+                    .queryParam("advertiserId", advertiserId)
+                    .queryParam("idType", idType)
+                    .toUriString();
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("X-IBM-Client-Id", settingsService.get("nhc_client_id", ""));
+            headers.set("X-IBM-Client-Secret", settingsService.get("nhc_client_secret", ""));
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
+                return new LookupResult(false, null, response.getBody(), "http_" + response.getStatusCode().value());
+            }
+            JsonNode root = objectMapper.readTree(response.getBody());
+            JsonNode ad = root.path("data").path("advertisement");
+            if (ad.isMissingNode() || ad.isNull()) {
+                return new LookupResult(false, null, response.getBody(), "not_found");
+            }
+            return new LookupResult(true, ad, response.getBody(), null);
+        } catch (Exception e) {
+            log.error("Responsible-employee fetch failed", e);
+            return new LookupResult(false, null, null, e.getMessage());
+        }
+    }
+
     public boolean isConfigured() {
         return !settingsService.get("nhc_client_id", "").isBlank()
                 && !settingsService.get("nhc_client_secret", "").isBlank();

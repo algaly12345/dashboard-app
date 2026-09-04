@@ -1,5 +1,7 @@
 package com.realestate.admin.controller.web;
 
+import com.realestate.admin.service.NhcService;
+
 import com.realestate.admin.entity.AppUser;
 import com.realestate.admin.entity.Estate;
 import com.realestate.admin.repository.AppUserRepository;
@@ -24,6 +26,7 @@ import java.util.List;
 public class EstateController {
 
     private final EstateRepository estateRepository;
+    private final NhcService nhcService;
     private final R2StorageService r2StorageService;
     private final AppUserRepository appUserRepository;
     private final com.realestate.admin.service.ImageUrlService imageUrlService;
@@ -406,6 +409,31 @@ public String uploadImage(@PathVariable Long id, @RequestParam("files") Multipar
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         estateRepository.deleteById(id);
         redirectAttributes.addFlashAttribute("deleted", true);
+        return "redirect:/estates";
+    }
+
+    @PostMapping("/estates/{id}/fetch-responsible")
+    public String fetchResponsible(@PathVariable Long id,
+                                    @RequestParam String idType,
+                                    RedirectAttributes redirectAttributes) {
+        Estate estate = estateRepository.findById(id).orElse(null);
+        if (estate == null) return "redirect:/estates";
+
+        String advertiserId = estate.getAdvertiserNo() != null ? String.valueOf(estate.getAdvertiserNo()) : null;
+        NhcService.LookupResult result = nhcService.fetchResponsibleEmployee(
+                estate.getLicenseNumber(), advertiserId, idType);
+
+        if (result.success()) {
+            com.fasterxml.jackson.databind.JsonNode ad = result.advertisement();
+            String name = ad.path("responsibleEmployeeName").isMissingNode() ? null : ad.path("responsibleEmployeeName").asText(null);
+            String phone = ad.path("responsibleEmployeePhoneNumber").isMissingNode() ? null : ad.path("responsibleEmployeePhoneNumber").asText(null);
+            estate.setResponsibleEmployeeName(name);
+            estate.setResponsibleEmployeePhoneNumber(phone);
+            estateRepository.save(estate);
+            redirectAttributes.addFlashAttribute("responsibleFetched", true);
+        } else {
+            redirectAttributes.addFlashAttribute("responsibleFetchError", result.error());
+        }
         return "redirect:/estates";
     }
 

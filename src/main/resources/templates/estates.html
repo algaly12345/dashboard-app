@@ -12,6 +12,8 @@
 
         <div class="content">
 
+            <div th:if="${responsibleFetched}" class="alert alert-success py-2 px-3 mb-3 small">تم جلب بيانات المسؤول وحفظها بنجاح</div>
+            <div th:if="${responsibleFetchError}" class="alert alert-danger py-2 px-3 mb-3 small">تعذّر جلب بيانات المسؤول (<span th:text="${responsibleFetchError}">error</span>)</div>
             <div th:if="${expiredOnly}" class="alert py-2 px-3 mb-3 small d-flex align-items-center justify-content-between" style="background: var(--danger-bg); color: var(--danger); border-color: var(--danger);">
                 <span><i class="bi bi-exclamation-triangle"></i> <span th:text="#{estate.expiredFilterActive}">Showing expired licenses only</span></span>
                 <a th:href="@{/estates}" class="fw-semibold" style="color: var(--danger);" th:text="#{estate.clearFilter}">Clear</a>
@@ -198,6 +200,11 @@
                         <td th:if="${expiredOnly}" style="color: var(--danger); font-weight:700;" th:text="${e.endDate}">01/01/2025</td>
                         <td>
                             <div class="d-flex gap-1">
+                                <button type="button" th:if="${e.responsibleEmployeeName == null or e.responsibleEmployeeName == ''}"
+                                        class="btn-icon" style="color: var(--amber);" title="إضافة بيانات المسؤول"
+                                        th:onclick="'openResponsibleModal(' + ${e.id} + ')'">
+                                    <i class="bi bi-person-plus"></i>
+                                </button>
                                 <a th:href="@{'/estates/' + ${e.id}}" class="btn-icon" title="View">
                                     <i class="bi bi-eye"></i>
                                 </a>
@@ -426,6 +433,38 @@
             if (!e.target.closest('.advertiser-search-dropdown')) results.classList.remove('open');
         });
     })();
+</script>
+<!-- Responsible employee fetch modal -->
+<div id="responsibleModalBackdrop" class="advertiser-modal-backdrop" onclick="closeResponsibleModal(event)">
+    <div class="advertiser-modal" onclick="event.stopPropagation()" style="max-width:400px;">
+        <button type="button" class="advertiser-modal-close" onclick="closeResponsibleModal()"><i class="bi bi-x-lg"></i></button>
+        <div class="fw-bold fs-5 mb-3"><i class="bi bi-person-plus"></i> إضافة بيانات المسؤول</div>
+        <p class="text-muted small">اختر نوع هوية المعلن المسجّلة بالرخصة، وبنجيب اسم ورقم المسؤول تلقائيًا من الجهة المختصة.</p>
+        <form id="responsibleForm" method="post">
+            <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+            <div class="id-type-toggle mb-3">
+                <label class="id-type-option">
+                    <input type="radio" name="idType" value="1" checked/>
+                    <span><i class="bi bi-person"></i> فرد</span>
+                </label>
+                <label class="id-type-option">
+                    <input type="radio" name="idType" value="2"/>
+                    <span><i class="bi bi-building"></i> منشأة</span>
+                </label>
+            </div>
+            <button type="submit" class="btn btn-gold w-100"><i class="bi bi-download"></i> جلب البيانات</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openResponsibleModal(estateId) {
+        document.getElementById('responsibleForm').action = '/estates/' + estateId + '/fetch-responsible';
+        document.getElementById('responsibleModalBackdrop').classList.add('open');
+    }
+    function closeResponsibleModal(e) {
+        document.getElementById('responsibleModalBackdrop').classList.remove('open');
+    }
 </script>
 </body>
 </html>
