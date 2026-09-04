@@ -41,8 +41,7 @@ public class NhcService {
                     .queryParam("idType", idType)
                     .toUriString();
             HttpHeaders headers = new HttpHeaders();
-            headers.set("X-IBM-Client-Id", settingsService.get("nhc_client_id", ""));
-            headers.set("X-IBM-Client-Secret", settingsService.get("nhc_client_secret", ""));
+            headers.setBearerAuth(settingsService.get("laravel_admin_token", ""));
             ResponseEntity<String> response = restTemplate.exchange(
                     url, HttpMethod.POST, new HttpEntity<>(headers), String.class);
             if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
