@@ -44,7 +44,7 @@ public class NhcService {
             headers.set("X-IBM-Client-Id", settingsService.get("nhc_client_id", ""));
             headers.set("X-IBM-Client-Secret", settingsService.get("nhc_client_secret", ""));
             ResponseEntity<String> response = restTemplate.exchange(
-                    url, HttpMethod.GET, new HttpEntity<>(headers), String.class);
+                    url, HttpMethod.POST, new HttpEntity<>(headers), String.class);
             if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
                 return new LookupResult(false, null, response.getBody(), "http_" + response.getStatusCode().value());
             }
