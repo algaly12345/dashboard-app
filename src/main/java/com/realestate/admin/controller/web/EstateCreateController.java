@@ -295,6 +295,8 @@ estate.setLongDescription(form.get("longDescription"));
         estate.setDeedNumber(form.get("deedNumber"));
         estate.setAdvertiserName(advertiserName);
         estate.setPhoneNumber(phone);
+        estate.setResponsibleEmployeeName(form.get("responsibleEmployeeName"));
+        estate.setResponsibleEmployeePhoneNumber(form.get("responsibleEmployeePhoneNumber"));
         estate.setPropertyType(form.get("propertyType"));
         estate.setAdvertisementType(form.get("advertisementType"));
         estate.setPostalCode(parseIntOrNull(form.get("postalCode")));

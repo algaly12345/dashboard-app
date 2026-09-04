@@ -156,6 +156,12 @@ public class Estate {
     @Column(name = "brokerageAndMarketingLicenseNumber")
     private String brokerageAndMarketingLicenseNumber;
 
+    @Column(name = "responsible_employee_name")
+    private String responsibleEmployeeName;
+
+    @Column(name = "responsible_employee_phone_number")
+    private String responsibleEmployeePhoneNumber;
+
     @Column(name = "titleDeedTypeName")
     private String titleDeedTypeName;
 
