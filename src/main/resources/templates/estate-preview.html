@@ -49,6 +49,26 @@
             </div>
 
             <form th:action="@{/estates/confirm}" method="post">
+
+                <!-- Editable generated texts -->
+                <div class="form-section">
+                    <div class="form-section-title"><i class="bi bi-pencil-square"></i> عنوان ووصف الإعلان (تلقائي، قابل للتعديل)</div>
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">العنوان</label>
+                            <input type="text" name="title" class="form-control" th:value="${generatedTitle}"/>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">الوصف القصير</label>
+                            <input type="text" name="shortDescription" class="form-control" th:value="${generatedShortDesc}"/>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">الوصف الطويل</label>
+                            <textarea name="longDescription" rows="6" class="form-control" th:text="${generatedLongDesc}"></textarea>
+                        </div>
+                    </div>
+                </div>
+
                 <input type="hidden" name="propertyPrice" th:value="${propertyPrice}"/>
                 <input type="hidden" name="advertiserNumber" th:value="${advertiserNumber}"/>
                 <input type="hidden" name="idType" th:value="${idType}"/>
