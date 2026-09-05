@@ -294,9 +294,9 @@ estate.setLongDescription(form.get("longDescription"));
         estate.setLicenseNumber(form.get("licenseNumber"));
         estate.setDeedNumber(form.get("deedNumber"));
         estate.setAdvertiserName(advertiserName);
-        estate.setPhoneNumber(phone);
+        estate.setPhoneNumber(normalizeSaudiPhone(phone));
         estate.setResponsibleEmployeeName(form.get("responsibleEmployeeName"));
-        estate.setResponsibleEmployeePhoneNumber(form.get("responsibleEmployeePhoneNumber"));
+        estate.setResponsibleEmployeePhoneNumber(normalizeSaudiPhone(form.get("responsibleEmployeePhoneNumber")));
         estate.setPropertyType(form.get("propertyType"));
         estate.setAdvertisementType(form.get("advertisementType"));
         estate.setPostalCode(parseIntOrNull(form.get("postalCode")));
@@ -310,6 +310,7 @@ estate.setLongDescription(form.get("longDescription"));
 if (priceValue == null || priceValue.isBlank()) priceValue = form.get("landTotalPrice");
 if (priceValue == null || priceValue.isBlank()) priceValue = "0";
 estate.setPrice(priceValue);
+        estate.setTotalPrice(form.get("landTotalPrice"));
         estate.setPropertyFace(form.get("propertyFace"));
         estate.setAdLicenseNumber(form.get("adLicenseNumber"));
         estate.setLandNumber(form.get("landNumber"));
@@ -407,6 +408,20 @@ try {
         if (length != null && !length.isBlank()) sb.append(length);
         String out = sb.toString().trim();
         return out.isEmpty() ? null : out;
+    }
+
+    private String normalizeSaudiPhone(String phone) {
+        if (phone == null || phone.isBlank()) return phone;
+        String digits = phone.replaceAll("[^0-9]", "");
+
+        if (digits.startsWith("966")) {
+            digits = digits.substring(3);
+        } else if (digits.startsWith("0")) {
+            digits = digits.substring(1);
+        }
+
+        if (digits.isEmpty()) return phone;
+        return "+966" + digits;
     }
 
     private Long parseLongOrNull(String s) {
