@@ -107,6 +107,23 @@ public class EstateCreateController {
         model.addAttribute("suggestedZoneId", suggestedZoneId);
 
         // ---- People / identity ----
+        String propType = text(ad, "propertyType");
+        String adType = text(ad, "advertisementType");
+        String cityName = text(ad, "location", "city");
+        String districtName = text(ad, "location", "district");
+        String areaText = text(ad, "propertyArea");
+        String priceText = text(ad, "propertyPrice");
+        String landPriceText = text(ad, "landTotalPrice");
+        String effectivePrice = (priceText != null && !priceText.isBlank() && !"0".equals(priceText)) ? priceText : landPriceText;
+
+        String generatedTitle = buildTitle(propType, adType, districtName, cityName);
+        String generatedShortDesc = buildShortDescription(propType, adType, districtName, cityName, areaText, effectivePrice);
+        String generatedLongDesc = buildLongDescription(ad, propType, adType, districtName, cityName, areaText, effectivePrice);
+
+        model.addAttribute("generatedTitle", generatedTitle);
+        model.addAttribute("generatedShortDesc", generatedShortDesc);
+        model.addAttribute("generatedLongDesc", generatedLongDesc);
+
         model.addAttribute("advertiserName", text(ad, "advertiserName"));
         model.addAttribute("phoneNumber", text(ad, "phoneNumber"));
         model.addAttribute("responsibleEmployeeName", text(ad, "responsibleEmployeeName"));
@@ -384,6 +401,55 @@ try {
 
         redirectAttributes.addFlashAttribute("created", true);
         return "redirect:/estates/" + estate.getId() + "/edit";
+    }
+
+    private String buildTitle(String propType, String adType, String district, String city) {
+        StringBuilder sb = new StringBuilder();
+        if (propType != null) sb.append(propType);
+        if (adType != null) sb.append(" ").append("بيع".equals(adType) ? "للبيع" : "للإيجار");
+        if (district != null) sb.append(" في ").append(district);
+        if (city != null) sb.append(" - ").append(city);
+        String out = sb.toString().trim();
+        return out.isEmpty() ? null : out;
+    }
+
+    private String buildShortDescription(String propType, String adType, String district, String city,
+                                          String area, String price) {
+        StringBuilder sb = new StringBuilder();
+        if (propType != null) sb.append(propType).append(" ");
+        sb.append("بيع".equals(adType) ? "للبيع" : "للإيجار");
+        if (district != null || city != null) {
+            sb.append(" في ");
+            if (district != null) sb.append(district);
+            if (district != null && city != null) sb.append(" - ");
+            if (city != null) sb.append(city);
+        }
+        if (area != null && !area.isBlank()) sb.append(" | المساحة ").append(area).append(" م²");
+        if (price != null && !price.isBlank() && !"0".equals(price)) sb.append(" | السعر ").append(price).append(" ريال");
+        return sb.toString().trim();
+    }
+
+    private String buildLongDescription(JsonNode ad, String propType, String adType, String district, String city,
+                                         String area, String price) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("يُطرح للـ").append("بيع".equals(adType) ? "بيع" : "إيجار").append(" ");
+        if (propType != null) sb.append(propType).append(" ");
+        if (district != null || city != null) {
+            sb.append("يقع في ");
+            if (district != null) sb.append("حي ").append(district);
+            if (district != null && city != null) sb.append(" بمدينة ");
+            if (city != null) sb.append(city);
+            sb.append(".\n");
+        }
+        if (area != null && !area.isBlank()) sb.append("المساحة: ").append(area).append(" م²\n");
+        if (price != null && !price.isBlank() && !"0".equals(price)) sb.append("السعر: ").append(price).append(" ريال\n");
+        String face = text(ad, "propertyFace");
+        if (face != null) sb.append("الواجهة: ").append(face).append("\n");
+        String rooms = text(ad, "numberOfRooms");
+        if (rooms != null && !rooms.isBlank()) sb.append("عدد الغرف: ").append(rooms).append("\n");
+        String age = text(ad, "propertyAge");
+        if (age != null) sb.append("عمر البناء: ").append(age).append("\n");
+        return sb.toString().trim();
     }
 
     private String text(JsonNode node, String field) {
