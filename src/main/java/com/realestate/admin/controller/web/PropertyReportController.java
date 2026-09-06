@@ -242,7 +242,9 @@ public class PropertyReportController {
     }
 
     static BigDecimal effectivePrice(Estate e) {
-        if ("أرض".equals(e.getPropertyType()) && e.getTotalPrice() != null && !e.getTotalPrice().isBlank()) {
+        String type = e.getPropertyType();
+        boolean isLand = type != null && (type.contains("ارض") || type.contains("أرض"));
+        if (isLand && e.getTotalPrice() != null && !e.getTotalPrice().isBlank()) {
             return parsePrice(e.getTotalPrice());
         }
         return parsePrice(e.getPrice());
