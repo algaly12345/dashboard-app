@@ -97,7 +97,7 @@ public class PropertyReportController {
 
         List<BigDecimal> salePrices = estates.stream()
                 .filter(e -> "بيع".equals(e.getAdvertisementType()))
-                .map(e -> parsePrice(e.getPrice()))
+                .map(PropertyReportController::effectivePrice)
                 .filter(java.util.Objects::nonNull)
                 .toList();
         BigDecimal portfolioValue = salePrices.stream().reduce(BigDecimal.ZERO, BigDecimal::add)
@@ -239,6 +239,13 @@ public class PropertyReportController {
                         .divide(BigDecimal.valueOf(prices.size()), 0, RoundingMode.HALF_UP);
         double pct = totalEstates > 0 ? (count * 100.0 / totalEstates) : 0;
         return new CityStat(label, count, pct, avg);
+    }
+
+    static BigDecimal effectivePrice(Estate e) {
+        if ("أرض".equals(e.getPropertyType()) && e.getTotalPrice() != null && !e.getTotalPrice().isBlank()) {
+            return parsePrice(e.getTotalPrice());
+        }
+        return parsePrice(e.getPrice());
     }
 
     static BigDecimal parsePrice(String price) {
