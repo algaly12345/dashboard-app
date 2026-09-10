@@ -413,11 +413,13 @@ public String uploadImage(@PathVariable Long id, @RequestParam("files") Multipar
     }
 
     @PostMapping("/estates/{id}/fetch-responsible")
-    public String fetchResponsible(@PathVariable Long id,
-                                    @RequestParam String idType,
-                                    RedirectAttributes redirectAttributes) {
+    @ResponseBody
+    public java.util.Map<String, Object> fetchResponsible(@PathVariable Long id,
+                                                            @RequestParam String idType) {
         Estate estate = estateRepository.findById(id).orElse(null);
-        if (estate == null) return "redirect:/estates";
+        if (estate == null) {
+            return java.util.Map.of("success", false, "error", "estate_not_found");
+        }
 
         String advertiserId = estate.getIdentityOrUnified();
         NhcService.LookupResult result = nhcService.fetchResponsibleEmployee(
@@ -430,11 +432,10 @@ public String uploadImage(@PathVariable Long id, @RequestParam("files") Multipar
             estate.setResponsibleEmployeeName(name);
             estate.setResponsibleEmployeePhoneNumber(phone);
             estateRepository.save(estate);
-            redirectAttributes.addFlashAttribute("responsibleFetched", true);
+            return java.util.Map.of("success", true, "name", name != null ? name : "", "phone", phone != null ? phone : "");
         } else {
-            redirectAttributes.addFlashAttribute("responsibleFetchError", result.error());
+            return java.util.Map.of("success", false, "error", result.error() != null ? result.error() : "unknown_error");
         }
-        return "redirect:/estates";
     }
 
     private Integer parseIntOrNull(String s) {

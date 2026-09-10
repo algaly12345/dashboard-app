@@ -184,10 +184,13 @@
                                     <span th:text="${estateUsers.get(e.userId).name}">Name</span>
                                 </button>
                                 <span th:unless="${e.userId != null and estateUsers.get(e.userId) != null}" class="text-muted small">—</span>
-                                <span th:if="${e.responsibleEmployeeName != null and e.responsibleEmployeeName != ''}"
+                                <span th:id="'responsible-name-' + ${e.id}"
+                                      th:if="${e.responsibleEmployeeName != null and e.responsibleEmployeeName != ''}"
                                       class="text-muted" style="font-size:.72rem; line-height:1.2;">
                                     <i class="bi bi-person-badge"></i> <span th:text="${e.responsibleEmployeeName}">Responsible</span>
                                 </span>
+                                <span th:unless="${e.responsibleEmployeeName != null and e.responsibleEmployeeName != ''}"
+                                      th:id="'responsible-name-' + ${e.id}" style="display:none;"></span>
                             </div>
                         </td>
                         <td th:text="${e.city}">City</td>
@@ -206,7 +209,8 @@
                         <td th:if="${expiredOnly}" style="color: var(--danger); font-weight:700;" th:text="${e.endDate}">01/01/2025</td>
                         <td>
                             <div class="d-flex gap-1">
-                                <button type="button" th:if="${e.responsibleEmployeeName == null or e.responsibleEmployeeName == ''}"
+                                <button type="button" th:id="'responsible-icon-' + ${e.id}"
+                                        th:if="${e.responsibleEmployeeName == null or e.responsibleEmployeeName == ''}"
                                         class="btn-icon" style="color: var(--amber);" title="إضافة بيانات المسؤول"
                                         th:onclick="'openResponsibleModal(' + ${e.id} + ')'">
                                     <i class="bi bi-person-plus"></i>
@@ -464,13 +468,53 @@
 </div>
 
 <script>
+    var currentResponsibleEstateId = null;
+
     function openResponsibleModal(estateId) {
-        document.getElementById('responsibleForm').action = '/estates/' + estateId + '/fetch-responsible';
+        currentResponsibleEstateId = estateId;
         document.getElementById('responsibleModalBackdrop').classList.add('open');
     }
     function closeResponsibleModal(e) {
         document.getElementById('responsibleModalBackdrop').classList.remove('open');
     }
+
+    document.getElementById('responsibleForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!currentResponsibleEstateId) return;
+
+        var formData = new FormData(this);
+        var submitBtn = this.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> جاري الجلب...';
+
+        fetch('/estates/' + currentResponsibleEstateId + '/fetch-responsible', {
+            method: 'POST',
+            body: formData
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-download"></i> جلب البيانات';
+
+            if (data.success) {
+                var nameSpan = document.getElementById('responsible-name-' + currentResponsibleEstateId);
+                if (nameSpan && data.name) {
+                    nameSpan.innerHTML = '<i class="bi bi-person-badge"></i> <span>' + data.name + '</span>';
+                    nameSpan.style.display = '';
+                }
+                var icon = document.getElementById('responsible-icon-' + currentResponsibleEstateId);
+                if (icon) icon.remove();
+                closeResponsibleModal();
+            } else {
+                alert('تعذّر جلب بيانات المسؤول: ' + data.error);
+            }
+        })
+        .catch(function () {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="bi bi-download"></i> جلب البيانات';
+            alert('حدث خطأ أثناء الاتصال بالخادم');
+        });
+    });
 </script>
 </body>
 </html>
