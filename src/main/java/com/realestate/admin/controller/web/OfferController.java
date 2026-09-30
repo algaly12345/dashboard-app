@@ -136,6 +136,7 @@ public class OfferController {
     }
 
     @PostMapping("/offers/{id}")
+    @org.springframework.transaction.annotation.Transactional
     public String update(@PathVariable Long id,
                           @RequestParam String title,
                           @RequestParam(required = false) String description,
