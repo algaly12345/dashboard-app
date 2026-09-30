@@ -20,4 +20,6 @@ public interface OfferZoneRepository extends JpaRepository<OfferZone, OfferZone.
     List<Long> findZoneIdsByOfferId(@Param("offerId") Long offerId);
 
     List<OfferZone> findByOfferIdIn(List<Long> offerIds);
+
+    void deleteByOfferId(Long offerId);
 }

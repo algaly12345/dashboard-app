@@ -95,6 +95,30 @@
                             </div>
                         </div>
 
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="bi bi-map"></i> المناطق المرتبطة</div>
+                            <div class="d-flex flex-wrap gap-3">
+                                <label class="form-check d-flex align-items-center gap-2" th:each="z : ${allZones}">
+                                    <input type="checkbox" class="form-check-input" name="zoneIds" th:value="${z.id}"
+                                           th:checked="${selectedZoneIds.contains(z.id)}"/>
+                                    <span th:text="${z.nameAr}">Zone</span>
+                                </label>
+                                <div th:if="${allZones.isEmpty()}" class="text-muted small">لا توجد مناطق متاحة</div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <div class="form-section-title"><i class="bi bi-tags"></i> الأقسام العقارية المرتبطة</div>
+                            <div class="d-flex flex-wrap gap-3">
+                                <label class="form-check d-flex align-items-center gap-2" th:each="c : ${allCategories}">
+                                    <input type="checkbox" class="form-check-input" name="categoryIds" th:value="${c.id}"
+                                           th:checked="${selectedCategoryIds.contains(c.id)}"/>
+                                    <span th:text="${c.nameAr}">Category</span>
+                                </label>
+                                <div th:if="${allCategories.isEmpty()}" class="text-muted small">لا توجد أقسام متاحة</div>
+                            </div>
+                        </div>
+
                         <div class="sticky-save-bar">
                             <a th:href="@{/offers}" class="btn btn-outline-gold" th:text="#{common.cancel}">Cancel</a>
                             <button type="submit" class="btn btn-gold" th:text="#{offer.save}">Save</button>

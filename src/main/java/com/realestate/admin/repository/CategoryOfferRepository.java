@@ -11,4 +11,9 @@ public interface CategoryOfferRepository extends JpaRepository<CategoryOffer, In
 
     @Query("select co.categoryId from CategoryOffer co where co.offerId = :offerId")
     List<Long> findCategoryIdsByOfferId(@Param("offerId") Long offerId);
+
+    void deleteByOfferId(Long offerId);
+
+    @Query("select coalesce(max(co.id), 0) from CategoryOffer co")
+    Integer findMaxId();
 }

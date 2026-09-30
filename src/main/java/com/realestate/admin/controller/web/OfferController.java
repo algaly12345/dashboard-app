@@ -127,6 +127,10 @@ public class OfferController {
                 .orElseThrow(() -> new IllegalArgumentException("Offer not found: " + id));
         model.addAttribute("offer", offer);
         model.addAttribute("serviceTypes", serviceTypeRepository.findAllByOrderByNameAsc());
+        model.addAttribute("allZones", zoneRepository.findAll());
+        model.addAttribute("allCategories", categoryRepository.findAllByOrderByPositionAsc());
+        model.addAttribute("selectedZoneIds", offerZoneRepository.findZoneIdsByOfferId(id));
+        model.addAttribute("selectedCategoryIds", categoryOfferRepository.findCategoryIdsByOfferId(id));
         model.addAttribute("activePage", "offers");
         return "offer-edit";
     }
@@ -142,6 +146,8 @@ public class OfferController {
                           @RequestParam String expiryDate,
                           @RequestParam(required = false) String phoneProvider,
                           @RequestParam(required = false) String serviceTypeId,
+                          @RequestParam(required = false) List<Long> zoneIds,
+                          @RequestParam(required = false) List<Long> categoryIds,
                           RedirectAttributes redirectAttributes) {
 
         Offer offer = offerRepository.findById(id)
@@ -160,6 +166,28 @@ public class OfferController {
         offer.setUpdatedAt(LocalDateTime.now());
 
         offerRepository.save(offer);
+
+        offerZoneRepository.deleteByOfferId(id);
+        if (zoneIds != null) {
+            for (Long zoneId : zoneIds) {
+                com.realestate.admin.entity.OfferZone oz = new com.realestate.admin.entity.OfferZone();
+                oz.setOfferId(id);
+                oz.setZoneId(zoneId);
+                offerZoneRepository.save(oz);
+            }
+        }
+
+        categoryOfferRepository.deleteByOfferId(id);
+        if (categoryIds != null) {
+            for (Long categoryId : categoryIds) {
+                com.realestate.admin.entity.CategoryOffer co = new com.realestate.admin.entity.CategoryOffer();
+                co.setId(categoryOfferRepository.findMaxId() + 1);
+                co.setOfferId(id);
+                co.setCategoryId(categoryId);
+                categoryOfferRepository.save(co);
+            }
+        }
+
         redirectAttributes.addFlashAttribute("saved", true);
         return "redirect:/offers/" + id + "/edit";
     }
