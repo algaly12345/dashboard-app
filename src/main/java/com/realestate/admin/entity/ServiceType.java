@@ -17,4 +17,10 @@ public class ServiceType {
 
     @Column(nullable = false)
     private String name;
+
+    @Column(name = "created_at")
+    private java.time.LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private java.time.LocalDateTime updatedAt;
 }

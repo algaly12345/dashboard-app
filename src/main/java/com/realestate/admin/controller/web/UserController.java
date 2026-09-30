@@ -35,23 +35,56 @@ public class UserController {
                         @RequestParam(defaultValue = "0") int page,
                         Model model) {
 
-        Page<AppUser> result = appUserRepository.search(
-                blankToNull(q), blankToNull(userType), PageRequest.of(page, 15));
-
+        // "userType" here is activity-based, not the static users.user_type
+        // column: "customer" (marketer) = has at least one estate listing,
+        // "provider" (service provider) = has at least one offer (matched
+        // by phone_provider). A user can legitimately be both.
+        java.util.Set<Long> estateOwnerIds = new java.util.HashSet<>();
         Map<Long, Long> estateCounts = new HashMap<>();
         for (Object[] row : estateRepository.countGroupedByUser()) {
-            estateCounts.put((Long) row[0], (Long) row[1]);
+            Long uid = (Long) row[0];
+            Long count = (Long) row[1];
+            estateCounts.put(uid, count);
+            if (count > 0) estateOwnerIds.add(uid);
         }
 
         // Offers have no user_id - the creator is identified by phone_provider,
-        // matched against users.phone. Build a phone -> count map, then key
-        // it by user id for the template.
+        // matched against users.phone.
         Map<String, Long> offersByPhone = new HashMap<>();
         for (Object[] row : offerRepository.countGroupedByPhoneProvider()) {
             offersByPhone.put((String) row[0], (Long) row[1]);
         }
+        java.util.Set<String> providerPhones = offersByPhone.keySet();
+
+        // Base search: text query only (no DB-level userType filter anymore).
+        java.util.List<AppUser> allMatches = appUserRepository.search(
+                blankToNull(q), null, org.springframework.data.domain.PageRequest.of(0, Integer.MAX_VALUE)).getContent();
+
+        String activityFilter = blankToNull(userType);
+        java.util.List<AppUser> filtered = allMatches.stream()
+                .filter(u -> {
+                    if (activityFilter == null) return true;
+                    boolean isMarketer = estateOwnerIds.contains(u.getId());
+                    boolean isProvider = u.getPhone() != null && providerPhones.contains(u.getPhone());
+                    return switch (activityFilter) {
+                        case "customer" -> isMarketer;
+                        case "provider" -> isProvider;
+                        default -> true;
+                    };
+                })
+                .toList();
+
+        long totalFiltered = filtered.size();
+        int pageSize = 15;
+        int from = Math.min(page * pageSize, filtered.size());
+        int to = Math.min(from + pageSize, filtered.size());
+        java.util.List<AppUser> pageContent = filtered.subList(from, to);
+
+        org.springframework.data.domain.Page<AppUser> result = new org.springframework.data.domain.PageImpl<>(
+                pageContent, org.springframework.data.domain.PageRequest.of(page, pageSize), totalFiltered);
+
         Map<Long, Long> offerCounts = new HashMap<>();
-        for (AppUser u : result.getContent()) {
+        for (AppUser u : pageContent) {
             Long count = offersByPhone.get(u.getPhone());
             if (count != null) offerCounts.put(u.getId(), count);
         }
@@ -59,6 +92,7 @@ public class UserController {
         model.addAttribute("users", result);
         model.addAttribute("estateCounts", estateCounts);
         model.addAttribute("offerCounts", offerCounts);
+        model.addAttribute("totalFilteredUsers", totalFiltered);
         model.addAttribute("q", q);
         model.addAttribute("userType", userType);
         model.addAttribute("activePage", "users");

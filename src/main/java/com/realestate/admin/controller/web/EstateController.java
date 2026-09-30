@@ -322,16 +322,28 @@ public String uploadImage(@PathVariable Long id, @RequestParam("files") Multipar
     }
 
     @PostMapping("/estates/{id}/upload-plan")
-    public String uploadPlan(@PathVariable Long id, @RequestParam("file") MultipartFile file,
+    public String uploadPlan(@PathVariable Long id, @RequestParam("files") MultipartFile[] files,
                               @RequestParam(required = false) String redirectTo,
                               RedirectAttributes redirectAttributes) {
         Estate estate = estateRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Estate not found: " + id));
 
-        R2StorageService.UploadResult result = r2StorageService.upload(file, "estate");
-        if (result.success()) {
-            List<String> planned = new ArrayList<>(estate.getPlannedList());
-            planned.add(result.filename());
+        List<String> planned = new ArrayList<>(estate.getPlannedList());
+        int successCount = 0;
+        String lastError = null;
+
+        for (MultipartFile file : files) {
+            if (file.isEmpty()) continue;
+            R2StorageService.UploadResult result = r2StorageService.upload(file, "estate");
+            if (result.success()) {
+                planned.add(result.filename());
+                successCount++;
+            } else {
+                lastError = result.error();
+            }
+        }
+
+        if (successCount > 0) {
             try {
                 estate.setPlanned(objectMapper.writeValueAsString(planned));
             } catch (Exception ignored) {
@@ -342,7 +354,7 @@ public String uploadImage(@PathVariable Long id, @RequestParam("files") Multipar
             redirectAttributes.addFlashAttribute("uploadResult", true);
         } else {
             redirectAttributes.addFlashAttribute("uploadResult", false);
-            redirectAttributes.addFlashAttribute("uploadError", result.error());
+            redirectAttributes.addFlashAttribute("uploadError", lastError);
         }
         return "redirect:" + (redirectTo != null && !redirectTo.isBlank() ? redirectTo : "/estates/" + id + "/photos");
     }

@@ -18,6 +18,9 @@ public interface OfferRepository extends JpaRepository<Offer, Long> {
     @Query("select o.phoneProvider, count(o) from Offer o where o.phoneProvider is not null group by o.phoneProvider")
     List<Object[]> countGroupedByPhoneProvider();
 
+    @Query("select distinct o.phoneProvider from Offer o where o.phoneProvider is not null")
+    List<String> findDistinctPhoneProviders();
+
     @Query("select o.status, count(o) from Offer o group by o.status")
     List<Object[]> countGroupedByStatus();
 
@@ -34,6 +37,8 @@ public interface OfferRepository extends JpaRepository<Offer, Long> {
 
     @Query("select o.serviceTypeId, count(o) from Offer o group by o.serviceTypeId order by count(o) desc")
     List<Object[]> countGroupedByServiceType();
+
+    long countByServiceTypeId(Long serviceTypeId);
 
     @Query("select avg(o.discount) from Offer o where o.offerType = com.realestate.admin.entity.Offer.OfferType.discount and o.discount is not null")
     Double avgDiscount();

@@ -114,21 +114,21 @@
                     <div class="card kpi-card">
                         <div class="kpi-icon violet"><i class="bi bi-cash-stack"></i></div>
                         <div class="kpi-label" th:text="#{propReport.kpi.portfolioValue}">Portfolio value</div>
-                        <div class="kpi-value" style="font-size:1.25rem;" th:text="|${#numbers.formatDecimal(portfolioValue, 0, 'COMMA', 0, 'POINT')} #{estate.currency}|">0</div>
+                        <div class="kpi-value" style="font-size:1.25rem;" th:text="${@num.money(portfolioValue)} + ' ' + #{estate.currency}">0</div>
                     </div>
                 </div>
                 <div class="col-6 col-xl-3">
                     <div class="card kpi-card">
                         <div class="kpi-icon amber"><i class="bi bi-graph-up"></i></div>
                         <div class="kpi-label" th:text="#{propReport.kpi.avgPrice}">Avg price</div>
-                        <div class="kpi-value" style="font-size:1.25rem;" th:text="|${#numbers.formatDecimal(avgSalePrice, 0, 'COMMA', 0, 'POINT')} #{estate.currency}|">0</div>
+                        <div class="kpi-value" style="font-size:1.25rem;" th:text="${@num.money(avgSalePrice)} + ' ' + #{estate.currency}">0</div>
                     </div>
                 </div>
                 <div class="col-6 col-xl-3">
                     <div class="card kpi-card">
                         <div class="kpi-icon" style="background:#E7F6EC; color:#1E8E4B;"><i class="bi bi-graph-up-arrow"></i></div>
                         <div class="kpi-label">متوسط الإيجار</div>
-                        <div class="kpi-value" style="font-size:1.25rem;" th:text="|${#numbers.formatDecimal(avgRentPrice, 0, 'COMMA', 0, 'POINT')} #{estate.currency}|">0</div>
+                        <div class="kpi-value" style="font-size:1.25rem;" th:text="${@num.money(avgRentPrice)} + ' ' + #{estate.currency}">0</div>
                     </div>
                 </div>
                 <div class="col-6 col-xl-3">
@@ -193,7 +193,7 @@
                                     <td><span class="pr-rank-badge" th:text="${iter.count}">1</span><span th:text="${c.city}">City</span></td>
                                     <td th:text="${c.count}">0</td>
                                     <td th:text="${#numbers.formatDecimal(c.percentage, 1, 1)} + '%'">0%</td>
-                                    <td th:text="|${#numbers.formatDecimal(c.avgPrice, 0, 'COMMA', 0, 'POINT')} #{estate.currency}|">0</td>
+                                    <td th:text="${@num.money(c.avgPrice)} + ' ' + #{estate.currency}">0</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -240,7 +240,7 @@
                                     <td><span class="pr-rank-badge" th:text="${iter.count}">1</span><span th:text="${z.city}">Zone</span></td>
                                     <td th:text="${z.count}">0</td>
                                     <td th:text="${#numbers.formatDecimal(z.percentage, 1, 1)} + '%'">0%</td>
-                                    <td th:text="|${#numbers.formatDecimal(z.avgPrice, 0, 'COMMA', 0, 'POINT')} #{estate.currency}|">0</td>
+                                    <td th:text="${@num.money(z.avgPrice)} + ' ' + #{estate.currency}">0</td>
                                 </tr>
                                 </tbody>
                             </table>

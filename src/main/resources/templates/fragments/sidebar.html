@@ -35,6 +35,9 @@
         <a th:href="@{/commissions}" class="nav-link" th:classappend="${active == 'commissions'} ? 'active' : ''">
             <i class="bi bi-cash-coin"></i><span>العمولات</span>
         </a>
+        <a th:href="@{/service-types}" class="nav-link" th:classappend="${active == 'service-types'} ? 'active' : ''">
+            <i class="bi bi-tags"></i><span>أنواع الخدمات</span>
+        </a>
         <a th:href="@{/settings}" class="nav-link" th:classappend="${active == 'settings'} ? 'active' : ''">
             <i class="bi bi-gear"></i><span th:text="#{nav.settings}">Settings</span>
         </a>

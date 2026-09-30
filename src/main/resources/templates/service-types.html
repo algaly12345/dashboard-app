@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}"
+      th:dir="${#locale.language == 'ar'} ? 'rtl' : 'ltr'">
+<head th:replace="~{fragments/head :: head('أنواع الخدمات')}"></head>
+<body>
+<div class="app-shell">
+    <div th:replace="~{fragments/sidebar :: sidebar('service-types')}"></div>
+
+    <div class="main-col">
+        <div th:replace="~{fragments/topbar :: topbar(#{app.name}, 'أنواع الخدمات')}"></div>
+
+        <div class="content">
+
+            <div th:if="${saved}" class="alert alert-success py-2 px-3 mb-3 small">تم الحفظ بنجاح</div>
+            <div th:if="${deleted}" class="alert alert-success py-2 px-3 mb-3 small">تم الحذف بنجاح</div>
+            <div th:if="${deleteError}" class="alert alert-danger py-2 px-3 mb-3 small">
+                <i class="bi bi-exclamation-triangle"></i> لا يمكن حذف هذا النوع — مستخدم بـ <span th:text="${deleteError}">0</span> عرض/عروض حاليًا.
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">أنواع الخدمات</h5>
+                <button type="button" class="btn btn-gold btn-sm" onclick="openCreateModal()">
+                    <i class="bi bi-plus-lg"></i> إضافة نوع جديد
+                </button>
+            </div>
+
+            <div class="card table-card">
+                <table class="data-table">
+                    <thead>
+                    <tr>
+                        <th>الاسم</th>
+                        <th>عدد العروض المرتبطة</th>
+                        <th>تاريخ الإضافة</th>
+                        <th>إجراءات</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="t : ${serviceTypes}">
+                        <td class="fw-bold" th:text="${t.name}">Name</td>
+                        <td>
+                            <span class="badge-pill badge-tour"><i class="bi bi-bag"></i> <span th:text="${offerCounts.get(t.id)} ?: 0">0</span></span>
+                        </td>
+                        <td th:text="${t.createdAt != null ? #temporals.format(t.createdAt, 'yyyy-MM-dd') : '-'}">-</td>
+                        <td>
+                            <div class="d-flex gap-1">
+                                <button type="button" class="btn-icon edit-type-btn" title="تعديل"
+                                        th:data-id="${t.id}" th:data-name="${t.name}">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <form th:action="@{'/service-types/' + ${t.id} + '/delete'}" method="post" class="d-inline"
+                                      onsubmit="return confirm('متأكد تبي تحذف هذا النوع؟');">
+                                    <button type="submit" class="btn-icon btn-icon-danger" title="حذف"><i class="bi bi-trash3"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr th:if="${serviceTypes.isEmpty()}">
+                        <td colspan="4" class="text-center text-muted py-4">لا توجد أنواع خدمات بعد</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Create / edit modal -->
+            <div id="serviceTypeModalBackdrop" class="advertiser-modal-backdrop" onclick="closeServiceTypeModal(event)">
+                <div class="advertiser-modal" onclick="event.stopPropagation()" style="max-width:400px;">
+                    <button type="button" class="advertiser-modal-close" onclick="closeServiceTypeModal()"><i class="bi bi-x-lg"></i></button>
+                    <div class="fw-bold fs-5 mb-3" id="serviceTypeModalTitle"><i class="bi bi-tags"></i> إضافة نوع جديد</div>
+                    <form id="serviceTypeForm" method="post">
+                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                        <label class="form-label">اسم نوع الخدمة *</label>
+                        <input type="text" name="name" id="serviceTypeNameInput" class="form-control" required/>
+                        <button type="submit" class="btn btn-gold w-100 mt-3"><i class="bi bi-check2"></i> حفظ</button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.edit-type-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            openEditModal(btn.getAttribute('data-id'), btn.getAttribute('data-name'));
+        });
+    });
+
+    function openCreateModal() {
+        document.getElementById('serviceTypeModalTitle').innerHTML = '<i class="bi bi-tags"></i> إضافة نوع جديد';
+        document.getElementById('serviceTypeForm').action = '/service-types';
+        document.getElementById('serviceTypeNameInput').value = '';
+        document.getElementById('serviceTypeModalBackdrop').classList.add('open');
+    }
+    function openEditModal(id, name) {
+        document.getElementById('serviceTypeModalTitle').innerHTML = '<i class="bi bi-pencil"></i> تعديل نوع الخدمة';
+        document.getElementById('serviceTypeForm').action = '/service-types/' + id;
+        document.getElementById('serviceTypeNameInput').value = name;
+        document.getElementById('serviceTypeModalBackdrop').classList.add('open');
+    }
+    function closeServiceTypeModal(e) {
+        document.getElementById('serviceTypeModalBackdrop').classList.remove('open');
+    }
+</script>
+</body>
+</html>

@@ -7,4 +7,7 @@ import java.util.List;
 
 public interface ServiceTypeRepository extends JpaRepository<ServiceType, Long> {
     List<ServiceType> findAllByOrderByNameAsc();
+
+    @org.springframework.data.jpa.repository.Query("select coalesce(max(s.id), 0) from ServiceType s")
+    Long findMaxId();
 }

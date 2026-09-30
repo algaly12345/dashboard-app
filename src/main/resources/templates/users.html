@@ -12,7 +12,16 @@
 
         <div class="content">
 
-            <div class="d-flex justify-content-end mb-2">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="zone-stat">
+                    <div class="zone-stat-value" th:text="${totalFilteredUsers}">0</div>
+                    <div class="zone-stat-label">
+                        <i class="bi bi-people"></i>
+                        <span th:if="${userType == null or userType == ''}">إجمالي المستخدمين</span>
+                        <span th:if="${userType == 'customer'}">إجمالي المسوّقين العقاريين</span>
+                        <span th:if="${userType == 'provider'}">إجمالي مزودي الخدمة</span>
+                    </div>
+                </div>
                 <a th:href="@{/users/new}" class="btn btn-gold btn-sm">
                     <i class="bi bi-person-plus"></i> إضافة مستخدم
                 </a>
@@ -25,11 +34,11 @@
                         <input type="text" name="q" th:value="${q}" class="form-control" th:placeholder="#{user.search.placeholder}"/>
                     </div>
                     <div class="col-md-4">
-                        <label class="form-label small fw-semibold" th:text="#{user.type}">Type</label>
+                        <label class="form-label small fw-semibold">النشاط</label>
                         <select name="userType" class="form-select">
-                            <option value="" th:text="#{user.filter.type}">All types</option>
-                            <option value="customer" th:selected="${userType == 'customer'}">customer</option>
-                            <option value="provider" th:selected="${userType == 'provider'}">provider</option>
+                            <option value="" th:selected="${userType == null or userType == ''}">الكل</option>
+                            <option value="customer" th:selected="${userType == 'customer'}">مسوّق عقاري (عنده عقارات)</option>
+                            <option value="provider" th:selected="${userType == 'provider'}">مزود خدمة (عنده خدمات)</option>
                         </select>
                     </div>
                     <div class="col-md-2">
