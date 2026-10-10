@@ -97,6 +97,8 @@ public class PropertyReportController {
 
         List<BigDecimal> salePrices = estates.stream()
                 .filter(e -> "بيع".equals(e.getAdvertisementType()))
+                .filter(e -> e.getStatus() == Estate.Status.active)
+                .filter(e -> !e.isLicenseExpired())
                 .map(PropertyReportController::effectivePrice)
                 .filter(java.util.Objects::nonNull)
                 .toList();
@@ -242,11 +244,8 @@ public class PropertyReportController {
     }
 
     static BigDecimal effectivePrice(Estate e) {
-        String type = e.getPropertyType();
-        boolean isLand = type != null && (type.contains("ارض") || type.contains("أرض"));
-        if (isLand && e.getTotalPrice() != null && !e.getTotalPrice().isBlank()) {
-            return parsePrice(e.getTotalPrice());
-        }
+        BigDecimal total = parsePrice(e.getTotalPrice());
+        if (total != null && total.signum() > 0) return total;
         return parsePrice(e.getPrice());
     }
 

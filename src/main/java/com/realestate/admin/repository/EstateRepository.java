@@ -84,10 +84,32 @@ Long findMaxId();
     @Query("select e.zoneId, count(e), avg(cast(e.price as big_decimal)) from Estate e where e.zoneId is not null group by e.zoneId order by count(e) desc")
     List<Object[]> countAndAvgPriceGroupedByZone();
 
-    @Query("select sum(cast(e.price as big_decimal)) from Estate e where e.advertisementType = 'بيع'")
+    @Query(value = """
+       select coalesce(sum(case
+                when total_price regexp '^[0-9]+([.][0-9]+)?$' and cast(total_price as decimal(20,2)) > 0
+                     then cast(total_price as decimal(20,2))
+                when price regexp '^[0-9]+([.][0-9]+)?$'
+                     then cast(price as decimal(20,2))
+              end), 0)
+       from estates
+       where advertisement_type = 'بيع' and status = 'active'
+         and end_date is not null and end_date <> ''
+         and str_to_date(end_date, '%d/%m/%Y') >= curdate()
+       """, nativeQuery = true)
     java.math.BigDecimal sumSalePrice();
 
-    @Query("select avg(cast(e.price as big_decimal)) from Estate e where e.advertisementType = 'بيع'")
+    @Query(value = """
+       select coalesce(avg(case
+                when total_price regexp '^[0-9]+([.][0-9]+)?$' and cast(total_price as decimal(20,2)) > 0
+                     then cast(total_price as decimal(20,2))
+                when price regexp '^[0-9]+([.][0-9]+)?$'
+                     then cast(price as decimal(20,2))
+              end), 0)
+       from estates
+       where advertisement_type = 'بيع' and status = 'active'
+         and end_date is not null and end_date <> ''
+         and str_to_date(end_date, '%d/%m/%Y') >= curdate()
+       """, nativeQuery = true)
     java.math.BigDecimal avgSalePrice();
 
     @Query(value = """
