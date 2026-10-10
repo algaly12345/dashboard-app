@@ -159,6 +159,16 @@
                                 <strong th:text="${@num.money(expiredSaleValue)} + ' ' + #{estate.currency}">0</strong>
                                 (<span th:text="${expiredSaleCount}">0</span> عقار)
                             </div>
+                            <div class="small mt-1" style="color: var(--danger);">
+                                قيمة عقارات البيع المنتهية الرخصة:
+                                <strong th:text="${@num.money(expiredSaleValue)} + ' ' + #{estate.currency}">0</strong>
+                                (<span th:text="${expiredSaleCount}">0</span> عقار)
+                            </div>
+                            <div class="small mt-1" style="color: var(--danger);">
+                                قيمة عقارات البيع المنتهية الرخصة:
+                                <strong th:text="${@num.money(expiredSaleValue)} + ' ' + #{estate.currency}">0</strong>
+                                (<span th:text="${expiredSaleCount}">0</span> عقار)
+                            </div>
                         </div>
                         <div class="text-muted small ms-auto" th:text="#{kpi.expiredLicensesHint}">Based on end_date</div>
                     </a>
