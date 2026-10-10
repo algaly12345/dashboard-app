@@ -203,6 +203,17 @@ public class PropertyReportController {
         model.addAttribute("totalZones", totalZones);
         model.addAttribute("totalCategories", totalCategories);
         model.addAttribute("totalOffers", totalOffers);
+        List<BigDecimal> expiredSalePrices = estates.stream()
+                .filter(e -> "بيع".equals(e.getAdvertisementType()))
+                .filter(Estate::isLicenseExpired)
+                .map(PropertyReportController::effectivePrice)
+                .filter(java.util.Objects::nonNull)
+                .toList();
+        BigDecimal expiredSaleValue = expiredSalePrices.stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(0, RoundingMode.HALF_UP);
+        model.addAttribute("expiredSaleValue", expiredSaleValue);
+        model.addAttribute("expiredSaleCount", (long) expiredSalePrices.size());
         model.addAttribute("portfolioValue", portfolioValue);
         model.addAttribute("avgSalePrice", avgSalePrice);
         model.addAttribute("avgRentPrice", avgRentPrice);
