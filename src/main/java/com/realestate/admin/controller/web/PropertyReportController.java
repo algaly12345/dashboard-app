@@ -214,6 +214,16 @@ public class PropertyReportController {
                 .setScale(0, RoundingMode.HALF_UP);
         model.addAttribute("expiredSaleValue", expiredSaleValue);
         model.addAttribute("expiredSaleCount", (long) expiredSalePrices.size());
+        long expiredSaleN = estates.stream()
+                .filter(e -> "بيع".equals(e.getAdvertisementType()))
+                .filter(Estate::isLicenseExpired).count();
+        long expiredRentCount = estates.stream()
+                .filter(e -> "إيجار".equals(e.getAdvertisementType()))
+                .filter(Estate::isLicenseExpired).count();
+        long expiredOtherCount = Math.max(0, expiredLicenses - expiredSaleN - expiredRentCount);
+        model.addAttribute("expiredSaleN", expiredSaleN);
+        model.addAttribute("expiredRentCount", expiredRentCount);
+        model.addAttribute("expiredOtherCount", expiredOtherCount);
         model.addAttribute("portfolioValue", portfolioValue);
         model.addAttribute("avgSalePrice", avgSalePrice);
         model.addAttribute("avgRentPrice", avgRentPrice);
