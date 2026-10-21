@@ -11,9 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface EstateRepository extends JpaRepository<Estate, Long> {
-
     java.util.Optional<Estate> findByLicenseNumber(String licenseNumber);
-
 
 @org.springframework.data.jpa.repository.Query("select coalesce(max(e.id), 0) from Estate e")
 Long findMaxId();
