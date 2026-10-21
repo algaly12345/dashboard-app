@@ -195,6 +195,15 @@ public class Estate {
     @Column(name = "plan_number")
     private String planNumber;
 
+    @Column(name = "discount_percent")
+    private java.math.BigDecimal discountPercent;
+
+    @Column(name = "price_after_discount")
+    private java.math.BigDecimal priceAfterDiscount;
+
+    @Column(name = "total_price_after_discount")
+    private java.math.BigDecimal totalPriceAfterDiscount;
+
     @Column(name = "obligationsOnTheProperty")
     private String obligationsOnTheProperty;
 

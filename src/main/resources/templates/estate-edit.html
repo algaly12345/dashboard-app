@@ -17,6 +17,7 @@
             </a>
 
             <div th:if="${saved}" class="alert alert-success py-2 px-3 mb-3 small" th:text="#{estate.saved}">Saved</div>
+            <div th:if="${discountCancelled}" class="alert alert-success py-2 px-3 mb-3 small">تم إلغاء التخفيض عن العقار.</div>
             <div th:if="${created}" class="alert alert-success py-2 px-3 mb-3 small">تمت إضافة العقار بنجاح!</div>
             <div th:if="${uploadResult != null}"
                  th:class="'alert py-2 px-3 mb-3 small ' + (${uploadResult} ? 'alert-success' : 'alert-warning')">
@@ -100,6 +101,118 @@
                             <div class="col-md-3">
                                 <label class="form-label" th:text="#{estate.space}">Space (m²)</label>
                                 <input type="text" name="space" th:value="${estate.space}" class="form-control"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section" th:if="${estate.discountPercent != null or estate.priceAfterDiscount != null or estate.totalPriceAfterDiscount != null}">
+                        <div class="form-section-title"><i class="bi bi-percent"></i> <span>التخفيض الحالي على العقار</span></div>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">نسبة التخفيض %</label>
+                                <input type="text" class="form-control" th:value="${estate.discountPercent}" readonly/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">السعر بعد التخفيض</label>
+                                <input type="text" class="form-control" th:value="${estate.priceAfterDiscount}" readonly/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">الإجمالي بعد التخفيض</label>
+                                <input type="text" class="form-control" th:value="${estate.totalPriceAfterDiscount}" readonly/>
+                            </div>
+                            <div class="col-md-3 d-flex align-items-end">
+                                <button type="submit" formmethod="post" formnovalidate
+                                        th:formaction="@{'/estates/' + ${estate.id} + '/cancel-discount'}"
+                                        class="btn btn-outline-danger w-100"
+                                        onclick="return confirm('هل تريد إلغاء التخفيض عن هذا العقار؟')">
+                                    <i class="bi bi-x-circle"></i> إلغاء التخفيض
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="bi bi-file-earmark-text"></i> <span>التراخيص والوثائق</span></div>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">رقم المخطط</label>
+                                <input type="text" name="planNumber" th:value="${estate.planNumber}" class="form-control" dir="ltr"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">رقم القطعة</label>
+                                <input type="text" name="landNumber" th:value="${estate.landNumber}" class="form-control" dir="ltr"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">رقم الصك</label>
+                                <input type="text" name="deedNumber" th:value="${estate.deedNumber}" class="form-control" dir="ltr"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">رقم الترخيص</label>
+                                <input type="text" name="licenseNumber" th:value="${estate.licenseNumber}" class="form-control" dir="ltr"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">رقم رخصة الإعلان</label>
+                                <input type="text" name="adLicenseNumber" th:value="${estate.adLicenseNumber}" class="form-control" dir="ltr"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">تاريخ الإنشاء</label>
+                                <input type="text" name="creationDate" th:value="${estate.creationDate}" class="form-control" dir="ltr" placeholder="dd/MM/yyyy"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">تاريخ انتهاء الرخصة</label>
+                                <input type="text" name="endDate" th:value="${estate.endDate}" class="form-control" dir="ltr" placeholder="dd/MM/yyyy"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="bi bi-rulers"></i> <span>مواصفات إضافية</span></div>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label class="form-label">نوع العقار (property_type)</label>
+                                <input type="text" name="propertyType" th:value="${estate.propertyType}" class="form-control"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">الواجهة</label>
+                                <input type="text" name="propertyFace" th:value="${estate.propertyFace}" class="form-control"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">عرض الشارع</label>
+                                <input type="text" name="streetWidth" th:value="${estate.streetWidth}" class="form-control" dir="ltr"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">المساحة المبنية</label>
+                                <input type="text" name="buildSpace" th:value="${estate.buildSpace}" class="form-control" dir="ltr"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">الرمز البريدي</label>
+                                <input type="number" name="postalCode" th:value="${estate.postalCode}" class="form-control" dir="ltr"/>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">العنوان الوطني</label>
+                                <input type="text" name="nationalAddress" th:value="${estate.nationalAddress}" class="form-control"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="form-section-title"><i class="bi bi-signpost-split"></i> <span>حدود العقار</span></div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">الحد الشمالي</label>
+                                <input type="text" name="northLimit" th:value="${estate.northLimit}" class="form-control"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">الحد الجنوبي</label>
+                                <input type="text" name="southLimit" th:value="${estate.southLimit}" class="form-control"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">الحد الشرقي</label>
+                                <input type="text" name="eastLimit" th:value="${estate.eastLimit}" class="form-control"/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">الحد الغربي</label>
+                                <input type="text" name="westLimit" th:value="${estate.westLimit}" class="form-control"/>
                             </div>
                         </div>
                     </div>

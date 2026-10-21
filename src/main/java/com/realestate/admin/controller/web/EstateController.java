@@ -220,6 +220,23 @@ public String editForm(@PathVariable Long id,
                           @RequestParam(required = false) String arPath,
                           @RequestParam(required = false) String advertiserName,
                           @RequestParam(required = false) String phoneNumber,
+                          @RequestParam(required = false) String planNumber,
+                          @RequestParam(required = false) String landNumber,
+                          @RequestParam(required = false) String deedNumber,
+                          @RequestParam(required = false) String licenseNumber,
+                          @RequestParam(required = false) String adLicenseNumber,
+                          @RequestParam(required = false) String creationDate,
+                          @RequestParam(required = false) String endDate,
+                          @RequestParam(required = false) String propertyType,
+                          @RequestParam(required = false) String propertyFace,
+                          @RequestParam(required = false) String streetWidth,
+                          @RequestParam(required = false) String buildSpace,
+                          @RequestParam(required = false) String postalCode,
+                          @RequestParam(required = false) String nationalAddress,
+                          @RequestParam(required = false) String northLimit,
+                          @RequestParam(required = false) String southLimit,
+                          @RequestParam(required = false) String eastLimit,
+                          @RequestParam(required = false) String westLimit,
                           RedirectAttributes redirectAttributes) {
         Estate estate = estateRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Estate not found: " + id));
@@ -247,6 +264,23 @@ public String editForm(@PathVariable Long id,
         estate.setArPath(arPath);
         estate.setAdvertiserName(advertiserName);
         estate.setPhoneNumber(phoneNumber);
+        estate.setPlanNumber(planNumber);
+        estate.setLandNumber(landNumber);
+        estate.setDeedNumber(deedNumber);
+        estate.setLicenseNumber(licenseNumber);
+        estate.setAdLicenseNumber(adLicenseNumber);
+        estate.setCreationDate(creationDate);
+        estate.setEndDate(endDate);
+        estate.setPropertyType(propertyType);
+        estate.setPropertyFace(propertyFace);
+        estate.setStreetWidth(streetWidth);
+        estate.setBuildSpace(buildSpace);
+        estate.setPostalCode(parseIntOrNull(postalCode));
+        estate.setNationalAddress(nationalAddress);
+        estate.setNorthLimit(northLimit);
+        estate.setSouthLimit(southLimit);
+        estate.setEastLimit(eastLimit);
+        estate.setWestLimit(westLimit);
         estate.setUpdatedAt(LocalDateTime.now());
 
         estateRepository.save(estate);
@@ -448,6 +482,19 @@ public String uploadImage(@PathVariable Long id, @RequestParam("files") Multipar
         } else {
             return java.util.Map.of("success", false, "error", result.error() != null ? result.error() : "unknown_error");
         }
+    }
+
+    @PostMapping("/estates/{id}/cancel-discount")
+    public String cancelDiscount(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        Estate estate = estateRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Estate not found: " + id));
+        estate.setDiscountPercent(null);
+        estate.setPriceAfterDiscount(null);
+        estate.setTotalPriceAfterDiscount(null);
+        estate.setUpdatedAt(LocalDateTime.now());
+        estateRepository.save(estate);
+        redirectAttributes.addFlashAttribute("discountCancelled", true);
+        return "redirect:/estates/" + id + "/edit";
     }
 
     private Integer parseIntOrNull(String s) {
