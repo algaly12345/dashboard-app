@@ -42,24 +42,26 @@
                     </div>
                     <div class="col-md-2">
                         <label class="form-label"><i class="bi bi-map"></i> المنطقة الإدارية</label>
-                        <select id="regionSelect" class="form-select">
-                            <option value="">اختر المنطقة</option>
-                            <option th:each="r : ${regionsLite}" th:value="${r.regionId}" th:text="${r.nameAr}"></option>
+                        <select name="regionId" id="regionSelect" class="form-select">
+                            <option value="">كل المناطق</option>
+                            <option th:each="r : ${regionsLite}" th:value="${r.regionId}" th:text="${r.nameAr}" th:selected="${regionId != null and regionId == r.regionId}"></option>
                         </select>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label" th:text="#{estate.city}">City</label>
-                        <select name="city" id="citySelect" class="form-select">
-                            <option value="" th:text="#{estate.filter.city}">All cities</option>
-                            <option th:each="c : ${cities}" th:value="${c}" th:text="${c}" th:selected="${c == city}"></option>
-                        </select>
+                        <input type="text" name="city" id="citySelect" class="form-control" list="cityList"
+                               th:value="${city}" placeholder="كل المدن (اكتب للبحث)" autocomplete="off"/>
+                        <datalist id="cityList">
+                            <option th:each="c : ${allCities}" th:value="${c}"></option>
+                        </datalist>
                     </div>
                     <div class="col-md-2">
                         <label class="form-label" th:text="#{estate.district}">District</label>
-                        <select name="district" id="districtSelect" class="form-select">
-                            <option value="" th:text="${district} ?: 'كل الأحياء'">All districts</option>
-                            <option th:if="${district}" th:value="${district}" th:text="${district}" selected></option>
-                        </select>
+                        <input type="text" name="district" id="districtSelect" class="form-control" list="districtList"
+                               th:value="${district}" placeholder="كل الأحياء (اكتب للبحث)" autocomplete="off"/>
+                        <datalist id="districtList">
+                            <option th:each="d : ${allDistricts}" th:value="${d}"></option>
+                        </datalist>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label"><i class="bi bi-person-badge"></i> المعلن</label>
@@ -250,11 +252,11 @@
                 <div class="btn-group">
                     <a class="btn btn-outline-secondary btn-sm"
                        th:classappend="${estates.first} ? 'disabled' : ''"
-                       th:href="@{/estates(q=${q}, city=${city}, category=${category}, status=${status}, adType=${adType}, estateType=${estateType}, virtualTour=${virtualTour}, minPrice=${minPrice}, maxPrice=${maxPrice}, licenseExpired=${licenseExpired}, userId=${userId}, page=${estates.number - 1})}"
+                       th:href="@{/estates(q=${q}, regionId=${regionId}, city=${city}, district=${district}, category=${category}, status=${status}, adType=${adType}, estateType=${estateType}, virtualTour=${virtualTour}, minPrice=${minPrice}, maxPrice=${maxPrice}, licenseExpired=${licenseExpired}, userId=${userId}, page=${estates.number - 1})}"
                        th:text="#{common.prev}">Prev</a>
                     <a class="btn btn-outline-secondary btn-sm"
                        th:classappend="${estates.last} ? 'disabled' : ''"
-                       th:href="@{/estates(q=${q}, city=${city}, category=${category}, status=${status}, adType=${adType}, estateType=${estateType}, virtualTour=${virtualTour}, minPrice=${minPrice}, maxPrice=${maxPrice}, licenseExpired=${licenseExpired}, userId=${userId}, page=${estates.number + 1})}"
+                       th:href="@{/estates(q=${q}, regionId=${regionId}, city=${city}, district=${district}, category=${category}, status=${status}, adType=${adType}, estateType=${estateType}, virtualTour=${virtualTour}, minPrice=${minPrice}, maxPrice=${maxPrice}, licenseExpired=${licenseExpired}, userId=${userId}, page=${estates.number + 1})}"
                        th:text="#{common.next}">Next</a>
                 </div>
             </nav>
@@ -344,47 +346,60 @@
     var regionSelectEl = document.getElementById('regionSelect');
     var citySelectEl = document.getElementById('citySelect');
     var districtSelectEl = document.getElementById('districtSelect');
+    var INITIAL_CITY_OPTIONS = document.getElementById('cityList').innerHTML;
+    var INITIAL_DISTRICT_OPTIONS = document.getElementById('districtList').innerHTML;
+
+    function fillList(listId, values) {
+        var list = document.getElementById(listId);
+        list.innerHTML = '';
+        values.forEach(function (v) {
+            var opt = document.createElement('option');
+            opt.value = v;
+            list.appendChild(opt);
+        });
+    }
+
+    function loadCities(regionId) {
+        fetch('/estates/cities-by-region?regionId=' + regionId)
+            .then(function (r) { return r.json(); })
+            .then(function (cities) { fillList('cityList', cities); });
+    }
+
+    function loadDistricts(cityName) {
+        fetch('/estates/districts-by-city?cityName=' + encodeURIComponent(cityName))
+            .then(function (r) { return r.json(); })
+            .then(function (districts) { fillList('districtList', districts); });
+    }
 
     if (regionSelectEl) {
+        if (regionSelectEl.value) loadCities(regionSelectEl.value);
         regionSelectEl.addEventListener('change', function () {
-            var regionId = this.value;
-            if (!regionId) return;
-            fetch('/estates/cities-by-region?regionId=' + regionId)
-                .then(r => r.json())
-                .then(cities => {
-                    citySelectEl.innerHTML = '<option value="">كل المدن</option>';
-                    cities.forEach(function (c) {
-                        var opt = document.createElement('option');
-                        opt.value = c;
-                        opt.textContent = c;
-                        citySelectEl.appendChild(opt);
-                    });
-                    districtSelectEl.innerHTML = '<option value="">كل الأحياء</option>';
-                });
+            citySelectEl.value = '';
+            districtSelectEl.value = '';
+            document.getElementById('districtList').innerHTML = INITIAL_DISTRICT_OPTIONS;
+            if (this.value) {
+                loadCities(this.value);
+            } else {
+                document.getElementById('cityList').innerHTML = INITIAL_CITY_OPTIONS;
+            }
         });
     }
 
     if (citySelectEl) {
-        citySelectEl.addEventListener('change', function () {
-            var cityName = this.value;
-            if (!cityName) {
-                districtSelectEl.innerHTML = '<option value="">كل الأحياء</option>';
-                return;
-            }
-            fetch('/estates/districts-by-city?cityName=' + encodeURIComponent(cityName))
-                .then(r => r.json())
-                .then(districts => {
-                    districtSelectEl.innerHTML = '<option value="">كل الأحياء</option>';
-                    districts.forEach(function (d) {
-                        var opt = document.createElement('option');
-                        opt.value = d;
-                        opt.textContent = d;
-                        districtSelectEl.appendChild(opt);
-                    });
-                });
+        if (citySelectEl.value.trim()) loadDistricts(citySelectEl.value.trim());
+        var cityTimer = null;
+        citySelectEl.addEventListener('input', function () {
+            var cityName = this.value.trim();
+            clearTimeout(cityTimer);
+            cityTimer = setTimeout(function () {
+                if (!cityName) {
+                    document.getElementById('districtList').innerHTML = INITIAL_DISTRICT_OPTIONS;
+                } else {
+                    loadDistricts(cityName);
+                }
+            }, 250);
         });
     }
-
 
     (function () {
         var input = document.getElementById('advertiserSearchInput');

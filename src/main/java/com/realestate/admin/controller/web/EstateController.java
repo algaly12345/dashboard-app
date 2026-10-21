@@ -52,6 +52,8 @@ public String list(@RequestParam(required = false) String q,
                     @RequestParam(required = false) String licenseExpired,
                     @RequestParam(required = false) String zoneId,
                     @RequestParam(required = false) String userId,
+                    @RequestParam(required = false) Integer regionId,
+                    @RequestParam(required = false) String district,
                     @RequestParam(defaultValue = "0") int page,
                     Model model) {
 
@@ -63,11 +65,28 @@ public String list(@RequestParam(required = false) String q,
     Long userIdLong = parseLongOrNull(userId);
     boolean expiredOnly = "true".equals(licenseExpired);
 
+    boolean locationFilter = regionId != null
+            || (city != null && !city.isBlank())
+            || (district != null && !district.isBlank());
+
     Page<Estate> result;
     if (expiredOnly) {
-        List<Estate> expired = estateRepository.findExpiredLicenses(zoneIdLong, PageRequest.of(page, 12));
-        long total = estateRepository.countExpiredLicenses(zoneIdLong);
-        result = new org.springframework.data.domain.PageImpl<>(expired, PageRequest.of(page, 12), total);
+        if (locationFilter) {
+            List<Estate> all = applyLocationFilters(
+                    estateRepository.findExpiredLicenses(zoneIdLong, org.springframework.data.domain.Pageable.unpaged()),
+                    regionId, city, district);
+            result = pageOf(all, page);
+        } else {
+            List<Estate> expired = estateRepository.findExpiredLicenses(zoneIdLong, PageRequest.of(page, 12));
+            long total = estateRepository.countExpiredLicenses(zoneIdLong);
+            result = new org.springframework.data.domain.PageImpl<>(expired, PageRequest.of(page, 12), total);
+        }
+    } else if (locationFilter) {
+        List<Estate> all = estateRepository.search(
+                blankToNull(q), statusEnum, null, blankToNull(category), blankToNull(adType),
+                blankToNull(estateType), virtualTourBool, minPriceVal, maxPriceVal, zoneIdLong, userIdLong,
+                org.springframework.data.domain.Pageable.unpaged()).getContent();
+        result = pageOf(applyLocationFilters(all, regionId, city, district), page);
     } else {
         result = estateRepository.search(
                 blankToNull(q), statusEnum, blankToNull(city), blankToNull(category), blankToNull(adType),
@@ -116,6 +135,11 @@ public String list(@RequestParam(required = false) String q,
     model.addAttribute("minPrice", minPriceVal);
     model.addAttribute("maxPrice", maxPriceVal);
     model.addAttribute("licenseExpired", licenseExpired);
+    model.addAttribute("regionId", regionId);
+    model.addAttribute("district", district);
+    model.addAttribute("allCities", cityLiteRepository.findAll().stream()
+            .map(x -> x.getNameAr().trim()).distinct().sorted().toList());
+    model.addAttribute("allDistricts", estateRepository.findDistinctDistricts(null, null));
     model.addAttribute("zoneId", zoneId);
     model.addAttribute("expiredOnly", expiredOnly);
     model.addAttribute("activePage", "estates");
@@ -495,6 +519,46 @@ public String uploadImage(@PathVariable Long id, @RequestParam("files") Multipar
         estateRepository.save(estate);
         redirectAttributes.addFlashAttribute("discountCancelled", true);
         return "redirect:/estates/" + id + "/edit";
+    }
+
+    /** Same location logic as the property report: region -> its cities, city (trimmed), district (without the "حي" prefix). */
+    private List<Estate> applyLocationFilters(List<Estate> list, Integer regionId, String city, String district) {
+        List<Estate> out = list;
+        if (regionId != null) {
+            java.util.Set<String> regionCities = cityLiteRepository.findByRegionIdOrderByNameAr(regionId).stream()
+                    .map(x -> x.getNameAr().trim())
+                    .collect(java.util.stream.Collectors.toSet());
+            out = out.stream()
+                    .filter(e -> e.getCity() != null && regionCities.contains(e.getCity().trim()))
+                    .toList();
+        }
+        if (city != null && !city.isBlank()) {
+            String cityTrimmed = city.trim();
+            out = out.stream()
+                    .filter(e -> e.getCity() != null && cityTrimmed.equals(e.getCity().trim()))
+                    .toList();
+        }
+        if (district != null && !district.isBlank()) {
+            String wanted = normalizeDistrictName(district);
+            out = out.stream()
+                    .filter(e -> e.getDistricts() != null
+                            && wanted.equals(normalizeDistrictName(e.getDistricts())))
+                    .toList();
+        }
+        return out;
+    }
+
+    private String normalizeDistrictName(String name) {
+        if (name == null) return "";
+        return name.trim().replaceFirst("^حي\\s+", "").trim();
+    }
+
+    private Page<Estate> pageOf(List<Estate> all, int page) {
+        int size = 12;
+        int from = Math.min(Math.max(page, 0) * size, all.size());
+        int to = Math.min(from + size, all.size());
+        return new org.springframework.data.domain.PageImpl<>(
+                all.subList(from, to), PageRequest.of(Math.max(page, 0), size), all.size());
     }
 
     private Integer parseIntOrNull(String s) {
