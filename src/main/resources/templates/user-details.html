@@ -81,7 +81,7 @@
                             <input type="text" th:value="${user.createdAt != null ? #temporals.format(user.createdAt, 'yyyy-MM-dd') : '-'}" class="form-control" disabled/>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">رقم الهوية</label>
+                            <label class="form-label">معرّف المستخدم (ID)</label>
                             <input type="text" th:value="${user.id}" class="form-control" disabled dir="ltr"/>
                         </div>
                     </div>
@@ -199,6 +199,16 @@
                         <div class="col-md-6">
                             <label class="form-label">رقم السجل التجاري</label>
                             <input type="text" name="commercialRegisterionNo" th:value="${agent.commercialRegisterionNo}" class="form-control" dir="ltr"/>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">رقم الهوية</label>
+                            <input type="text" name="agentIdentity" th:value="${agentIdentity}" class="form-control" dir="ltr"/>
+                            <div class="form-text text-warning" th:if="${identitySource == 'unified'}">غير مسجّل في الوكيل، معروض من الرقم الموحد (يُحفظ عند الضغط على حفظ)</div>
+                            <div class="form-text text-warning" th:if="${identitySource == 'estate'}">غير مسجّل، مأخوذ من عقارات المستخدم (يُحفظ عند الضغط على حفظ)</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">الرقم الموحد (جدول الوكيل)</label>
+                            <input type="text" name="agentUnifiedNumber" th:value="${agentUnified}" class="form-control" dir="ltr"/>
                         </div>
                     </div>
                 </div>

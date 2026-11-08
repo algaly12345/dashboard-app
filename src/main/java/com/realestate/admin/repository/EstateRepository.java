@@ -185,4 +185,13 @@ Long findMaxId();
 
     @Query("select e.city, count(e) from Estate e where e.city is not null group by e.city order by count(e) desc")
     List<Object[]> countGroupedByCity();
+
+    @org.springframework.data.jpa.repository.Query(
+            value = "select identity_or_unified from estates where user_id = :uid "
+                  + "and identity_or_unified is not null and trim(identity_or_unified) <> '' "
+                  + "order by id desc limit 1",
+            nativeQuery = true)
+    java.util.List<String> findIdentityOrUnifiedByUserId(
+            @org.springframework.data.repository.query.Param("uid") Long uid);
+
 }

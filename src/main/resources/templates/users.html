@@ -29,16 +29,24 @@
 
             <form th:action="@{/users}" method="get" class="card section-card mb-3">
                 <div class="row g-2 align-items-end">
-                    <div class="col-md-6">
+                    <div class="col-md-3">
                         <label class="form-label small fw-semibold" th:text="#{user.name}">Search</label>
                         <input type="text" name="q" th:value="${q}" class="form-control" th:placeholder="#{user.search.placeholder}"/>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label class="form-label small fw-semibold">النشاط</label>
                         <select name="userType" class="form-select">
                             <option value="" th:selected="${userType == null or userType == ''}">الكل</option>
                             <option value="customer" th:selected="${userType == 'customer'}">مسوّق عقاري (عنده عقارات)</option>
                             <option value="provider" th:selected="${userType == 'provider'}">مزود خدمة (عنده خدمات)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold">الهوية / الرقم الموحد</label>
+                        <select name="idFilter" class="form-select">
+                            <option value="" th:selected="${idFilter == null or idFilter == ''}">الكل</option>
+                            <option value="missing" th:selected="${idFilter == 'missing'}">ناقص (لا هوية ولا موحد)</option>
+                            <option value="noIdentity" th:selected="${idFilter == 'noIdentity'}">بدون رقم هوية</option>
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -54,6 +62,7 @@
                         <th th:text="#{user.name}">Name</th>
                         <th th:text="#{user.phone}">Phone</th>
                         <th th:text="#{user.email}">Email</th>
+                        <th>الهوية / الموحد</th>
                         <th th:text="#{user.type}">Type</th>
                         <th th:text="#{user.status}">Status</th>
                         <th th:text="#{user.estatesAdded}">Listings</th>
@@ -72,6 +81,16 @@
                         </td>
                         <td th:text="${u.phone}" dir="ltr">Phone</td>
                         <td th:text="${u.email}">Email</td>
+                        <td dir="ltr">
+                            <th:block th:with="ids=${agentIds.get(u.id)}">
+                                <th:block th:if="${ids != null}">
+                                    <span th:if="${ids[0] != null}" th:text="${ids[0]}"></span>
+                                    <span th:if="${ids[0] == null and ids[1] != null}"><span th:text="${ids[1]}"></span> <small class="text-muted">(موحد)</small></span>
+                                    <span th:if="${ids[0] == null and ids[1] == null}" class="badge-pill badge-disactive">ناقص</span>
+                                </th:block>
+                                <span th:if="${ids == null}" class="text-muted">—</span>
+                            </th:block>
+                        </td>
                         <td>
                             <span th:if="${u.userType == 'customer'}" class="badge-pill badge-tour">باحث/مسوّق</span>
                             <span th:if="${u.userType == 'provider'}" class="badge-pill badge-rent">مزود خدمة</span>
@@ -94,7 +113,7 @@
                         </td>
                     </tr>
                     <tr th:if="${users.content.isEmpty()}">
-                        <td colspan="9" class="text-center text-muted py-4">—</td>
+                        <td colspan="10" class="text-center text-muted py-4">—</td>
                     </tr>
                     </tbody>
                 </table>
@@ -110,11 +129,11 @@
                 <div class="btn-group">
                     <a class="btn btn-outline-secondary btn-sm"
                        th:classappend="${users.first} ? 'disabled' : ''"
-                       th:href="@{/users(q=${q}, userType=${userType}, page=${users.number - 1})}"
+                       th:href="@{/users(q=${q}, userType=${userType}, idFilter=${idFilter}, page=${users.number - 1})}"
                        th:text="#{common.prev}">Prev</a>
                     <a class="btn btn-outline-secondary btn-sm"
                        th:classappend="${users.last} ? 'disabled' : ''"
-                       th:href="@{/users(q=${q}, userType=${userType}, page=${users.number + 1})}"
+                       th:href="@{/users(q=${q}, userType=${userType}, idFilter=${idFilter}, page=${users.number + 1})}"
                        th:text="#{common.next}">Next</a>
                 </div>
             </nav>
